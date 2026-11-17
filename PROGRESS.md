@@ -6,7 +6,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | # | Spec | Deliverable | Status | Evidence |
 |---|---|---|---|---|
 | 0 | `specs/00-bootstrap.md` | repo, tooling, config, timeutil, CI skeleton | ✅ | see below |
-| 1 | `specs/01-events-normalizer.md` | validation, normalizer, event taxonomy | ⬜ | |
+| 1 | `specs/01-events-normalizer.md` | validation, normalizer, event taxonomy | ✅ | see below |
 | 2 | `specs/02-storage.md` | SQLite schema v1, migrations, repositories, audit log | ⬜ | |
 | 3 | `specs/03-collectors-ingestion.md` | all collectors, ingestion, fuzz tests | ⬜ | |
 | 4 | `specs/04-severity-allowlist-enrichment.md` | editable defaults/overrides, allowlist, enrichment | ⬜ | |
@@ -44,3 +44,16 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 - **Commands run**: `make install`, `make test` → `24 passed`, `make lint` → ruff check
   passed, ruff format check passed, mypy `Success: no issues found in 10 source files`.
 - **Commit**: `phase-0: bootstrap tooling, config, timeutil and CI skeleton`.
+
+## Phase 1 evidence (2026-11-17)
+
+- **Code**: `core/events.py` (taxonomy, `validate_event`, `SEVERITY_ORDER`, severity helpers),
+  `core/normalizer.py` (`NormalizedEvent` TypedDict, aliases, `normalize_event`, `canonicalize`,
+  `compute_event_hash`).
+- **Tests**: `tests/test_events.py` (taxonomy, every required field, every type check, unknown
+  keys, severity boundaries), `tests/test_normalizer.py` (worked example, every field/type alias,
+  UTC conversion with patched local tz, whitespace/empty optionals, unknown-field dropping,
+  hash exclusions and key-order stability, hypothesis idempotence property).
+- **Commands run**: `make test` → `103 passed`; `make lint` → ruff check passed, ruff format
+  check passed, mypy `Success: no issues found in 12 source files`.
+- **Commit**: `phase-1: event taxonomy, validation and normalization`.

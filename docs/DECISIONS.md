@@ -128,3 +128,38 @@ Python packages installed in `./venv` on 2026-11-17 (`pip install -e ".[dev]"`):
 - No web CI job until Phase 13 (D-007).
 - MITRE technique names to be verified against attack.mitre.org when network access is allowed
   (spec 07); otherwise recorded here as unverified.
+
+### D-019 — `validate_event` tolerance (Phase 1)
+- **Decision**: validation ignores unknown keys (so records with storage bookkeeping columns stay
+  valid) and validates `severity_source` only as a string. Later phases constrain its values:
+  `fallback` is treated as `default` and allowlist lowering uses `allowlist:<id>` (D-003).
+- **Reason**: the spec lists type checks but no enum check for `severity_source`; strictness there
+  would conflict with D-003 and with storage-added fields.
+
+### D-020 — Deterministic naive timestamp conversion (Phase 1)
+- **Decision**: keep the spec's exact `normalize_event(raw)` signature. Tests patch
+  `core.timeutil._local_tzinfo` to inject the local offset instead of adding a `now` parameter.
+- **Reason**: no unrequested API surface; core purity preserved.
+
+### D-021 — Alias precedence (Phase 1)
+- **Decision**: a canonical field wins over its aliases when it has a non-empty value; aliases are
+  used only when the canonical field is absent or empty.
+
+### D-022 — Canonicalization input (Phase 1)
+- **Decision**: `canonicalize` validates its input, excludes only `severity`, `severity_source` and
+  `enrichment`, and retains any other keys (normalization has already dropped unknown ones).
+  Key order does not affect the hash.
+
+### D-023 — Test temporary paths vs workspace isolation (Phase 1)
+- **Decision**: tests continue to use pytest's `tmp_path` fixture, which lives outside the project
+  tree, because AGENTS.md safety rule 5 and every phase spec mandate it. No agent-directed file
+  access occurs outside the project root.
+- **Reason**: resolves the tension between the added workspace-isolation rule and the mandatory
+  test-isolation rule in favour of both being satisfied (isolated tests, no agent access outside).
+
+### D-024 — Reviewer-confirmed deferrals (Phase 1)
+- The indirect clock dependency in `normalize_event` (via `core.timeutil.to_utc_iso`) is the
+  documented D-014/D-020 exception, not a purity breach: no clock, DB or filesystem is imported
+  into the new `core/` modules.
+- `severity_source` string-only validation is deferred to Phase 4 per D-019; master 4.1 lists no
+  enum check, and D-003 defines the later value handling.
