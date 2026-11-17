@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.db
+*.db-wal
+*.db-shm
+logs/
+demo_workdir/
+exports/
+.env
+web/node_modules/
+web/.next/

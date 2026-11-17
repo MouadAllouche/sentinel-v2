@@ -1,0 +1,35 @@
+# Phase 18 — Demo, integration/e2e tests, deployment docs
+
+Skills: sentinel-testing-workflow, sentinel-ops-deployment, sentinel-docs-writing, sentinel-security-hardening.
+
+## Goal
+A reproducible, sandboxed demonstration; end-to-end confidence; production-style deployment guidance. Nothing here needs root or touches real system files.
+
+## 18.1 Demo — `python cli.py demo` / `scripts/demo.py`
+Creates `demo_workdir/` (git-ignored) containing: synthetic `auth.log` (timestamps relative to "now"), fake `etc/` tree (`sshd_config`, `sudoers.d/`, `cron.d/`, `authorized_keys` with generated sample **public** keys), `demo.db`, a demo `settings.toml` pointing at them, and an admin user `demo-admin` with a **randomly generated password printed once** (and a viewer `demo-viewer`). Steps (idempotent, `--reset` wipes the workdir):
+1. Seed 7 days of benign history (daily logins by two users, routine sudo, normal connections via a fake network collector feed) so baselines mature.
+2. Inject the standard scenario: ≥ 25 failed logins from `203.0.113.45` for `admin` across two bursts (6 within 5 min; then 30 within 40 s), a successful login, `sudo visudo`, `chmod 777 etc/sshd_config`, a new `cron.d/backup` file, a new authorized key, a new listening port on all interfaces (faked), a package install of `nmap` (faked dpkg line), and a spike in failed logins that triggers a baseline anomaly. Also benign noise from a trusted IP covered by an allowlist entry (to show suppression).
+3. Run `run_cycle` twice (second must change nothing).
+4. Print a summary: incidents with score/severity, timeline excerpt, grouping reasons, anomaly explanation, drift events, rule findings per tier (shows the 5/20/50 tiers firing), notifications (to a local file sink channel in demo mode), and the commands to start the API and web against `demo.db` plus the login details.
+5. `--live` mode (optional): keeps appending new synthetic events every few seconds so the dashboard's live feed and SSE can be demonstrated.
+
+## 18.2 Integration tests (`tests/integration/`)
+- `test_full_scenario.py`: the demo scenario in `tmp_path` asserting exact outcomes (one main incident, expected rule findings and tiers, anomaly numbers, drift descriptions, severity critical with reasons summing to raw score, second cycle idempotent, notification counts = escalations only).
+- Rule-editing flows through the repositories: change a tier threshold → next cycle reflects it; disable a rule → score drops accordingly; change a default severity → new events use it; reapply changes old events; allowlist suppression excludes alerts but keeps events.
+- Failure modes: missing/unreadable auth.log; unreadable monitored files; journald missing; DB busy; collector exception; clock skew (events in the future); huge burst (10 000 failed logins) stays within time/memory budget (record numbers in DECISIONS.md).
+- Security regression tests: grep-style tests asserting no code path logs/stores `cmdline`, file contents, or secrets; `/etc/shadow` metadata-only enforced; the repo contains no `shell=True`, `eval(`, `exec(` (a test scans source); all SQL in `storage/` uses parameters (static scan for f-strings in `execute` calls).
+- Idempotence/commutativity property tests across the whole pipeline (event order shuffled → same incidents/scores).
+
+## 18.3 End-to-end (`web/e2e/`, Playwright)
+`playwright.config.ts` starts the API (`uvicorn`) and the Next.js production build against a freshly generated demo DB via `globalSetup` (calls `scripts/demo.py --reset --no-print-password` and reads credentials from a temp file). Journeys: login/logout; overview KPIs; events filter + drawer + export; the standard incident walk-through (timeline, why grouped, why score, what-if, graph, notes, status change, export PDF); **create the 5/20 failed-login rule in the builder and backtest it**; edit default severity; override reorder; allowlist create; drift accept baseline; behavior anomaly view; notification test to a local server; viewer-role restrictions; session expiry handling; CSRF failure surface (tamper cookie → friendly error). Run in CI headless with traces on failure. Add `axe` checks only if the dependency was approved earlier.
+
+## 18.4 Deployment assets (`deploy/`, documentation only — the agent never installs anything)
+- `sentinel-engine.service.example`, `sentinel-api.service.example`, `sentinel-web.service.example`: run as dedicated user `sentinel` (member of `adm`, **no sudo**), `WorkingDirectory`, `EnvironmentFile=/etc/sentinel/sentinel.env` (mode 0600, holds `SENTINEL_SESSION_KEY` and notification secrets), hardening: `NoNewPrivileges=yes`, `ProtectSystem=strict`, `ProtectHome=read-only` (or `tmpfs` + explicit binds where needed for `authorized_keys`), `PrivateTmp=yes`, `ReadWritePaths=` only the DB/log/export dirs, `ReadOnlyPaths=/etc /var/log`, `CapabilityBoundingSet=` empty, `RestrictAddresses`/`IPAddressDeny=any` for engine **unless** notification channels are enabled (document the tradeoff), `MemoryMax`, `Restart=on-failure`, `RestrictNamespaces=yes`, `LockPersonality=yes`, `SystemCallFilter=@system-service`.
+- Reverse-proxy example (nginx or Caddy) terminating TLS in front of the Next server with `Secure` cookies, HSTS, SSE-safe settings (`proxy_buffering off` for `/api/stream`), IP allowlist suggestion; SSH-tunnel access instructions as the default remote-access method.
+- `docs/OPERATIONS.md`: install steps (user creation, venv, `pip install`, `npm ci && npm run build`), first admin creation, upgrade/migration procedure (backup DB first: `sqlite3 .backup` or `VACUUM INTO`), backup/restore, log locations, retention, troubleshooting (auth.log permission, journald access), disaster recovery, and "how to generate real failed SSH logins safely against a throwaway VM you own" (`scripts/generate_attack_vm.md`; documentation only, never automated, never run by tests or by the agent).
+
+## 18.5 Documentation set
+`README.md` (what/why, screenshots-free quick start: 6 commands to a working demo), `docs/ARCHITECTURE.md` (layers, data flow, diagrams as Mermaid, tables, module responsibilities), `docs/RULES.md` (every rule kind with JSON and UI walkthrough), `docs/RISK_RULES.md` (generated from seeds), `docs/API.md`, `docs/SECURITY.md` (threat model: what Sentinel defends/doesn't, trust boundaries, auth design, secrets handling, data stored/never stored), `docs/LIMITATIONS.md` (polling gaps, psutil snapshot limits, single host, no remediation, heuristic thresholds not validated, SQLite scale limits, MITRE mapping indicative), `docs/DEMO.md`, `docs/OPERATIONS.md`, `docs/DECISIONS.md` (complete). Every doc claim must match the code; a test checks that each seeded rule id and each API route appears in the docs.
+
+## Gate (fresh clone test)
+New clone → `python3 -m venv venv && pip install -e ".[dev]"` → `cd web && npm ci` → `make test && make lint && make web-test && make web-e2e && python cli.py demo && make api & make web` all succeed; CI workflow passes locally (act or the equivalent command list).
