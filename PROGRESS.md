@@ -7,7 +7,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 |---|---|---|---|---|
 | 0 | `specs/00-bootstrap.md` | repo, tooling, config, timeutil, CI skeleton | ✅ | see below |
 | 1 | `specs/01-events-normalizer.md` | validation, normalizer, event taxonomy | ✅ | see below |
-| 2 | `specs/02-storage.md` | SQLite schema v1, migrations, repositories, audit log | ⬜ | |
+| 2 | `specs/02-storage.md` | SQLite schema v1, migrations, repositories, audit log | ✅ | see below |
 | 3 | `specs/03-collectors-ingestion.md` | all collectors, ingestion, fuzz tests | ⬜ | |
 | 4 | `specs/04-severity-allowlist-enrichment.md` | editable defaults/overrides, allowlist, enrichment | ⬜ | |
 | 5 | `specs/05-rules-engine-core.md` | rule models, conditions, threshold evaluator, backtest | ⬜ | |
@@ -57,3 +57,18 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 - **Commands run**: `make test` → `103 passed`; `make lint` → ruff check passed, ruff format
   check passed, mypy `Success: no issues found in 12 source files`.
 - **Commit**: `phase-1: event taxonomy, validation and normalization`.
+
+## Phase 2 evidence (2026-11-17)
+
+- **Code**: `storage/database.py` (WAL connection pragmas, injectable path, `init_db`),
+  `storage/migrations.py` (`schema_version`, `m001`, seven indexes), `storage/repositories.py`
+  (events, state, audit, settings; keyset pagination; whitelisted filters).
+- **Tests**: `tests/test_database.py` (pragmas, table/index creation, idempotence, legacy-DB upgrade,
+  settings-derived default path), `tests/test_repositories.py` (dedup, validation, promoted
+  columns, every filter, 250-event keyset pagination, time series, top values, state/audit/settings,
+  concurrent writers, hypothesis round trip, static SQL scan), plus a shared `tmp_initialised_db`
+  fixture in `tests/conftest.py`.
+- **Commands run**: `make test` → `144 passed` (after reviewer non-blockers were fixed);
+  `make lint` → ruff check passed, ruff format check passed, mypy `Success: no issues found in
+  15 source files`.
+- **Commit**: `phase-2: SQLite storage, migrations and repositories`.

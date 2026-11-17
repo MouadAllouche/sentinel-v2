@@ -13,6 +13,8 @@ from pathlib import Path
 
 import pytest
 
+from storage.database import init_db
+
 _FIXED_NOW = datetime(2026, 11, 15, 12, 34, 56, tzinfo=UTC)
 
 
@@ -60,7 +62,13 @@ def make_event() -> Callable[..., dict[str, object]]:
 def tmp_db(tmp_path: Path) -> Path:
     """A path to a throwaway database file.
 
-    The file is not created until storage exists (Phase 2); tests that need a
-    live schema call storage.init_db(db_path=tmp_db) themselves.
+    The file is deliberately not shared with the real project database.
     """
     return tmp_path / "sentinel.db"
+
+
+@pytest.fixture
+def tmp_initialised_db(tmp_db: Path) -> Path:
+    """An initialised, empty database in the test sandbox."""
+    init_db(db_path=tmp_db)
+    return tmp_db

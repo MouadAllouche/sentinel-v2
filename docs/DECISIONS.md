@@ -163,3 +163,45 @@ Python packages installed in `./venv` on 2026-11-17 (`pip install -e ".[dev]"`):
   into the new `core/` modules.
 - `severity_source` string-only validation is deferred to Phase 4 per D-019; master 4.1 lists no
   enum check, and D-003 defines the later value handling.
+
+### D-025 — Storage filters and deferred incident join (Phase 2)
+- **Decision**: `search` queries `json_extract(event_data, '$.description')` because `description`
+  is not a promoted column. An `incident_id` filter raises `ValueError` with a clear message until
+  Phase 7 adds the incident schema; it is never silently ignored.
+- **Reason**: honours the promoted-column list in master 4.4 and avoids false query results.
+
+### D-026 — Keyset cursor format (Phase 2)
+- **Decision**: the opaque cursor is base64url JSON `{"t": timestamp, "i": id}`; ordering is
+  `timestamp DESC, id DESC`; `limit` is bounded to 1–500; no OFFSET queries are used.
+
+### D-027 — Time-series shape (Phase 2)
+- **Decision**: `event_time_series` returns `{bucket_label: count}` with UTC-suffixed labels
+  (`...+00:00`). With `zero_fill=True`, gaps between `since`/`until` (or the observed min/max) are
+  filled with zero. Buckets are hour/day only.
+
+### D-028 — Event write surface (Phase 2)
+- **Decision**: `save_event`/`save_events` accept `severity_source` and `allowlisted` keywords,
+  persist only normalizer-allowed keys, and compute identity with the severity-independent hash.
+  A re-save with a different `severity_source` is deduplicated rather than creating a second row.
+
+### D-029 — Narrow SQL lint suppressions (Phase 2)
+- **Decision**: two per-line `# noqa: S608` comments with explanatory text cover SQL strings built
+  from a whitelisted column name and from `?` placeholder markers. All values remain bound (R4).
+
+### D-030 — Hypothesis fixture suppression (Phase 2)
+- **Decision**: the save/get property test suppresses `HealthCheck.function_scoped_fixture`;
+  each generated example uses a unique UUID description, so fixture reuse cannot cause collisions.
+
+### D-031 — Migration application (Phase 2)
+- **Decision**: `init_db` accepts an injectable `now` for `schema_version.applied_at`, applies each
+  pending migration in its own explicit `BEGIN`/`COMMIT` transaction (SQLite does not implicitly
+  wrap DDL), and never edits an applied migration.
+
+### D-032 — Phase 2 reviewer fixes
+- `search` escapes `\`, `%` and `_` and uses `LIKE ? ESCAPE '\'` so it is a literal substring test.
+- `save_event` preserves an event's own `severity_source` unless a non-default value is passed
+  explicitly (D-003 labels remain intact through storage).
+- List-valued filters fail fast on scalars; `list_audit` bounds `limit` to 1–500; `MIGRATIONS` is a
+  list as the spec shows; the `top_values` test asserts the exact ordering contract.
+- Automatic audit rows for `set_setting` remain deferred to the Phase 12 API layer, which audits
+  every mutation; the Phase 2 spec defines the two functions independently.
