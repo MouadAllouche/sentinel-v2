@@ -12,3 +12,9 @@ exports/
 .env
 web/node_modules/
 web/.next/
+.coverage
+coverage.xml
+htmlcov/
+*.egg-info/
+build/
+dist/

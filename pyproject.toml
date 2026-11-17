@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sentinel"
+version = "0.1.0"
+description = "Read-only security monitoring for one Linux server"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic>=2",
+    "psutil",
+    "httpx",
+    "reportlab",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "hypothesis",
+    "ruff",
+    "mypy",
+    "types-psutil",
+]
+
+[tool.setuptools.packages.find]
+include = ["core*", "collectors*", "storage*", "engine*", "api*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+# Specs and docs contain illustrative Python snippets that are not product code.
+extend-exclude = ["specs", "docs", "web", ".opencode"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["core", "collectors", "storage", "engine", "api"]
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = ["core.*"]
+strict = true
