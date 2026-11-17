@@ -98,4 +98,19 @@ def m001(connection: sqlite3.Connection) -> None:
         connection.execute(statement)
 
 
-MIGRATIONS: list[Migration] = [m001]
+def m002(connection: sqlite3.Connection) -> None:
+    """Create the phase-3 collector run ledger."""
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS collector_runs ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "collector TEXT NOT NULL, "
+        "started_at TEXT NOT NULL, "
+        "finished_at TEXT, "
+        "events_found INTEGER NOT NULL DEFAULT 0, "
+        "events_new INTEGER NOT NULL DEFAULT 0, "
+        "status TEXT NOT NULL, "
+        "message TEXT)"
+    )
+
+
+MIGRATIONS: list[Migration] = [m001, m002]

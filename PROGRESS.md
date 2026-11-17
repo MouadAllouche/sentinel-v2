@@ -8,7 +8,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 0 | `specs/00-bootstrap.md` | repo, tooling, config, timeutil, CI skeleton | ✅ | see below |
 | 1 | `specs/01-events-normalizer.md` | validation, normalizer, event taxonomy | ✅ | see below |
 | 2 | `specs/02-storage.md` | SQLite schema v1, migrations, repositories, audit log | ✅ | see below |
-| 3 | `specs/03-collectors-ingestion.md` | all collectors, ingestion, fuzz tests | ⬜ | |
+| 3 | `specs/03-collectors-ingestion.md` | all collectors, ingestion, fuzz tests | ✅ | see below |
 | 4 | `specs/04-severity-allowlist-enrichment.md` | editable defaults/overrides, allowlist, enrichment | ⬜ | |
 | 5 | `specs/05-rules-engine-core.md` | rule models, conditions, threshold evaluator, backtest | ⬜ | |
 | 6 | `specs/06-rules-engine-advanced.md` | sequence, new-value, field-match, seeded default rules | ⬜ | |
@@ -72,3 +72,19 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
   `make lint` → ruff check passed, ruff format check passed, mypy `Success: no issues found in
   15 source files`.
 - **Commit**: `phase-2: SQLite storage, migrations and repositories`.
+
+## Phase 3 evidence (2026-11-17)
+
+- **Code**: `collectors/__init__.py` (`CollectionResult`), `collectors/logs.py`,
+  `journald.py`, `dpkg.py`, `network.py`, `listening.py`, `processes.py`, `filesystem.py`,
+  `system.py`, `engine/ingest.py` (`run_collection`, `IngestReport`), `storage/migrations.py`
+  (`m002`: `collector_runs`), `storage/repositories.py` (`record_collector_run`).
+- **Tests**: `tests/test_collectors_logs.py` (all patterns, timestamps, incremental/rotation,
+  long lines, UTF-8, permissions), `tests/test_collectors_system.py` (journald argv, both-mode
+  dedup, dpkg, psutil-faked network/listening/processes, filesystem helpers, system info),
+  `tests/test_ingest.py` (idempotence, state-after-save, failing collector), `tests/fuzz/test_parsers.py`
+  (hypothesis fuzz of both parsers).
+- **Commands run**: `make test` → `195 passed` (after reviewer non-blockers were fixed);
+  `make lint` → ruff check passed, ruff format check
+  passed, mypy `Success: no issues found in 24 source files`.
+- **Commit**: `phase-3: read-only collectors and idempotent ingestion`.

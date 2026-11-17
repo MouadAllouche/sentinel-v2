@@ -205,3 +205,49 @@ Python packages installed in `./venv` on 2026-11-17 (`pip install -e ".[dev]"`):
   list as the spec shows; the `top_values` test asserts the exact ordering contract.
 - Automatic audit rows for `set_setting` remain deferred to the Phase 12 API layer, which audits
   every mutation; the Phase 2 spec defines the two functions independently.
+
+### D-033 — Collector state and journald resume (Phase 3)
+- State keys are namespaced (`auth_log:<path>`, `journald:<unit>`, `dpkg:<path>`, `network:state`,
+  `listening:state`, `processes:state`, `system:hour`).
+- `journalctl` runs with an argument list, `check=False`, timeout 20 s. The next run's `--since`
+  comes from the last processed entry's UTC timestamp; `__CURSOR__` is persisted for traceability.
+  With `auth_source="both"`, hash dedup depends on identical UTC timestamps (pinned by a test, R1).
+
+### D-034 — Phase 4 ingestion hooks (Phase 3)
+- `engine/ingest.py` includes identity functions for enrichment, allowlist annotation and severity
+  resolution, as the spec requires no-op pipeline steps. Phase 4 replaces their bodies; they do not
+  create events or alter identities today.
+
+### D-035 — Phase 3 gate adaptation
+- `specs/03` asks for `python cli.py init && python cli.py collect`, but `cli.py` is a Phase 11
+  deliverable. Phase 3 is verified through `run_collection` integration tests on a tmp DB instead;
+  the CLI gate is exercised in Phase 11.
+
+### D-036 — Filesystem metadata details (Phase 3)
+- Modes are rendered as four-digit octal (`0644`); a missing path yields `exists=False` rather than
+  an error. Rotation detection uses inode plus size shrink; replacement with an identical inode and
+  size cannot be detected in v1 (to be listed in `docs/LIMITATIONS.md`).
+
+### D-037 — Narrow lint suppressions in collectors (Phase 3)
+- File-level `S108` in `processes.py` (literal suspicious-path markers, never opened), `S105` on the
+  `PASSWORD_CHANGED` regex name, `S104` on the bind-scope classification constant, and test-only
+  `S104/S108` for fake connections/executables. All are explained inline (R4).
+
+### D-038 — Phase 3 reviewer fixes
+- `journalctl` still uses an argument list and timeout 20 s, but the event timestamp now comes from
+  a prefix embedded in `MESSAGE` when present; `__REALTIME_TIMESTAMP` is only the fallback. This
+  makes "both"-mode dedup work on real syslog-prefixed messages (R1). The collector keeps
+  `source="auth_log"` deliberately so identical lines hash identically; the `journald` taxonomy
+  value remains unused in v1. Residual risk: messages without an embedded prefix can still differ
+  by sub-second amounts from auth.log timestamps — to be listed in `docs/LIMITATIONS.md`.
+- `collector_runs` now records `events_found` even when the subsequent save fails, and uses the
+  injected `now` for `finished_at`.
+- State is capped for listening (5 000 ports) and processes (5 000 entries); first-run suspicious
+  events are capped by `max_process_events_per_run`. Network keeps its 20 000/24 h policy.
+- The 4 096-byte line cap excludes the trailing newline; `authorized_keys` fingerprints accept
+  `ssh-`, `ecdsa-` and `sk-` key types; listening ports report `tcp`/`udp` protocol labels.
+
+### D-039 — Reviewer-confirmed Phase 3 scope notes
+- `source="journald"` is intentionally unused in v1 so identical auth messages deduplicate across
+  both sources (D-008/D-033); the taxonomy value remains reserved.
+- `engine/ingest.py` identity hooks are the spec's explicit no-op pipeline steps (D-034), not stubs.

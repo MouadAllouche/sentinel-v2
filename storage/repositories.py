@@ -23,6 +23,7 @@ from storage.database import get_connection
 __all__ = [
     "count_events",
     "event_time_series",
+    "record_collector_run",
     "get_event",
     "get_events_by_ids",
     "get_setting",
@@ -316,6 +317,37 @@ def top_values(
     with closing(get_connection(db_path)) as connection:
         rows = connection.execute(statement, parameters).fetchall()
     return [{"value": row["value"], "count": int(row["total"])} for row in rows]
+
+
+def record_collector_run(
+    collector: str,
+    started_at: str,
+    *,
+    finished_at: str | None = None,
+    events_found: int = 0,
+    events_new: int = 0,
+    status: str = "ok",
+    message: str | None = None,
+    db_path: str | Path | None = None,
+) -> int:
+    """Append a collector run record (idempotence is provided by event hashes)."""
+    with closing(get_connection(db_path)) as connection, connection:
+        cursor = connection.execute(
+            "INSERT INTO collector_runs(collector, started_at, finished_at, events_found, "
+            "events_new, status, message) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                collector,
+                started_at,
+                finished_at or utc_now().isoformat(),
+                events_found,
+                events_new,
+                status,
+                message,
+            ),
+        )
+        if cursor.lastrowid is None:  # pragma: no cover - INSERT always assigns a rowid
+            raise RuntimeError("collector run insert did not return a row id")
+        return int(cursor.lastrowid)
 
 
 def get_state(key: str, db_path: str | Path | None = None) -> Any:

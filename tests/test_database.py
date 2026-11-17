@@ -31,6 +31,7 @@ def test_init_creates_expected_tables_and_indexes(tmp_db: Path) -> None:
         "collector_state",
         "audit_log",
         "app_settings",
+        "collector_runs",
     } <= tables
     indexes = {
         row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type = 'index'")
@@ -51,7 +52,7 @@ def test_migrations_are_idempotent(tmp_db: Path) -> None:
     init_db(tmp_db, now="2026-11-17T00:00:00+00:00")
     connection = get_connection(tmp_db)
     before = connection.execute("SELECT name, sql FROM sqlite_master ORDER BY name").fetchall()
-    assert connection.execute("SELECT MAX(version) FROM schema_version").fetchone()[0] == 1
+    assert connection.execute("SELECT MAX(version) FROM schema_version").fetchone()[0] == 2
     connection.close()
 
     init_db(tmp_db, now="2026-11-18T00:00:00+00:00")
@@ -59,7 +60,7 @@ def test_migrations_are_idempotent(tmp_db: Path) -> None:
     after = connection.execute("SELECT name, sql FROM sqlite_master ORDER BY name").fetchall()
     versions = connection.execute("SELECT version FROM schema_version ORDER BY version").fetchall()
     assert after == before
-    assert [row[0] for row in versions] == [1]
+    assert [row[0] for row in versions] == [1, 2]
     connection.close()
 
 
@@ -77,16 +78,17 @@ def test_migration_upgrades_a_legacy_database(tmp_db: Path) -> None:
 
     init_db(tmp_db)
     connection = get_connection(tmp_db)
-    assert connection.execute("SELECT MAX(version) FROM schema_version").fetchone()[0] == 1
-    assert "events" in {
+    assert connection.execute("SELECT MAX(version) FROM schema_version").fetchone()[0] == 2
+    tables = {
         row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type = 'table'")
     }
+    assert {"events", "collector_runs"} <= tables
     connection.close()
 
 
-def test_migration_list_has_one_entry() -> None:
-    assert len(MIGRATIONS) == 1
-    assert callable(MIGRATIONS[0])
+def test_migration_list_has_two_entries() -> None:
+    assert len(MIGRATIONS) == 2
+    assert all(callable(migration) for migration in MIGRATIONS)
 
 
 def test_default_db_path_comes_from_settings(monkeypatch: object, tmp_path: Path) -> None:
