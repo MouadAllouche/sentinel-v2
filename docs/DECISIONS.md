@@ -251,3 +251,43 @@ Python packages installed in `./venv` on 2026-11-17 (`pip install -e ".[dev]"`):
 - `source="journald"` is intentionally unused in v1 so identical auth messages deduplicate across
   both sources (D-008/D-033); the taxonomy value remains reserved.
 - `engine/ingest.py` identity hooks are the spec's explicit no-op pipeline steps (D-034), not stubs.
+
+### D-040 — Condition DSL implementation (Phase 4)
+- Raw condition documents are validated with path-aware errors before pydantic parsing; `None`
+  group values from serialised models are treated as absent. Compiled regexes are cached; regex
+  evaluation is bounded to 500 characters; `cidr_in` skips invalid CIDR strings at evaluation.
+
+### D-041 — Seeded listening overrides (Phase 4)
+- The spec's single listening override carries two severities; each override has exactly one, so
+  two consecutive built-ins (`listening-all-interfaces` priority 7, `listening-loopback` priority 8)
+  are seeded (D-041).
+
+### D-042 — Storage ownership of Phase 4 config (Phase 4)
+- The editable-default/override/allowlist repositories live in `storage/severity_repository.py`
+  rather than overloading `storage/repositories.py`. Every mutation audits before/after in the
+  same transaction, as AGENTS.md requires.
+
+### D-043 — Re-apply semantics (Phase 4)
+- `reapply_severity` defaults to dry-run and updates both the promoted severity columns and the
+  severity fields inside `event_data`. Hashes are unchanged because severity is excluded (D-003).
+  Allowlist `lower_severity` uses `allowlist:<id>`; a disabled event type is skipped at ingestion
+  with a visible warning (D-001: evidence loss must be prominent in UI/docs later).
+
+### D-044 — Phase 4 reviewer fixes
+- The nested-quantifier heuristic now detects `(a+){2,}` and `((a+))+` as well as the original
+  examples; `weekday_hour_utc` converts to UTC before formatting with a fixed English weekday.
+- `set_default` validates event type and points; override create/update reject duplicate priorities
+  and the 200-entry cap with `ValueError` instead of surfacing a SQLite integrity error.
+- Multiple matching `lower_severity` entries lower a severity once (first match wins for the
+  source label), in both ingestion and re-apply. Re-apply no longer persists `id`/`allowlisted`
+  bookkeeping keys into `event_data`.
+- Allowlist `ip` entries match only `source_ip` (the remote initiator per master 4.1); use `cidr`
+  for outbound ranges. `ip_scope` covers `source_ip`, with `destination_ip_scope` as the separate
+  destination value — the seeded `success-from-public-ip` override needs source scope.
+- The prominent "disabling an event type loses evidence" warning is now in `README.md` (UI warning
+  lands with the severity screens in Phase 16). Seeding is initialization and writes no audit rows.
+
+### D-045 — Enrichment classification notes (Phase 4)
+- Python's `ipaddress` treats documentation TEST-NET ranges (e.g. `203.0.113.0/24`) as private;
+  public-scope tests therefore use `8.8.8.8`. Suspicious-path and all-interfaces literals are
+  classification markers only, covered by an explained narrow ruff ignore (R4).

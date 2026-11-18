@@ -15,7 +15,8 @@ from core.config import load_settings
 from core.timeutil import utc_now
 from engine import ingest
 from storage.database import get_connection
-from storage.repositories import count_events, get_state
+from storage.repositories import count_events, get_state, query_events
+from storage.severity_repository import add_allowlist_entry, seed_defaults, set_default
 
 
 def _settings(db: Path, **collector_overrides: bool) -> Any:
@@ -123,6 +124,57 @@ def test_one_failing_collector_does_not_stop_others(
         "auth_log": "ok",
         "dpkg": "error",
     }
+
+
+def test_collected_events_carry_resolved_severity_and_enrichment(
+    tmp_initialised_db: Path,
+    make_event: Callable[..., dict[str, Any]],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seed_defaults(tmp_initialised_db)
+    set_default("failed_login", "high", 5, actor="alice", db_path=tmp_initialised_db)
+    settings = _settings(tmp_initialised_db)
+    monkeypatch.setattr(
+        ingest,
+        "collect_auth_events",
+        lambda path, state, now=None: CollectionResult(
+            events=[make_event(event_type="failed_login", source_ip="8.8.8.8")],
+            warnings=[],
+            state={"offset": 1},
+        ),
+    )
+    ingest.run_collection(settings, tmp_initialised_db, now=utc_now())
+    items = query_events({}, db_path=tmp_initialised_db)["items"]
+    assert len(items) == 1
+    assert items[0]["severity"] == "high"
+    assert items[0]["severity_source"] == "default"
+    assert items[0]["enrichment"]["ip_scope"] == "public"
+
+
+def test_suppressed_event_is_stored_and_annotated(
+    tmp_initialised_db: Path,
+    make_event: Callable[..., dict[str, Any]],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    identifier = add_allowlist_entry(
+        {"kind": "ip", "value": "8.8.8.8", "scope": "suppress_alerts", "reason": "trusted scanner"},
+        "alice",
+        tmp_initialised_db,
+    )
+    settings = _settings(tmp_initialised_db)
+    monkeypatch.setattr(
+        ingest,
+        "collect_auth_events",
+        lambda path, state, now=None: CollectionResult(
+            events=[make_event(source_ip="8.8.8.8")], warnings=[], state={"offset": 1}
+        ),
+    )
+    ingest.run_collection(settings, tmp_initialised_db, now=utc_now())
+    items = query_events({"allowlisted": True}, db_path=tmp_initialised_db)["items"]
+    assert len(items) == 1
+    assert items[0]["allowlisted"] is True
+    assert items[0]["enrichment"]["allowlist_match"] == [str(identifier)]
+    assert count_events({}, tmp_initialised_db) == 1
 
 
 def test_empty_collection_records_ok_run(

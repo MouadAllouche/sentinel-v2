@@ -21,11 +21,21 @@ from collectors.logs import collect_auth_events, state_key
 from collectors.network import collect_network_events
 from collectors.processes import collect_process_events
 from collectors.system import collect_system_info
+from core.allowlist import Entry, reduce_severity
+from core.allowlist import matches as allowlist_matches
 from core.config import Settings
+from core.enrichment import enrich_event
 from core.normalizer import normalize_event
+from core.severity import Override, TypeDefault, resolve_severity
 from core.timeutil import floor_hour, utc_now
 from storage.database import init_db
 from storage.repositories import get_state, record_collector_run, save_events, set_state
+from storage.severity_repository import (
+    get_allowlist_entries,
+    get_defaults,
+    get_overrides,
+    seed_defaults,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -38,23 +48,31 @@ class IngestReport:
     warnings: list[str] = field(default_factory=list)
 
 
-def _enrich(event: dict[str, Any]) -> dict[str, Any]:
-    """Phase 4 hook: enrichment (currently identity)."""
-    return event
+def _apply_pipeline(
+    event: dict[str, Any],
+    defaults: dict[str, TypeDefault],
+    overrides: list[Override],
+    entries: list[Entry],
+    now: datetime,
+) -> tuple[dict[str, Any], bool] | None:
+    """Enrich, annotate, resolve severity; return None for disabled types.
 
-
-def _apply_allowlist(event: dict[str, Any]) -> dict[str, Any]:
-    """Phase 4 hook: allowlist annotation (currently identity)."""
-    return event
-
-
-def _resolve_severity(event: dict[str, Any]) -> dict[str, Any]:
-    """Phase 4 hook: editable severity resolution (currently identity)."""
-    return event
-
-
-def _normalise(event: dict[str, Any]) -> dict[str, Any]:
-    return normalize_event(_resolve_severity(_apply_allowlist(_enrich(event))))
+    The second element of the result is the ``allowlisted`` storage flag.
+    """
+    default = defaults.get(str(event.get("event_type")))
+    if default is not None and not default.enabled:
+        return None
+    enriched = enrich_event(event)
+    matched = allowlist_matches(enriched, entries, now)
+    enriched["enrichment"]["allowlist_match"] = [str(entry.id) for entry in matched]
+    severity, source = resolve_severity(enriched, defaults, overrides)
+    lowering = next((entry for entry in matched if entry.scope == "lower_severity"), None)
+    if lowering is not None:
+        severity = reduce_severity(severity)
+        source = f"allowlist:{lowering.id}"
+    enriched["severity"] = severity
+    enriched["severity_source"] = source
+    return enriched, bool(matched)
 
 
 def _collector_specs(
@@ -132,6 +150,10 @@ def run_collection(
     """Run every enabled collector once; returns counts and per-collector runs."""
     reference = now or utc_now()
     init_db(db_path)
+    seed_defaults(db_path)
+    defaults = get_defaults(db_path)
+    overrides = get_overrides(db_path)
+    entries = get_allowlist_entries(db_path)
     report = IngestReport()
 
     for name, key, collect in _collector_specs(settings, reference):
@@ -143,16 +165,33 @@ def run_collection(
         try:
             result = collect(state)
             events_found = len(result.events)
-            normalised = [_normalise(event) for event in result.events]
-            identifiers = save_events(normalised, db_path)
+            prepared: list[tuple[dict[str, Any], bool]] = []
+            skipped: list[str] = []
+            for raw_event in result.events:
+                normalised = normalize_event(raw_event)
+                processed = _apply_pipeline(normalised, defaults, overrides, entries, reference)
+                if processed is None:
+                    skipped.append(str(normalised["event_type"]))
+                    continue
+                prepared.append(processed)
+            ordinary = [event for event, flag in prepared if not flag]
+            allowlisted = [event for event, flag in prepared if flag]
+            identifiers = save_events(ordinary, db_path) + save_events(
+                allowlisted, db_path, allowlisted=True
+            )
             new_count = sum(identifier is not None for identifier in identifiers)
             if result.state is not None:
                 set_state(key, result.state, db_path)
+            warnings = list(result.warnings)
+            if skipped:
+                warnings.append(
+                    "disabled event types not stored: " + ", ".join(sorted(set(skipped)))
+                )
             status = "ok"
-            message = "; ".join(result.warnings)
+            message = "; ".join(warnings)
             report.events_found += events_found
             report.events_new += new_count
-            report.warnings.extend(f"{name}: {warning}" for warning in result.warnings)
+            report.warnings.extend(f"{name}: {warning}" for warning in warnings)
         except Exception as exc:  # noqa: BLE001 - one collector must never stop the others
             logger.exception("collector %s failed", name)
             status = "error"

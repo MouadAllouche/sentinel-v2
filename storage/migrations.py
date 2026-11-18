@@ -113,4 +113,41 @@ def m002(connection: sqlite3.Connection) -> None:
     )
 
 
-MIGRATIONS: list[Migration] = [m001, m002]
+def m003(connection: sqlite3.Connection) -> None:
+    """Create the phase-4 editable severity and allowlist tables."""
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS event_type_defaults ("
+        "event_type TEXT PRIMARY KEY, "
+        "severity TEXT NOT NULL, "
+        "points INTEGER NOT NULL, "
+        "enabled INTEGER NOT NULL DEFAULT 1, "
+        "description TEXT, "
+        "default_severity TEXT, "
+        "default_points INTEGER)"
+    )
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS severity_overrides ("
+        "id TEXT PRIMARY KEY, "
+        "name TEXT NOT NULL, "
+        "priority INTEGER NOT NULL UNIQUE, "
+        "conditions_json TEXT NOT NULL, "
+        "severity TEXT NOT NULL, "
+        "enabled INTEGER NOT NULL DEFAULT 1, "
+        "builtin INTEGER NOT NULL DEFAULT 1, "
+        "default_definition_json TEXT NOT NULL)"
+    )
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS allowlist_entries ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "kind TEXT NOT NULL, "
+        "value TEXT NOT NULL, "
+        "scope TEXT NOT NULL, "
+        "reason TEXT NOT NULL, "
+        "expires_at TEXT, "
+        "created_by TEXT, "
+        "created_at TEXT NOT NULL, "
+        "enabled INTEGER NOT NULL DEFAULT 1)"
+    )
+
+
+MIGRATIONS: list[Migration] = [m001, m002, m003]

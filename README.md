@@ -24,6 +24,11 @@ are recorded in `docs/DECISIONS.md`.
 
 ## Safety
 
+- **Disabling an event type discards its evidence.** Event-type defaults are editable in the
+  database; setting `enabled=false` makes ingestion skip that type entirely, so those events are
+  never stored and cannot be recovered by re-enabling or by re-applying severities. A collector
+  warning is recorded whenever this happens. Prefer an allowlist entry with a reason when you only
+  want to suppress alerts.
 - Nothing writes outside the project directory; the monitored system is never modified.
 - All configuration that users edit lives in SQLite and is seeded from restorable defaults.
 - Secrets come only from environment variables; the database stores their names.

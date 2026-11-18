@@ -39,3 +39,14 @@ Authoritative docs, in priority order: this file → `SENTINEL_MASTER_PROMPT.md`
 
 ## Skills (load on demand)
 sentinel-event-schema · sentinel-safe-collection · sentinel-sqlite-patterns · sentinel-rules-engine · sentinel-correlation-incidents · sentinel-explainability · sentinel-api-design · sentinel-security-hardening · sentinel-nextjs-frontend · sentinel-ops-deployment · sentinel-testing-workflow · sentinel-docs-writing · sentinel-review-checklist
+
+## Workspace Isolation (Mandatory)
+- The project root is the ONLY authorized filesystem workspace.
+- You may freely read, create, edit, rename, move, and delete files inside it.
+- You may execute development and testing commands within the project.
+- Never access files outside the project root, even for reading.
+- Never access parent directories, sibling projects, or the user's home directory.
+- Never use `../`, absolute external paths, or symlinks to escape the workspace.
+- Never execute commands that modify files outside the workspace.
+- If a task requires external filesystem access, stop and ask the user.
+- These restrictions apply to all subagents and delegated tasks.

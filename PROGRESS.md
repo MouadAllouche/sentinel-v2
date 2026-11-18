@@ -9,7 +9,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 1 | `specs/01-events-normalizer.md` | validation, normalizer, event taxonomy | ✅ | see below |
 | 2 | `specs/02-storage.md` | SQLite schema v1, migrations, repositories, audit log | ✅ | see below |
 | 3 | `specs/03-collectors-ingestion.md` | all collectors, ingestion, fuzz tests | ✅ | see below |
-| 4 | `specs/04-severity-allowlist-enrichment.md` | editable defaults/overrides, allowlist, enrichment | ⬜ | |
+| 4 | `specs/04-severity-allowlist-enrichment.md` | editable defaults/overrides, allowlist, enrichment | ✅ | see below |
 | 5 | `specs/05-rules-engine-core.md` | rule models, conditions, threshold evaluator, backtest | ⬜ | |
 | 6 | `specs/06-rules-engine-advanced.md` | sequence, new-value, field-match, seeded default rules | ⬜ | |
 | 7 | `specs/07-correlation-incidents.md` | correlation, incidents, timeline, workflow, MITRE | ⬜ | |
@@ -88,3 +88,18 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
   `make lint` → ruff check passed, ruff format check
   passed, mypy `Success: no issues found in 24 source files`.
 - **Commit**: `phase-3: read-only collectors and idempotent ingestion`.
+
+## Phase 4 evidence (2026-11-18)
+
+- **Code**: `core/conditions.py`, `core/severity.py`, `core/allowlist.py`, `core/enrichment.py`,
+  `storage/migrations.py` (`m003`), `storage/severity_repository.py` (seeding, audited CRUD,
+  `reapply_severity`), `engine/ingest.py` (real enrichment → allowlist → severity pipeline).
+- **Tests**: `tests/test_conditions.py` (all ops, groups, depth, regex/CIDR safety, hypothesis),
+  `tests/test_severity.py` (defaults table, override precedence, worked example),
+  `tests/test_allowlist_enrichment.py` (kinds, scopes, expiry, IP scopes, no mutation),
+  `tests/test_severity_storage.py` (seeding idempotence, reset, audit, reapply dry-run), plus
+  updated `tests/test_database.py` and `tests/test_ingest.py`.
+- **Commands run**: `make test` → `237 passed` (after reviewer non-blockers were fixed);
+  `make lint` → ruff check passed, ruff format check
+  passed, mypy `Success: no issues found in 29 source files`.
+- **Commit**: `phase-4: condition DSL, editable severity, allowlist and enrichment`.
