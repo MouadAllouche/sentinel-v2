@@ -304,4 +304,37 @@ def m007(connection: sqlite3.Connection) -> None:
     )
 
 
-MIGRATIONS: list[Migration] = [m001, m002, m003, m004, m005, m006, m007]
+def m008(connection: sqlite3.Connection) -> None:
+    """Create the phase-10 risk assessment and change-record tables."""
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS risk_assessments ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "target_type TEXT NOT NULL, "
+        "target_id INTEGER NOT NULL, "
+        "score REAL NOT NULL, "
+        "severity TEXT NOT NULL, "
+        "reasons_json TEXT NOT NULL, "
+        "computed_at TEXT NOT NULL, "
+        "UNIQUE(target_type, target_id))"
+    )
+    for key, value in (
+        ("risk.severity_thresholds", '{"medium": 20, "high": 40, "critical": 70}'),
+        ("risk.recency_decay", '{"enabled": false, "half_life_hours": 72}'),
+    ):
+        connection.execute(
+            "INSERT OR IGNORE INTO app_settings(key, value_json, updated_at, updated_by) "
+            "VALUES (?, ?, ?, ?)",
+            (key, value, "2026-01-01T00:00:00+00:00", "system"),
+        )
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS risk_changes ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "target_type TEXT NOT NULL, "
+        "target_id INTEGER NOT NULL, "
+        "from_severity TEXT, "
+        "to_severity TEXT NOT NULL, "
+        "at TEXT NOT NULL)"
+    )
+
+
+MIGRATIONS: list[Migration] = [m001, m002, m003, m004, m005, m006, m007, m008]

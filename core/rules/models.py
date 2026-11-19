@@ -269,8 +269,23 @@ def _validate_reserved(obj: dict[str, Any], errors: list[dict[str, str]]) -> Non
         conditions = obj["meta_conditions"]
         if not 1 <= len(conditions) <= 5:
             errors.append(_error("conditions", "between 1 and 5 meta conditions are required"))
-        if any(not item.get("metric") for item in conditions):
-            errors.append(_error("conditions", "meta conditions need a metric"))
+        allowed_ops = {"gte", "lte", "eq", "ne", "gt", "lt"}
+        allowed_metrics = {
+            "distinct_event_types",
+            "distinct_rules_fired",
+            "event_count",
+            "has_strong_links_only",
+            "span_minutes",
+            "weak_link_ratio",
+            "contains_privileged_activity",
+            "contains_persistence_change",
+        }
+        for index, item in enumerate(conditions):
+            metric = str(item.get("metric", ""))
+            if metric not in allowed_metrics and not metric.startswith("has_event_type:"):
+                errors.append(_error(f"conditions[{index}].metric", "unknown meta metric"))
+            if item.get("op") not in allowed_ops:
+                errors.append(_error(f"conditions[{index}].op", "invalid meta op"))
 
 
 def _dominance_warnings(tiers: list[Tier]) -> list[str]:

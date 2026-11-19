@@ -422,6 +422,70 @@ _BASELINE_SUDO = _baseline_rule(
     ["T1548.003"],
 )
 
+
+def _meta_rule(
+    identifier: str,
+    name: str,
+    description: str,
+    conditions: list[dict[str, Any]],
+    severity: str,
+    points: int,
+) -> dict[str, Any]:
+    return {
+        "id": identifier,
+        "name": name,
+        "description": description,
+        "kind": "incident_meta",
+        "enabled": True,
+        "match": {"event_types": ["failed_login"], "conditions": {"all": []}},
+        "scope": {"exclude_allowlisted": True},
+        "actions": {"create_incident": False, "notify": True, "tags": []},
+        "mitre": [],
+        "severity": severity,
+        "points": points,
+        "conditions": conditions,
+    }
+
+
+_META_MULTIPLE = _meta_rule(
+    "multiple-related-events",
+    "Several distinct kinds of suspicious evidence",
+    "Multiple event types joined to one incident",
+    [{"metric": "distinct_event_types", "op": "gte", "value": 3}],
+    "medium",
+    10,
+)
+_META_PRIVILEGE = _meta_rule(
+    "credential-to-privilege-chain",
+    "Credential access followed by privileged activity",
+    "Successful login plus privileged action",
+    [
+        {"metric": "has_event_type:successful_login", "op": "eq", "value": True},
+        {"metric": "contains_privileged_activity", "op": "eq", "value": True},
+    ],
+    "high",
+    15,
+)
+_META_ANOMALY = _meta_rule(
+    "anomaly-in-incident",
+    "Anomaly in incident",
+    "Baseline anomaly joined to this incident",
+    [{"metric": "has_event_type:anomaly", "op": "eq", "value": True}],
+    "medium",
+    10,
+)
+_META_DRIFT = _meta_rule(
+    "drift-after-access",
+    "Configuration drift after access",
+    "Successful login plus persistence change",
+    [
+        {"metric": "has_event_type:successful_login", "op": "eq", "value": True},
+        {"metric": "contains_persistence_change", "op": "eq", "value": True},
+    ],
+    "high",
+    20,
+)
+
 DEFINITIONS: tuple[dict[str, Any], ...] = (
     _SSH_BRUTEFORCE,
     _SSH_SPRAYING,
@@ -444,6 +508,10 @@ DEFINITIONS: tuple[dict[str, Any], ...] = (
     _BASELINE_DESTINATIONS,
     _BASELINE_LOGINS,
     _BASELINE_SUDO,
+    _META_MULTIPLE,
+    _META_PRIVILEGE,
+    _META_ANOMALY,
+    _META_DRIFT,
 )
 
 DEFAULT_RULES: tuple[dict[str, Any], ...] = tuple(

@@ -162,6 +162,10 @@ All seeded rules are built-in (`builtin=true`), resettable and enabled except wh
 | `new-listening-port-all-interfaces` | field_match | new listener bound to all interfaces | 10 |
 | `suspicious-process` | field_match | executable from a temporary location | 20 |
 | `recon-or-attack-tool-installed` | field_match | nmap/ncat/hydra/... installed | 10 |
+| `multiple-related-events` | incident_meta | distinct_event_types ≥ 3 | 10 |
+| `credential-to-privilege-chain` | incident_meta | successful login + privileged activity | 15 |
+| `anomaly-in-incident` | incident_meta | anomaly attached to incident | 10 |
+| `drift-after-access` | incident_meta | successful login + persistence change | 20 |
 | `baseline-failed-logins` | baseline_metric | failed logins/hour above the learned baseline | 10/20 |
 | `baseline-new-connections-by-process` | baseline_metric | outbound connections/hour above baseline | 10/20 |
 | `baseline-distinct-destinations-by-process` | baseline_metric | distinct destinations/hour above baseline | 5/10 |

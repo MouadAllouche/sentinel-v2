@@ -15,7 +15,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 7 | `specs/07-correlation-incidents.md` | correlation, incidents, timeline, workflow, MITRE | ✅ | see below |
 | 8 | `specs/08-baselines-anomalies.md` | baselines, baseline-metric rules, anomalies | ✅ | see below |
 | 9 | `specs/09-config-drift.md` | files, dirs, persistence, authorized_keys | ✅ | see below |
-| 10 | `specs/10-risk-scoring.md` | incident-meta rules, scoring, recency decay | ⬜ | |
+| 10 | `specs/10-risk-scoring.md` | incident-meta rules, scoring, recency decay | ✅ | see below |
 | 11 | `specs/11-pipeline-engine-ops.md` | pipeline, engine loop, CLI, retention, notifications, exports, logging | ⬜ | |
 | 12 | `specs/12-api.md` | FastAPI, auth, RBAC, CSRF, SSE, OpenAPI | ⬜ | |
 | 13 | `specs/13-web-foundation.md` | Next.js scaffold, API client, auth, layout, design system | ⬜ | |
@@ -171,3 +171,16 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
   `make lint` → ruff check passed, ruff format check
   passed, mypy `Success: no issues found in 52 source files`.
 - **Commit**: `phase-9: read-only config drift and persistence monitoring`.
+
+## Phase 10 evidence (2026-11-19)
+
+- **Code**: `core/risk_scoring.py`, four seeded `incident_meta` rules, `m008`
+  (`risk_assessments`, `risk_changes`), `storage/risk_repository.py`, `engine/scoring.py`,
+  `docs/RISK_RULES.md`, updated `docs/RULES.md`.
+- **Tests**: `tests/test_risk_scoring.py` (boundaries, distinct rules, cap/floor, meta metrics,
+  decay, hypothesis reason-sum, `test_risk_worked_example`), `tests/test_risk_storage.py`
+  (upsert, propagation, severity-change once, generated docs), updated seeded/database tests.
+- **Commands run**: `make test` → `399 passed` (after reviewer blockers were fixed);
+  `make lint` → ruff check passed, ruff format check
+  passed, mypy `Success: no issues found in 55 source files`.
+- **Commit**: `phase-10: explainable risk scoring and incident-meta rules`.

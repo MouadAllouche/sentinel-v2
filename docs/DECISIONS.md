@@ -446,3 +446,34 @@ Python packages installed in `./venv` on 2026-11-17 (`pip install -e ".[dev]"`):
   Phase 11 CLI and Phase 12 API.
 - Added tests for real key fingerprints, symlink target changes, shadow forced metadata-only on
   reset, monitored-path reset and baseline_status transitions.
+
+### D-073 — Risk scoring model (Phase 10)
+- One distinct rule contributes its highest tier once; the raw score is capped at 100 and severity
+  is `max(score band, rule floor)`. Thresholds live in `app_settings.risk.severity_thresholds`, are
+  validated as strictly increasing 1–100 and are uncalibrated starting values. Summary and caveat
+  reasons carry zero points so the sum of reason points equals the raw score.
+
+### D-074 — Incident-meta rules (Phase 10)
+- Four seeded `incident_meta` rules cover distinct event types, credential-to-privilege chains,
+  anomalies and drift after access. All conditions are ANDed over the incident aggregate; the total
+  seeded rule count is 25.
+
+### D-075 — Recency decay floor (Phase 10)
+- Decay is off by default. When enabled, contributors older than seven half-lives drop the incident
+  to `low` unless it is open and a rule floor applies; a critical finding never decays below
+  `medium` so a severe observed finding is not hidden by age alone.
+
+### D-076 — Risk propagation (Phase 10)
+- Assessments are upserted by `(target_type, target_id)`; incident score/severity are updated in the
+  same cycle and a severity-change record is written only when severity actually changes, for later
+  notification/SSE use. `explain_score` renders the stored reasons as bullet lines.
+
+### D-077 — Phase 10 reviewer fixes
+- Recency decay now keeps the rule floor for open incidents with stale findings (critical never
+  falls below medium for closed ones); the rationale is documented in `docs/RISK_RULES.md`.
+- Assessment upsert, incident score/severity propagation and severity-change insertion now happen in
+  ONE transaction (`apply_assessment`). Scoring loads **all** findings for an incident, not just the
+  100 newest.
+- Rule-floor reasons identify the deciding rule and tier; thresholds reject missing keys and
+  non-increasing values; incident-meta rules validate metric and op at creation time; `m008` seeds
+  the two `app_settings` keys; `explain_score` no longer repeats the tier label.

@@ -316,7 +316,7 @@ def list_findings(
     filters: Mapping[str, Any] | None = None,
     cursor: str | None = None,
     db_path: str | Path | None = None,
-    limit: int = 100,
+    limit: int | None = 100,
 ) -> list[dict[str, Any]]:
     criteria = filters or {}
     clauses: list[str] = []
@@ -335,11 +335,13 @@ def list_findings(
     statement = "SELECT * FROM rule_findings"
     if clauses:
         statement += " WHERE " + " AND ".join(clauses)
-    statement += " ORDER BY id DESC LIMIT ?"
-    parameters.append(limit + 1)
+    statement += " ORDER BY id DESC"
+    if limit is not None:
+        statement += " LIMIT ?"
+        parameters.append(limit + 1)
     with closing(get_connection(db_path)) as connection:
         rows = connection.execute(statement, parameters).fetchall()
-    return [dict(row) for row in rows[:limit]]
+    return [dict(row) for row in (rows[:limit] if limit is not None else rows)]
 
 
 def get_events_for_rules(since: str, db_path: str | Path | None = None) -> list[dict[str, Any]]:
