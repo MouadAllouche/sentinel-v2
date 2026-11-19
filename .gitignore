@@ -12,6 +12,9 @@ exports/
 .env
 web/node_modules/
 web/.next/
+web/tsconfig.tsbuildinfo
+# Regenerated on every `next dev` run; not project source.
+web/AGENTS.md
 .coverage
 coverage.xml
 htmlcov/

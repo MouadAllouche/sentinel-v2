@@ -551,3 +551,77 @@ Python packages installed in `./venv` on 2026-11-17 (`pip install -e ".[dev]"`):
   0.10.5) so Starlette 1.10.0's `TestClient` uses the supported client and no longer emits
   `StarletteDeprecationWarning`. Approved by the user; production dependencies are unchanged.
 - Trade-off: the API test suite is slower (~61 s vs ~34 s) with `httpx2`.
+
+### D-087 — Web toolchain versions (Phase 13)
+Node `v24.22.1`, npm `11.19.1`. Exact pinned versions (commit `web/package-lock.json`):
+Next.js `16.4.6`, React/ReactDOM `19.3.1`, TypeScript `5.9.3` (strict +
+`noUncheckedIndexedAccess`), Tailwind CSS `4.3.5` with `@tailwindcss/postcss` `4.3.5`,
+PostCSS `8.5.33`, `@tanstack/react-query` `5.108.0`, `@tanstack/react-table` `9.3.1`,
+Recharts `3.11.0`, react-hook-form `7.92.0`, zod `4.6.7`, `@hookform/resolvers` `7.0.7`,
+openapi-typescript `7.13.0`, openapi-fetch `0.17.0`, date-fns `4.4.0`, date-fns-tz `3.2.0`,
+lucide-react `1.76.0`, clsx `2.1.1`, tailwind-merge `3.7.0`, class-variance-authority `0.7.1`,
+`@radix-ui/react-slot` `1.5.0`; dev: Vitest `5.1.1`, Vite `8.3.8`, `@vitejs/plugin-react`
+`6.3.0`, Testing Library React `16.3.3`, jest-dom `8.0.0`, user-event `14.6.13`, MSW `3.0.7`,
+jsdom `31.0.1`, Playwright `1.65.1`, ESLint `9.39.5`, `eslint-config-next` `16.4.6`,
+`eslint-plugin-jsx-a11y` `6.10.2`, `eslint-config-prettier` `10.1.8`, Prettier `3.10.1`,
+`@types/node` `26.6.6`, `@types/react`/`@types/react-dom` `19.3.0`. ESLint is pinned to 9.x
+because `eslint-plugin-jsx-a11y` 6.10.2 does not accept ESLint 10 as a peer. No other packages
+were added. `frontend-design` skill was not available and was not required.
+
+### D-088 — API client and SSE fallback (Phase 13)
+- `lib/api/schema.d.ts` is generated from `web/openapi.json` with `npm run gen:api`; the client
+  is `openapi-fetch` with `credentials: "include"`, dynamic `X-CSRF-Token` from the readable
+  cookie on unsafe methods, envelope→`ApiError` mapping and a `sentinel:unauthorized` event on
+  401. No tokens are written to `localStorage`. The client resolves `fetch` at call time so
+  unit tests can stub it.
+- `middleware.ts` redirects to `/login?next=` when the session cookie is absent and builds a
+  nonce-bearing CSP; the login screen validates `next` with `validateNextPath()` (same-origin
+  absolute paths only) before navigating. `Content-Security-Policy`
+  therefore lives in middleware (not `next.config`) to avoid duplicate policies; Next receives
+  the nonce through the `x-nonce` request header.
+- Next.js 16.4.6 prints a deprecation notice for the `middleware.ts` convention in favour of
+  `proxy.ts`. The file is kept as `middleware.ts` because spec 13.3 names it explicitly; the
+  redirect and CSP behaviour was verified by starting `make web` and requesting `/login` and
+  `/events` (307 to `/login?next=%2Fevents`, all security headers, no `x-powered-by`).
+- SSE through a buffering proxy cannot be verified in a single-process test environment, so the
+  polling fallback is implemented proactively: after three stream failures `useLiveUpdates()`
+  polls `GET /api/changes?since=` every 10 s. That endpoint was added to the API in this phase
+  with a test. The SSE stream itself remains the preferred path.
+
+### D-089 — Phase 13 manual checklist (screenshot-free)
+Run `make api` and `make web`, then verify by hand (no screenshots):
+1. `curl -I http://127.0.0.1:3000/login` shows `content-security-policy` with `frame-ancestors 'none'`,
+   `x-content-type-options: nosniff`, `referrer-policy: no-referrer`, `x-frame-options: DENY`,
+   `permissions-policy`, and no `x-powered-by`.
+2. `curl -I http://127.0.0.1:3000/events` without cookies returns 307 to `/login?next=%2Fevents`.
+3. Login with the seeded demo admin, confirm the shell, the "Live updates active" indicator,
+   and that role-hidden admin controls appear only for admins; sign out returns to `/login`.
+4. Toggle the theme and reload; the choice persists. Open a table and confirm its filter is
+   reflected in the URL query string.
+5. Confirm `GET /api/changes?since=0` returns `{items, next_cursor}` only for authenticated
+   sessions, and that a viewer receives 403 on a mutating endpoint even with a valid CSRF token.
+
+### D-090 — Phase 13 security audit notes
+- Hardened in this phase: `/api/changes?since=` and `Last-Event-ID` are bounded to signed 64-bit
+  ids; `validateNextPath()` keeps structural checks even without `window`; web responses outside
+  `/_next` send `Cache-Control: no-store`; a 401 clears the TanStack cache before redirecting.
+- `secure_cookies = true` in `[api]` is mandatory behind an HTTPS reverse proxy; the default is
+  false for loopback development. The SSE per-user connection cap is per worker (global cap
+  belongs at the proxy). Login remains exempt from CSRF because no session exists yet; Origin
+  checking for login is a Phase 12 issue (login CSRF cannot create a foothold without
+  self-registration). Lockout is intentionally a uniform 401 rather than a 429 with `retry_after`
+  so it cannot disclose account state; the UI's 429 branch covers a future pre-auth limiter.
+
+### D-091 — Phase 13 reviewer fixes
+- Added `web/playwright.config.ts` (baseURL, Chromium project, webServer). `npm run test:e2e`
+  still requires the API and the seeded demo database from Phase 18; it is not part of CI.
+- `DataTable` now wraps TanStack Table v9 (`useTable`, `tableFeatures`,
+  `createFilteredRowModel`) instead of hand-rolling filtering. v9 removed the v8
+  `useReactTable`/`getCoreRowModel` exports, so the v9 API is used directly.
+- Polling status is reported as `polling` (never as `live`), polling timers are stopped when a
+  stream reconnects, and the SSE frame id (change-row id) is used for `since=`.
+- Added the toast region, field-level server-error mapping with an unsaved-changes guard, a
+  change-password dialog, `JsonViewer`, risk thresholds read from `/api/risk/thresholds`,
+  locally stored display timezone, and a factual "highest incident score" on Overview.
+  `date-fns-tz` is now used for absolute timestamps. CI runs `make coverage`.
+- `web/AGENTS.md` and `web/tsconfig.tsbuildinfo` are generated by `next dev`/`tsc` and ignored.

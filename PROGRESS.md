@@ -18,7 +18,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 10 | `specs/10-risk-scoring.md` | incident-meta rules, scoring, recency decay | ✅ | see below |
 | 11 | `specs/11-pipeline-engine-ops.md` | pipeline, engine loop, CLI, retention, notifications, exports, logging | ✅ | see below |
 | 12 | `specs/12-api.md` | FastAPI, auth, RBAC, CSRF, SSE, OpenAPI | ✅ | see below |
-| 13 | `specs/13-web-foundation.md` | Next.js scaffold, API client, auth, layout, design system | ⬜ | |
+| 13 | `specs/13-web-foundation.md` | Next.js scaffold, API client, auth, layout, design system | ✅ | see below |
 | 14 | `specs/14-web-overview-events.md` | overview, events explorer | ⬜ | |
 | 15 | `specs/15-web-incidents.md` | incident list/detail, timeline, graph, workflow, export | ⬜ | |
 | 16 | `specs/16-web-rules-severity.md` | rule builder, backtest, severities, allowlist | ⬜ | |
@@ -210,3 +210,19 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 - **Commit**: `phase-12: FastAPI auth, RBAC, REST, SSE and OpenAPI`.
 - **Follow-up**: added `httpx2` 2.16.2 to dev dependencies (D-086) to remove the Starlette
   `TestClient` deprecation warning; suite remains green with no warnings.
+
+## Phase 13 evidence (2026-11-19)
+
+- **Code**: `web/` App Router scaffold, typed client (`lib/api/{client,hooks}.ts`,
+  generated `schema.d.ts`), auth/RBAC helpers, SSE hook with polling fallback,
+  design-system components, layout/shell, every page from spec 13.3, `middleware.ts`,
+  `next.config.ts`, Makefile `web`/`web-test`/`web-e2e`, `.github/workflows/ci.yml`,
+  plus `GET /api/changes` in `api/routers/stream.py` as the documented SSE fallback.
+- **Tests**: Vitest unit/component tests under `web/tests/` (8 files, 29 tests),
+  `web/e2e/smoke.spec.ts` with `web/playwright.config.ts`, and
+  `tests/api/test_endpoints.py::test_changes_polling_fallback`.
+- **Commands run**: `make test` → `506 passed`; `make lint` → ruff/format/mypy clean;
+  `npm test` → `29 passed`; `npm run typecheck`, `npm run lint`, `npm run build` → pass.
+  `make web` served on `127.0.0.1:3000`; verified `/login` security headers and the
+  `/events` → `/login?next=%2Fevents` redirect.
+- **Commit**: `phase-13: Next.js foundation, typed client, auth and design system`.

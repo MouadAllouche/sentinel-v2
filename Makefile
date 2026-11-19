@@ -27,13 +27,13 @@ engine:
 	./venv/bin/python cli.py engine
 
 web:
-	@echo "Next.js dashboard is delivered in Phase 13; run 'make web' then."
+	cd web && npm run dev
 
 web-test:
-	@echo "Web tests are delivered in Phase 13; run 'make web-test' then."
+	cd web && npm test && npm run typecheck && npm run lint
 
 web-e2e:
-	@echo "Playwright tests are delivered in Phase 18; run 'make web-e2e' then."
+	cd web && npm run test:e2e
 
 openapi:
 	SENTINEL_SESSION_KEY=openapi-generation-key-0123456789abcdef ./venv/bin/python -c "import json;from api.main import create_app;json.dump(create_app().openapi(),open('web/openapi.json','w'),sort_keys=True,indent=2)"

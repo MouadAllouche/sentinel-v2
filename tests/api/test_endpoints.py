@@ -99,6 +99,21 @@ def test_stream_requires_auth(api_client: Any) -> None:
     assert api_client.get("/api/stream").status_code == 401
 
 
+def test_changes_polling_fallback(api_client: Any, tmp_initialised_db: Path) -> None:
+    from storage.notification_repository import record_change
+
+    _admin(api_client, tmp_initialised_db)
+    for index in range(3):
+        record_change("incident.created", index, tmp_initialised_db)
+    first = api_client.get("/api/changes", params={"since": 0, "limit": 2})
+    assert first.status_code == 200
+    assert len(first.json()["items"]) == 2
+    assert first.json()["items"][0]["type"] == "incident.created"
+    assert first.json()["next_cursor"]
+    second = api_client.get("/api/changes", params={"since": first.json()["next_cursor"]})
+    assert len(second.json()["items"]) == 1
+
+
 def test_openapi_snapshot_is_current(api_client: Any) -> None:
     response = api_client.get("/api/openapi.json")
     assert response.status_code == 200
