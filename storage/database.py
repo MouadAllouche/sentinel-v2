@@ -6,6 +6,7 @@ is parameterised; database paths are injectable so tests never use the real DB.
 
 from __future__ import annotations
 
+import ipaddress
 import sqlite3
 from contextlib import closing
 from pathlib import Path
@@ -15,6 +16,16 @@ from core.timeutil import utc_now
 from storage.migrations import MIGRATIONS, _record_version, current_version
 
 __all__ = ["default_db_path", "get_connection", "init_db"]
+
+
+def _ip_in_cidr(address: str | None, network: str) -> int:
+    """SQL helper for CIDR filters; invalid input never matches."""
+    if not address:
+        return 0
+    try:
+        return int(ipaddress.ip_address(address) in ipaddress.ip_network(network, strict=False))
+    except ValueError:
+        return 0
 
 
 def default_db_path(settings: Settings | None = None) -> Path:
@@ -28,6 +39,7 @@ def get_connection(db_path: str | Path | None = None) -> sqlite3.Connection:
     path.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(str(path), timeout=5)
     connection.row_factory = sqlite3.Row
+    connection.create_function("ip_in_cidr", 2, _ip_in_cidr)
     connection.execute("PRAGMA foreign_keys=ON")
     connection.execute("PRAGMA journal_mode=WAL")
     connection.execute("PRAGMA busy_timeout=5000")

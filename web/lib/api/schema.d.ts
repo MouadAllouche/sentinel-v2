@@ -2223,12 +2223,14 @@ export interface operations {
                 source?: string[] | null;
                 username?: string | null;
                 source_ip?: string | null;
+                source_cidr?: string | null;
                 process_name?: string | null;
                 since?: string | null;
                 until?: string | null;
                 search?: string | null;
                 allowlisted?: boolean | null;
                 incident_id?: number | null;
+                in_incident?: boolean | null;
                 cursor?: string | null;
                 limit?: number;
             };
@@ -2264,6 +2266,20 @@ export interface operations {
         parameters: {
             query?: {
                 format?: string;
+                event_type?: string[] | null;
+                severity?: string[] | null;
+                source?: string[] | null;
+                username?: string | null;
+                source_ip?: string | null;
+                source_cidr?: string | null;
+                process_name?: string | null;
+                since?: string | null;
+                until?: string | null;
+                search?: string | null;
+                allowlisted?: boolean | null;
+                incident_id?: number | null;
+                in_incident?: boolean | null;
+                limit?: number;
             };
             header?: never;
             path?: never;
@@ -2330,6 +2346,7 @@ export interface operations {
         parameters: {
             query?: {
                 bucket?: string;
+                group_by?: string | null;
                 since?: string | null;
                 until?: string | null;
             };

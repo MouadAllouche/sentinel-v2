@@ -19,7 +19,8 @@ const POLL_INTERVAL_MS = 10_000;
  * backoff, pause when the tab is hidden, and fall back to polling if streaming
  * cannot be established (for example through a buffering proxy).
  */
-export function useLiveUpdates(): { status: StreamStatus } {
+export function useLiveUpdates(options: { paused?: boolean } = {}): { status: StreamStatus } {
+  const paused = options.paused ?? false;
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<StreamStatus>("connecting");
   const [retry, setRetry] = useState(0);
@@ -110,12 +111,19 @@ export function useLiveUpdates(): { status: StreamStatus } {
   }, [invalidate, startPolling, stopPolling]);
 
   useEffect(() => {
+    if (paused) {
+      source.current?.close();
+      source.current = null;
+      stopPolling();
+      queueMicrotask(() => setStatus("paused"));
+      return;
+    }
     let active = true;
     queueMicrotask(() => {
       if (active) connect();
     });
     const onVisibility = () => {
-      if (document.visibilityState === "hidden") {
+      if (document.visibilityState === "hidden" || paused) {
         source.current?.close();
         setStatus("paused");
       } else {
@@ -139,17 +147,17 @@ export function useLiveUpdates(): { status: StreamStatus } {
       for (const timer of timers.current) clearTimeout(timer);
       timers.current = [];
     };
-  }, [connect, queryClient, stopPolling]);
+  }, [connect, paused, queryClient, stopPolling]);
 
   useEffect(() => {
-    if (retry === 0) return;
+    if (retry === 0 || paused) return;
     const delay = Math.min(MAX_BACKOFF_MS, 1000 * 2 ** (failures.current - 1));
     const timer = setTimeout(() => {
       if (document.visibilityState === "visible") connect();
     }, delay);
     timers.current.push(timer);
     return () => clearTimeout(timer);
-  }, [retry, connect]);
+  }, [retry, connect, paused]);
 
   return { status };
 }

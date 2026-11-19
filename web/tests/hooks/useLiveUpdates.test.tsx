@@ -54,6 +54,13 @@ describe("useLiveUpdates", () => {
     timeoutSpy.mockRestore();
   });
 
+  it("does not open a stream while paused", async () => {
+    vi.stubGlobal("EventSource", FakeEventSource);
+    const { result } = renderHook(() => useLiveUpdates({ paused: true }), { wrapper });
+    await waitFor(() => expect(result.current.status).toBe("paused"));
+    expect(FakeEventSource.instances).toHaveLength(0);
+  });
+
   it("falls back to polling after three stream failures", async () => {
     vi.stubGlobal("EventSource", FakeEventSource);
     const fetchMock = vi

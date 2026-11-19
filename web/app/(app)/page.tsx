@@ -1,5 +1,5 @@
-import { OverviewCards } from "@/components/layout/OverviewCards";
+import { Overview } from "@/components/overview/Overview";
 
 export default function OverviewPage() {
-  return <OverviewCards />;
+  return <Overview />;
 }

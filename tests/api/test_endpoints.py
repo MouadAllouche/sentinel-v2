@@ -95,6 +95,58 @@ def test_validation_and_unknown_fields(api_client: Any, tmp_initialised_db: Path
     assert "total_findings" in preview.json()
 
 
+def test_stats_grouped_by_severity(api_client: Any, tmp_initialised_db: Path) -> None:
+    _admin(api_client, tmp_initialised_db)
+    save_events(
+        [
+            {
+                "timestamp": f"2026-11-19T10:{i:02d}:00+00:00",
+                "source": "auth.log",
+                "event_type": "failed_login",
+                "severity": "low" if i % 2 else "high",
+                "description": f"failure {i}",
+            }
+            for i in range(4)
+        ],
+        tmp_initialised_db,
+    )
+    response = api_client.get(
+        "/api/events/stats",
+        params={
+            "bucket": "hour",
+            "group_by": "severity",
+            "since": "2026-11-19T10:00:00+00:00",
+            "until": "2026-11-19T11:00:00+00:00",
+        },
+    )
+    assert response.status_code == 200
+    buckets = response.json()["buckets"]
+    assert any(item["bucket"].startswith("2026-11-19T10") for item in buckets)
+    assert sum(item["total"] for item in buckets) == 4
+
+
+def test_export_honours_filters(api_client: Any, tmp_initialised_db: Path) -> None:
+    _admin(api_client, tmp_initialised_db)
+    save_events(
+        [
+            {
+                "timestamp": f"2026-11-19T10:{i:02d}:00+00:00",
+                "source": "auth.log",
+                "event_type": "failed_login",
+                "severity": "low" if i else "critical",
+                "description": f"failure {i}",
+            }
+            for i in range(3)
+        ],
+        tmp_initialised_db,
+    )
+    response = api_client.get("/api/events/export", params={"format": "json", "severity": ["low"]})
+    assert response.status_code == 200
+    rows = json.loads(json.loads(response.text))
+    assert len(rows) == 2
+    assert all(row["severity"] == "low" for row in rows)
+
+
 def test_stream_requires_auth(api_client: Any) -> None:
     assert api_client.get("/api/stream").status_code == 401
 

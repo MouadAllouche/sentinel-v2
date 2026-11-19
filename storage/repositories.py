@@ -23,6 +23,8 @@ from storage.database import get_connection
 __all__ = [
     "count_events",
     "event_time_series",
+    "event_time_series_by_severity",
+    "query_events_bulk",
     "record_collector_run",
     "get_event",
     "get_events_by_ids",
@@ -44,7 +46,9 @@ _TEXT_FILTERS = frozenset({"username", "source_ip", "process_name"})
 _EVENT_FILTERS = (
     _LIST_FILTERS
     | _TEXT_FILTERS
-    | frozenset({"since", "until", "search", "allowlisted", "incident_id"})
+    | frozenset(
+        {"since", "until", "search", "allowlisted", "incident_id", "in_incident", "source_cidr"}
+    )
 )
 _TOP_VALUE_FIELDS = frozenset(
     {"source_ip", "username", "process_name", "source", "event_type", "severity"}
@@ -172,6 +176,8 @@ def _build_where(filters: Mapping[str, Any]) -> tuple[list[str], list[Any]]:
     if "incident_id" in filters:
         clauses.append("id IN (SELECT event_id FROM incident_events WHERE incident_id = ?)")
         parameters.append(filters["incident_id"])
+    if filters.get("in_incident"):
+        clauses.append("id IN (SELECT event_id FROM incident_events)")
     for key in ("event_type", "severity", "source"):
         values = filters.get(key)
         if values:
@@ -185,6 +191,9 @@ def _build_where(filters: Mapping[str, Any]) -> tuple[list[str], list[Any]]:
         if key in filters and filters[key] is not None:
             clauses.append(key + " = ?")
             parameters.append(filters[key])
+    if filters.get("source_cidr"):
+        clauses.append("ip_in_cidr(source_ip, ?) = 1")
+        parameters.append(filters["source_cidr"])
     if filters.get("since") is not None:
         clauses.append("timestamp >= ?")
         parameters.append(filters["since"])
@@ -226,6 +235,11 @@ def query_events(
     if not 1 <= limit <= 500:
         raise ValueError("limit must be between 1 and 500")
     clauses, parameters = _build_where(filters or {})
+    count_statement = "SELECT COUNT(*) FROM events"
+    if clauses:
+        count_statement += " WHERE " + " AND ".join(clauses)
+    with closing(get_connection(db_path)) as connection:
+        total = int(connection.execute(count_statement, parameters).fetchone()[0])
     if cursor:
         timestamp, event_id = _decode_cursor(cursor)
         clauses.append("(timestamp < ? OR (timestamp = ? AND id < ?))")
@@ -242,7 +256,7 @@ def query_events(
     if len(rows) > limit:
         boundary = rows[limit - 1]
         next_cursor = _encode_cursor(boundary["timestamp"], boundary["id"])
-    return {"items": items, "next_cursor": next_cursor}
+    return {"items": items, "next_cursor": next_cursor, "total": total}
 
 
 def count_events(
@@ -295,6 +309,63 @@ def event_time_series(
         current += step
     filled.update(series)
     return filled
+
+
+def event_time_series_by_severity(
+    filters: Mapping[str, Any] | None = None,
+    bucket: str = "hour",
+    zero_fill: bool = False,
+    db_path: str | Path | None = None,
+) -> dict[str, dict[str, int]]:
+    """Zero-filled bucket → severity → count series for stacked charts."""
+    if bucket not in {"hour", "day"}:
+        raise ValueError("bucket must be 'hour' or 'day'")
+    pattern = "%Y-%m-%dT%H:00:00+00:00" if bucket == "hour" else "%Y-%m-%dT00:00:00+00:00"
+    clauses, parameters = _build_where(filters or {})
+    statement = "SELECT strftime(?, timestamp) AS bucket, severity, COUNT(*) AS total FROM events"
+    if clauses:
+        statement += " WHERE " + " AND ".join(clauses)
+    statement += " GROUP BY bucket, severity ORDER BY bucket"
+    with closing(get_connection(db_path)) as connection:
+        rows = connection.execute(statement, [pattern, *parameters]).fetchall()
+    series: dict[str, dict[str, int]] = {}
+    for row in rows:
+        if not row["bucket"]:
+            continue
+        series.setdefault(str(row["bucket"]), {})[str(row["severity"])] = int(row["total"])
+    if not zero_fill or not series:
+        return series
+    criteria = filters or {}
+    start = datetime.fromisoformat(str(criteria.get("since", min(series))))
+    end = datetime.fromisoformat(str(criteria.get("until", max(series))))
+    step = timedelta(hours=1) if bucket == "hour" else timedelta(days=1)
+    current = start.replace(minute=0, second=0, microsecond=0)
+    last = end.replace(minute=0, second=0, microsecond=0)
+    if bucket == "day":
+        current, last = current.replace(hour=0), last.replace(hour=0)
+    while current <= last:
+        series.setdefault(current.strftime(pattern), {})
+        current += step
+    return series
+
+
+def query_events_bulk(
+    filters: Mapping[str, Any] | None = None,
+    limit: int = 100_000,
+    db_path: str | Path | None = None,
+) -> list[dict[str, Any]]:
+    """Return up to ``limit`` matching events for export (no cursor)."""
+    if not 1 <= limit <= 100_000:
+        raise ValueError("limit must be between 1 and 100000")
+    clauses, parameters = _build_where(filters or {})
+    statement = "SELECT * FROM events"
+    if clauses:
+        statement += " WHERE " + " AND ".join(clauses)
+    statement += " ORDER BY timestamp DESC, id DESC LIMIT ?"
+    parameters.append(limit)
+    with closing(get_connection(db_path)) as connection:
+        rows = connection.execute(statement, parameters).fetchall()
+    return [_event_from_row(row) for row in rows]
 
 
 def top_values(

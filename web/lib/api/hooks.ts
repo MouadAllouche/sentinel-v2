@@ -10,6 +10,7 @@ import type { paths } from "./schema";
 export interface ListPage<T> {
   items: T[];
   next_cursor?: string | null;
+  total?: number;
 }
 
 export interface EventRecord {
@@ -31,6 +32,10 @@ export interface IncidentRecord {
   title?: string;
   created_at?: string;
   assignee?: string | null;
+  mitre?: string[];
+  event_ids?: number[];
+  first_seen?: string;
+  last_seen?: string;
 }
 
 export interface RuleRecord {
@@ -78,7 +83,10 @@ export function useApiList<T>(
   });
 }
 
-export function useEvents(filters: Record<string, unknown> = {}) {
+export function useEvents(
+  filters: Record<string, unknown> = {},
+  options: { refetchInterval?: number } = {},
+) {
   return useQuery({
     queryKey: queryKeys.events(filters),
     queryFn: async (): Promise<ListPage<EventRecord>> => {
@@ -88,6 +96,7 @@ export function useEvents(filters: Record<string, unknown> = {}) {
       return (data as ListPage<EventRecord> | undefined) ?? emptyPage<EventRecord>();
     },
     staleTime: 15_000,
+    refetchInterval: options.refetchInterval,
   });
 }
 
@@ -256,6 +265,137 @@ export function useToggleRule() {
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.rules });
     },
+  });
+}
+
+export interface StatBucket {
+  bucket: string;
+  severity: string;
+  total: number;
+}
+
+export function useEventStats(params: {
+  bucket: "hour" | "day";
+  group_by?: "severity";
+  since?: string;
+  until?: string;
+}) {
+  return useQuery({
+    queryKey: queryKeys.eventStats(params as Record<string, unknown>),
+    queryFn: async (): Promise<StatBucket[]> => {
+      const { data } = await client.GET("/api/events/stats", {
+        params: { query: params as never },
+      });
+      if (data && "buckets" in data) {
+        return (data as unknown as { buckets: StatBucket[] }).buckets;
+      }
+      return [];
+    },
+    staleTime: 15_000,
+  });
+}
+
+export function useTopValues(field: string, limit = 5) {
+  return useQuery({
+    queryKey: queryKeys.topValues(field),
+    queryFn: async (): Promise<Array<{ value: string; total: number }>> => {
+      const { data } = await client.GET("/api/events/top", {
+        params: { query: { field, limit } },
+      });
+      return (data as Array<{ value: string; total: number }> | undefined) ?? [];
+    },
+    staleTime: 30_000,
+  });
+}
+
+export function useFindings() {
+  return useQuery({
+    queryKey: queryKeys.findings,
+    queryFn: async (): Promise<Array<Record<string, unknown>>> => {
+      const { data } = await client.GET("/api/rules/findings");
+      return (data as Array<Record<string, unknown>> | undefined) ?? [];
+    },
+    staleTime: 30_000,
+  });
+}
+
+export function useSavedFilters() {
+  return useQuery({
+    queryKey: queryKeys.savedFilters,
+    queryFn: async (): Promise<Array<{ id: number; name: string; page: string; query: Record<string, unknown> }>> => {
+      const { data } = await client.GET("/api/filters/saved");
+      return (data as Array<{ id: number; name: string; page: string; query: Record<string, unknown> }> | undefined) ?? [];
+    },
+  });
+}
+
+export function useCreateSavedFilter() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { name: string; page: string; query: Record<string, unknown> }) => {
+      await client.POST("/api/filters/saved", { body: payload });
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: queryKeys.savedFilters }),
+  });
+}
+
+export function useDeleteSavedFilter() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (identifier: number) => {
+      await client.DELETE("/api/filters/saved/{identifier}", {
+        params: { path: { identifier } },
+      });
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: queryKeys.savedFilters }),
+  });
+}
+
+export function useAddAllowlistEntry() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      kind: string;
+      value: string;
+      scope: string;
+      reason: string;
+    }) => {
+      await client.POST("/api/allowlist", { body: payload });
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: queryKeys.allowlist }),
+  });
+}
+
+export function useCollectors() {
+  return useQuery({
+    queryKey: queryKeys.collectors,
+    queryFn: async (): Promise<Array<Record<string, unknown>>> => {
+      const { data } = await client.GET("/api/collectors");
+      return (data as Array<Record<string, unknown>> | undefined) ?? [];
+    },
+    staleTime: 30_000,
+  });
+}
+
+export function useCycles() {
+  return useQuery({
+    queryKey: queryKeys.cycles,
+    queryFn: async (): Promise<Array<Record<string, unknown>>> => {
+      const { data } = await client.GET("/api/cycles");
+      return (data as Array<Record<string, unknown>> | undefined) ?? [];
+    },
+    staleTime: 30_000,
+  });
+}
+
+export function useBaselines() {
+  return useQuery({
+    queryKey: queryKeys.baselines,
+    queryFn: async (): Promise<Array<Record<string, unknown>>> => {
+      const { data } = await client.GET("/api/baselines");
+      return (data as Array<Record<string, unknown>> | undefined) ?? [];
+    },
+    staleTime: 60_000,
   });
 }
 

@@ -19,7 +19,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 11 | `specs/11-pipeline-engine-ops.md` | pipeline, engine loop, CLI, retention, notifications, exports, logging | ✅ | see below |
 | 12 | `specs/12-api.md` | FastAPI, auth, RBAC, CSRF, SSE, OpenAPI | ✅ | see below |
 | 13 | `specs/13-web-foundation.md` | Next.js scaffold, API client, auth, layout, design system | ✅ | see below |
-| 14 | `specs/14-web-overview-events.md` | overview, events explorer | ⬜ | |
+| 14 | `specs/14-web-overview-events.md` | overview, events explorer | ✅ | see below |
 | 15 | `specs/15-web-incidents.md` | incident list/detail, timeline, graph, workflow, export | ⬜ | |
 | 16 | `specs/16-web-rules-severity.md` | rule builder, backtest, severities, allowlist | ⬜ | |
 | 17 | `specs/17-web-behavior-drift-admin.md` | behavior, drift, notifications, settings, users, audit, health | ⬜ | |
@@ -226,3 +226,16 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
   `make web` served on `127.0.0.1:3000`; verified `/login` security headers and the
   `/events` → `/login?next=%2Fevents` redirect.
 - **Commit**: `phase-13: Next.js foundation, typed client, auth and design system`.
+
+## Phase 14 evidence (2026-11-19)
+
+- **Code**: `web/components/overview/*`, `web/components/events/*`, `web/lib/{filters,events}.ts`,
+  expanded `web/lib/api/hooks.ts`/`query-keys.ts`; `api/routers/events.py` (CIDR filter,
+  severity-grouped stats, filter-aware bounded export) and `storage/{database,repositories}.py`.
+- **Tests**: `web/tests/{lib,components,integration}/*` (13 files, 61 tests),
+  `web/e2e/overview-events.spec.ts`, `tests/test_event_explorer_api.py`,
+  `tests/test_seed_demo_db.py`, added API tests for stats and export.
+- **Commands run**: `make test` → `514 passed`; `make lint` → ruff/format/mypy clean;
+  `npm test` → `61 passed`; `npm run typecheck`, `npm run lint`, `npm run build` → pass;
+  `npx playwright test --list` → `6 tests in 2 files`.
+- **Commit**: `phase-14: Overview and Events explorer with typed filters and exports`.
