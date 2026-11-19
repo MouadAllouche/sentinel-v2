@@ -10,7 +10,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 2 | `specs/02-storage.md` | SQLite schema v1, migrations, repositories, audit log | ✅ | see below |
 | 3 | `specs/03-collectors-ingestion.md` | all collectors, ingestion, fuzz tests | ✅ | see below |
 | 4 | `specs/04-severity-allowlist-enrichment.md` | editable defaults/overrides, allowlist, enrichment | ✅ | see below |
-| 5 | `specs/05-rules-engine-core.md` | rule models, conditions, threshold evaluator, backtest | ⬜ | |
+| 5 | `specs/05-rules-engine-core.md` | rule models, conditions, threshold evaluator, backtest | ✅ | see below |
 | 6 | `specs/06-rules-engine-advanced.md` | sequence, new-value, field-match, seeded default rules | ⬜ | |
 | 7 | `specs/07-correlation-incidents.md` | correlation, incidents, timeline, workflow, MITRE | ⬜ | |
 | 8 | `specs/08-baselines-anomalies.md` | baselines, baseline-metric rules, anomalies | ⬜ | |
@@ -103,3 +103,19 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
   `make lint` → ruff check passed, ruff format check
   passed, mypy `Success: no issues found in 29 source files`.
 - **Commit**: `phase-4: condition DSL, editable severity, allowlist and enrichment`.
+
+## Phase 5 evidence (2026-11-19)
+
+- **Code**: `core/rules/{models,threshold,engine,backtest,defaults}.py`,
+  `storage/migrations.py` (`m004`), `storage/rules_repository.py`, `engine/rules.py`,
+  `engine/ingest.py` (`allowlist_suppressed` enrichment flag).
+- **Tests**: `tests/test_rules_models.py` (validation paths/warnings), `tests/test_rules_threshold.py`
+  (boundaries, sliding/fixed, escalation, `test_user_example_tiers`, hypothesis order invariance),
+  `tests/test_rules_storage.py` (versions, reset, soft delete, unique findings),
+  `tests/test_rules_backtest_engine.py` (backtest limits/noise, deterministic `rule_triggered`,
+  200k-event performance budget), updated `tests/test_database.py`.
+- **Commands run**: `make test` → `290 passed` (after reviewer blockers were fixed);
+  `make lint` → ruff check passed, ruff format check
+  passed, mypy `Success: no issues found in 36 source files`.
+- **Performance**: 200 000 events evaluated in **0.751 s** (budget 30 s; recorded in D-051).
+- **Commit**: `phase-5: rule models, threshold evaluator, persistence and backtest`.

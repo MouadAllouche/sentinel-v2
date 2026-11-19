@@ -150,4 +150,50 @@ def m003(connection: sqlite3.Connection) -> None:
     )
 
 
-MIGRATIONS: list[Migration] = [m001, m002, m003]
+def m004(connection: sqlite3.Connection) -> None:
+    """Create the phase-5 rule store and findings ledger."""
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS rules ("
+        "id TEXT PRIMARY KEY, "
+        "name TEXT NOT NULL, "
+        "kind TEXT NOT NULL, "
+        "enabled INTEGER NOT NULL DEFAULT 1, "
+        "builtin INTEGER NOT NULL DEFAULT 0, "
+        "version INTEGER NOT NULL DEFAULT 1, "
+        "definition_json TEXT NOT NULL, "
+        "default_definition_json TEXT NOT NULL, "
+        "created_at TEXT NOT NULL, "
+        "updated_at TEXT NOT NULL, "
+        "deleted_at TEXT)"
+    )
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS rule_versions ("
+        "rule_id TEXT NOT NULL, "
+        "version INTEGER NOT NULL, "
+        "definition_json TEXT NOT NULL, "
+        "changed_by TEXT, "
+        "changed_at TEXT NOT NULL, "
+        "PRIMARY KEY(rule_id, version))"
+    )
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS rule_findings ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "rule_id TEXT NOT NULL, "
+        "rule_version INTEGER NOT NULL, "
+        "group_key TEXT NOT NULL, "
+        "tier_index INTEGER NOT NULL, "
+        "severity TEXT NOT NULL, "
+        "points INTEGER NOT NULL, "
+        "window_start TEXT NOT NULL, "
+        "window_end TEXT NOT NULL, "
+        "observed INTEGER NOT NULL, "
+        "evidence_event_ids_json TEXT NOT NULL, "
+        "created_at TEXT NOT NULL, "
+        "UNIQUE(rule_id, group_key, tier_index, window_start))"
+    )
+    connection.execute(
+        "CREATE INDEX IF NOT EXISTS idx_rule_findings_rule ON rule_findings(rule_id)"
+    )
+
+
+MIGRATIONS: list[Migration] = [m001, m002, m003, m004]

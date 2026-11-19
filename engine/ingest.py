@@ -65,6 +65,9 @@ def _apply_pipeline(
     enriched = enrich_event(event)
     matched = allowlist_matches(enriched, entries, now)
     enriched["enrichment"]["allowlist_match"] = [str(entry.id) for entry in matched]
+    enriched["enrichment"]["allowlist_suppressed"] = any(
+        entry.scope == "suppress_alerts" for entry in matched
+    )
     severity, source = resolve_severity(enriched, defaults, overrides)
     lowering = next((entry for entry in matched if entry.scope == "lower_severity"), None)
     if lowering is not None:

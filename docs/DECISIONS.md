@@ -291,3 +291,30 @@ Python packages installed in `./venv` on 2026-11-17 (`pip install -e ".[dev]"`):
 - Python's `ipaddress` treats documentation TEST-NET ranges (e.g. `203.0.113.0/24`) as private;
   public-scope tests therefore use `8.8.8.8`. Suspicious-path and all-interfaces literals are
   classification markers only, covered by an explained narrow ruff ignore (R4).
+
+### D-046 — Rule engine return shape (Phase 5)
+- `evaluate_rules` returns `(findings, warnings)` rather than a bare list so reserved kinds produce an
+  explicit `NotImplementedForKind` warning and are never silently skipped (spec 05 §5.4).
+
+### D-047 — Rule-side allowlist exclusion (Phase 5)
+- Ingestion records `enrichment.allowlist_suppressed` for `suppress_alerts` matches. Threshold rules
+  with `scope.exclude_allowlisted=true` drop only those events; annotate/lower entries remain in
+  rule inputs, so evidence suppression is scoped correctly.
+
+### D-048 — Same-tier re-fire rule (Phase 5)
+- After a tier satisfaction, the same tier re-fires only when the next window starts strictly after
+  the previous window end, or when a positive cooldown has elapsed. This prevents duplicate findings
+  at `cooldown_seconds=0` without weakening escalation to higher tiers.
+
+### D-049 — Rule cycle event window (Phase 5)
+- `engine/rules.run_rules` queries only events at/after `now − (max tier window + max cooldown)`.
+  Historical backtests supply their own range; integration tests use a `now` adjacent to the events.
+
+### D-050 — Backtest surface (Phase 5)
+- `BacktestResult` exposes findings, severity/tier counts, groups, an hourly timeline, up to 20 sample
+  events per finding and `noise_per_day`. `should_stop` is checked between groups (D-009), and the
+  core function never reads the clock.
+
+### D-051 — Phase 5 performance measurement
+- 200 000 synthetic events, one 3-tier threshold rule, 20 IPs: `evaluate_threshold` completed in
+  **0.751 s** (measured 2026-11-19 with the bundled venv); test budget is 30 s.
