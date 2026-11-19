@@ -61,8 +61,9 @@ def test_cli_json_output_and_password_never_in_argv(tmp_path: Path, monkeypatch:
     db = tmp_path / "cli.db"
     main(["--db", str(db), "init"])
     monkeypatch.setattr("cli.getpass", lambda prompt: "a-very-long-password")
-    code = main(["--db", str(db), "user", "create", "--role", "admin"])
-    assert code == 2  # user management arrives with the auth tables in Phase 12
+    argv = ["--db", str(db), "user", "create", "--role", "admin"]
+    assert main(argv) == 0
+    assert all("a-very-long-password" not in item for item in argv)
 
 
 def test_cli_drift_and_rules_commands(tmp_path: Path) -> None:

@@ -513,3 +513,35 @@ Python packages installed in `./venv` on 2026-11-17 (`pip install -e ".[dev]"`):
   `notification_log.finding_id`. HMAC and `run_notifier` kill-switch tests were added.
 - Deferred (non-blockers): finding-level `actions.notify` triggers, full export sections/status
   history, and moving the spec-mandated `core/health`/`export` clock+I/O exceptions out of `core`.
+
+### D-083 — API security foundation (Phase 12)
+- `m010` creates users/sessions/saved_filters as planned (G1). The API refuses to start without
+  `SENTINEL_SESSION_KEY` (D-006). CSRF tokens are HMACs of the session id; unsafe methods also check
+  Origin. Roles are enforced server-side; CLI `user create` uses `getpass` and never puts the
+  password in argv.
+- scrypt uses the specified n=2^15/r=8/p=1 parameters; an explicit `maxmem=64 MiB` is passed because
+  OpenSSL's default limit rejects the specified memory cost. Verification is constant-time and
+  unknown usernames are checked against a precomputed dummy hash for uniform timing.
+
+### D-084 — API contract (Phase 12)
+- `web/openapi.json` is the committed contract, regenerated with `make openapi`; a test asserts it is
+  current. Errors use the `{error:{code,message,details?}}` envelope, pagination is keyset-based,
+  and routers stay thin (validate → call → serialize).
+
+### D-085 — Phase 12 review and security fixes
+- `make api` and `cli.py api` now serve the app; the non-loopback guard requires `allow_remote` and
+  a `trusted_proxy` note, and session keys shorter than 32 characters are rejected at startup.
+- The remaining catalogue endpoints were added (override CRUD/reorder, risk decay, allowlist
+  update/stats, drift path update/delete/status/history/check, notification channel
+  update/delete/test, rules import/export, user password reset). SQL moved out of routers into
+  storage helpers; incident list, timeline findings and event detail links were fixed.
+- Login failures are now uniform in body and timing for unknown, wrong-password, locked and
+  disabled accounts; throttling counts username and IP with exponential lock repeats; passwords are
+  rehashed when scrypt parameters change. Sessions touch `last_seen` on authenticated requests.
+- SSE is a bounded streaming loop with 15 s heartbeats and a per-user connection cap. Request body
+  caps (1 MB / 2 MB), per-client rate limits on expensive routes and cooperative 30 s backtest
+  deadlines were added. All config/user/channel/filter mutations audit actor/before/after/IP.
+- An OpenAPI-driven matrix parametrises CSRF and RBAC across every unsafe route. Tests cover
+  cookie flags, hash omission, session revocation, timing, and `GET /api/incidents`.
+- Deferred (non-blockers): typed request/response models for every endpoint, `mode=ro` read
+  connections, markdown-lite sanitisation of notes, and one router module per resource area.

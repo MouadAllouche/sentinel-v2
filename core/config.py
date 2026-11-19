@@ -62,6 +62,11 @@ def default_settings_dict() -> dict[str, dict[str, Any]]:
             "port": 8000,
             "session_idle_minutes": 120,
             "session_absolute_hours": 12,
+            "secure_cookies": False,
+            "docs_enabled": False,
+            "allow_remote": False,
+            "trusted_proxy": "",
+            "cors_origins": (),
         },
         "notifications": {"enabled": False},
         "drift": {"allow_custom_paths": False},
@@ -107,6 +112,11 @@ class ApiSettings:
     port: int
     session_idle_minutes: int
     session_absolute_hours: int
+    secure_cookies: bool = False
+    docs_enabled: bool = False
+    allow_remote: bool = False
+    trusted_proxy: str = ""
+    cors_origins: tuple[str, ...] = ()
     session_key: str | None = field(default=None, repr=False, compare=False)
 
 
@@ -268,6 +278,13 @@ def _build_settings(
                 minimum=1,
                 maximum=720,
             ),
+            secure_cookies=_as_bool("api", "secure_cookies", api["secure_cookies"]),
+            docs_enabled=_as_bool("api", "docs_enabled", api["docs_enabled"]),
+            allow_remote=_as_bool("api", "allow_remote", api["allow_remote"]),
+            trusted_proxy=_as_str("api", "trusted_proxy", api["trusted_proxy"])
+            if api.get("trusted_proxy")
+            else "",
+            cors_origins=tuple(api.get("cors_origins") or ()),
             session_key=env.get("SENTINEL_SESSION_KEY"),
         ),
         notifications=NotificationSettings(

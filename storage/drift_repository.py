@@ -21,6 +21,9 @@ from core.timeutil import utc_now
 from storage.database import get_connection
 
 __all__ = [
+    "delete_monitored_path",
+    "list_snapshot_history",
+    "update_monitored_path",
     "MonitoredPath",
     "accept_baseline",
     "add_monitored_path",
@@ -326,6 +329,39 @@ def get_previous_snapshot(path: str, db_path: str | Path | None = None) -> dict[
             "SELECT * FROM file_snapshots WHERE path = ? ORDER BY id DESC LIMIT 1", (path,)
         ).fetchone()
     return None if row is None else _row_to_snapshot(row)
+
+
+def update_monitored_path(
+    identifier: int, changes: dict[str, Any], actor: str, db_path: str | Path | None = None
+) -> None:
+    with closing(get_connection(db_path)) as connection, connection:
+        connection.execute(
+            "UPDATE monitored_paths SET enabled = ?, sensitivity = ?, category = ? WHERE id = ?",
+            (
+                int(changes.get("enabled", True)),
+                changes.get("sensitivity", "medium"),
+                changes.get("category", "other"),
+                identifier,
+            ),
+        )
+        _audit(connection, actor, "drift.path.update", identifier, None, changes)
+
+
+def delete_monitored_path(identifier: int, actor: str, db_path: str | Path | None = None) -> None:
+    with closing(get_connection(db_path)) as connection, connection:
+        connection.execute("DELETE FROM monitored_paths WHERE id = ?", (identifier,))
+        _audit(connection, actor, "drift.path.delete", identifier, None, {"deleted": identifier})
+
+
+def list_snapshot_history(
+    path: str, limit: int = 100, db_path: str | Path | None = None
+) -> list[dict[str, Any]]:
+    with closing(get_connection(db_path)) as connection:
+        rows = connection.execute(
+            "SELECT * FROM file_snapshots WHERE path = ? ORDER BY id DESC LIMIT ?",
+            (path, limit),
+        ).fetchall()
+    return [_row_to_snapshot(row) for row in rows]
 
 
 def get_baseline_snapshot(path: str, db_path: str | Path | None = None) -> dict[str, Any] | None:

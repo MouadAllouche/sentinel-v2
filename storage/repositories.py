@@ -476,8 +476,11 @@ def set_setting(
     updated_by: str | None = None,
     db_path: str | Path | None = None,
 ) -> None:
-    """Upsert an app setting."""
+    """Upsert an app setting and audit the change in the same transaction."""
     with closing(get_connection(db_path)) as connection, connection:
+        previous = connection.execute(
+            "SELECT value_json FROM app_settings WHERE key = ?", (key,)
+        ).fetchone()
         connection.execute(
             "INSERT INTO app_settings(key, value_json, updated_at, updated_by) "
             "VALUES (?, ?, ?, ?) ON CONFLICT(key) DO UPDATE SET "
@@ -488,5 +491,19 @@ def set_setting(
                 json.dumps(value, sort_keys=True, default=str),
                 utc_now().isoformat(),
                 updated_by,
+            ),
+        )
+        connection.execute(
+            "INSERT INTO audit_log(ts, actor, action, target_type, target_id, before_json, "
+            "after_json, ip) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                utc_now().isoformat(),
+                updated_by or "system",
+                "setting.update",
+                "app_setting",
+                key,
+                previous["value_json"] if previous else None,
+                json.dumps(value, sort_keys=True, default=str),
+                None,
             ),
         )

@@ -383,6 +383,48 @@ def m009(connection: sqlite3.Connection) -> None:
         connection.execute(statement)
 
 
+def m010(connection: sqlite3.Connection) -> None:
+    """Create the phase-12 auth/session tables."""
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS users ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "username TEXT NOT NULL UNIQUE, "
+        "password_hash TEXT NOT NULL, "
+        "role TEXT NOT NULL, "
+        "disabled INTEGER NOT NULL DEFAULT 0, "
+        "failed_logins INTEGER NOT NULL DEFAULT 0, "
+        "locked_until TEXT, "
+        "lock_count INTEGER NOT NULL DEFAULT 0, "
+        "created_at TEXT NOT NULL)"
+    )
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS login_failures ("
+        "ip TEXT NOT NULL, "
+        "username TEXT NOT NULL, "
+        "count INTEGER NOT NULL, "
+        "first_at TEXT NOT NULL, "
+        "PRIMARY KEY(ip, username))"
+    )
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS sessions ("
+        "id_hash TEXT PRIMARY KEY, "
+        "user_id INTEGER NOT NULL, "
+        "created_at TEXT NOT NULL, "
+        "last_seen TEXT NOT NULL, "
+        "expires_at TEXT NOT NULL, "
+        "ip TEXT, "
+        "user_agent TEXT)"
+    )
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS saved_filters ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "user_id INTEGER NOT NULL, "
+        "name TEXT NOT NULL, "
+        "page TEXT NOT NULL, "
+        "query_json TEXT NOT NULL)"
+    )
+
+
 MIGRATIONS: list[Migration] = [
     m001,
     m002,
@@ -393,4 +435,5 @@ MIGRATIONS: list[Migration] = [
     m007,
     m008,
     m009,
+    m010,
 ]

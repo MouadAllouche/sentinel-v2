@@ -28,6 +28,10 @@ host = "127.0.0.1"
 port = 8000
 session_idle_minutes = 120
 session_absolute_hours = 12
+secure_cookies = false              # set true behind an HTTPS reverse proxy
+docs_enabled = false
+allow_remote = false                # refuse non-loopback binds unless true + trusted_proxy set
+trusted_proxy = ""
 
 [notifications]
 enabled = false                     # global kill switch, default off

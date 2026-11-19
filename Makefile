@@ -20,7 +20,8 @@ fmt:
 	./venv/bin/ruff check --fix .
 
 api:
-	@echo "FastAPI app is delivered in Phase 12; run 'make api' then."
+	SENTINEL_SESSION_KEY=$$( $$(pwd)/venv/bin/python -c "import secrets;print(secrets.token_hex(32))" ) \
+		./venv/bin/uvicorn api.main:app --host 127.0.0.1 --port 8000
 
 engine:
 	./venv/bin/python cli.py engine
@@ -35,7 +36,7 @@ web-e2e:
 	@echo "Playwright tests are delivered in Phase 18; run 'make web-e2e' then."
 
 openapi:
-	@echo "OpenAPI generation is delivered in Phase 12; run 'make openapi' then."
+	SENTINEL_SESSION_KEY=openapi-generation-key-0123456789abcdef ./venv/bin/python -c "import json;from api.main import create_app;json.dump(create_app().openapi(),open('web/openapi.json','w'),sort_keys=True,indent=2)"
 
 demo:
 	@echo "Demo CLI is delivered in Phase 18; run 'make demo' then."

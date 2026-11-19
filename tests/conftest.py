@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -72,3 +73,16 @@ def tmp_initialised_db(tmp_db: Path) -> Path:
     """An initialised, empty database in the test sandbox."""
     init_db(db_path=tmp_db)
     return tmp_db
+
+
+@pytest.fixture
+def api_client(tmp_initialised_db: Path, monkeypatch: pytest.MonkeyPatch) -> Any:
+    """A FastAPI TestClient bound to a throwaway database and session key."""
+    from fastapi.testclient import TestClient
+
+    from api.main import create_app
+
+    monkeypatch.setenv("SENTINEL_SESSION_KEY", "a-test-session-key-with-at-least-32-chars")
+    app = create_app(db_path=tmp_initialised_db)
+    with TestClient(app) as client:
+        yield client

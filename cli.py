@@ -23,6 +23,7 @@ from engine.logging_setup import setup_logging
 from engine.rules import run_rules
 from engine.runner import install_signal_handlers, run_engine_loop
 from engine.scoring import run_scoring
+from storage.auth_repository import create_user, list_users
 from storage.database import init_db
 from storage.drift_repository import (
     list_monitored_paths,
@@ -64,6 +65,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--json", action="store_true")
     sub = parser.add_subparsers(dest="command")
     sub.add_parser("init")
+    sub.add_parser("api")
     sub.add_parser("collect")
     sub.add_parser("analyze")
     sub.add_parser("run")
@@ -118,6 +120,11 @@ def main(argv: list[str] | None = None) -> int:
         else load_settings(env={"SENTINEL_DB_PATH": db_path, "SENTINEL_CONFIG": ""})
     )
     command = args.command
+    if command == "api":
+        import uvicorn
+
+        uvicorn.run("api.main:app", host=settings.api.host, port=settings.api.port)
+        return 0
     if command == "init":
         init_db(db_path)
         _emit({"ok": True}, args.json, f"initialised {db_path}")
@@ -257,12 +264,18 @@ def main(argv: list[str] | None = None) -> int:
             password = getpass("New password: ")
             if len(password) < 12:
                 return 2
-        # User management requires the auth tables delivered in Phase 12.
-        _emit(
-            {"error": "user management arrives with authentication in Phase 12"},
-            args.json,
-            "user management arrives in Phase 12",
-        )
+            identifier = create_user(
+                "admin" if args.role == "admin" else "viewer", password, args.role, db_path
+            )
+            _emit({"id": identifier}, args.json, f"created user {identifier}")
+            return 0
+        if args.action == "list":
+            users = [
+                {key: value for key, value in item.items() if key != "password_hash"}
+                for item in list_users(db_path)
+            ]
+            _emit(users, args.json, "\n".join(str(item["username"]) for item in users))
+            return 0
         return 2
     if command == "prune":
         policy = get_setting("retention", db_path) or DEFAULT_POLICY

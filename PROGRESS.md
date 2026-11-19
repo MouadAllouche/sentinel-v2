@@ -17,7 +17,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 9 | `specs/09-config-drift.md` | files, dirs, persistence, authorized_keys | ✅ | see below |
 | 10 | `specs/10-risk-scoring.md` | incident-meta rules, scoring, recency decay | ✅ | see below |
 | 11 | `specs/11-pipeline-engine-ops.md` | pipeline, engine loop, CLI, retention, notifications, exports, logging | ✅ | see below |
-| 12 | `specs/12-api.md` | FastAPI, auth, RBAC, CSRF, SSE, OpenAPI | ⬜ | |
+| 12 | `specs/12-api.md` | FastAPI, auth, RBAC, CSRF, SSE, OpenAPI | ✅ | see below |
 | 13 | `specs/13-web-foundation.md` | Next.js scaffold, API client, auth, layout, design system | ⬜ | |
 | 14 | `specs/14-web-overview-events.md` | overview, events explorer | ⬜ | |
 | 15 | `specs/15-web-incidents.md` | incident list/detail, timeline, graph, workflow, export | ⬜ | |
@@ -196,3 +196,15 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
   `make lint` → ruff check passed, ruff format check
   passed, mypy `Success: no issues found in 68 source files`.
 - **Commit**: `phase-11: pipeline, engine daemon, CLI, retention and notifications`.
+
+## Phase 12 evidence (2026-11-19)
+
+- **Code**: `core/auth.py`, `api/{main,deps,security,schemas}.py`, `api/routers/*.py`,
+  `storage/{migrations,auth_repository}.py` (`m010`), `core/config.py`, `cli.py`,
+  `web/openapi.json`, `docs/API.md`, `make openapi`.
+- **Tests**: `tests/test_auth.py`, `tests/api/test_auth_flow.py`, `tests/api/test_endpoints.py`,
+  updated CLI/database/conftest fixtures.
+- **Commands run**: `make test` → `505 passed` (after reviewer and security-auditor fixes);
+  `make lint` → ruff check passed, ruff format check
+  passed, mypy `Success: no issues found in 81 source files`.
+- **Commit**: `phase-12: FastAPI auth, RBAC, REST, SSE and OpenAPI`.
