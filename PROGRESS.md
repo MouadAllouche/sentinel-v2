@@ -208,3 +208,5 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
   `make lint` → ruff check passed, ruff format check
   passed, mypy `Success: no issues found in 81 source files`.
 - **Commit**: `phase-12: FastAPI auth, RBAC, REST, SSE and OpenAPI`.
+- **Follow-up**: added `httpx2` 2.16.2 to dev dependencies (D-086) to remove the Starlette
+  `TestClient` deprecation warning; suite remains green with no warnings.

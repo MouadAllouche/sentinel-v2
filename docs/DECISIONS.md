@@ -545,3 +545,9 @@ Python packages installed in `./venv` on 2026-11-17 (`pip install -e ".[dev]"`):
   cookie flags, hash omission, session revocation, timing, and `GET /api/incidents`.
 - Deferred (non-blockers): typed request/response models for every endpoint, `mode=ro` read
   connections, markdown-lite sanitisation of notes, and one router module per resource area.
+
+### D-086 — TestClient dependency (2026-11-19)
+- Added `httpx2` 2.16.2 to the dev dependencies (with `httpcore2` 2.16.2 and `truststore`
+  0.10.5) so Starlette 1.10.0's `TestClient` uses the supported client and no longer emits
+  `StarletteDeprecationWarning`. Approved by the user; production dependencies are unchanged.
+- Trade-off: the API test suite is slower (~61 s vs ~34 s) with `httpx2`.
