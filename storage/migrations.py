@@ -337,4 +337,60 @@ def m008(connection: sqlite3.Connection) -> None:
     )
 
 
-MIGRATIONS: list[Migration] = [m001, m002, m003, m004, m005, m006, m007, m008]
+def m009(connection: sqlite3.Connection) -> None:
+    """Create the phase-11 operational tables."""
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS cycle_runs ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "started_at TEXT NOT NULL, "
+        "finished_at TEXT NOT NULL, "
+        "status TEXT NOT NULL, "
+        "steps_json TEXT NOT NULL DEFAULT '[]')"
+    )
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS notification_channels ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "name TEXT NOT NULL, "
+        "kind TEXT NOT NULL, "
+        "enabled INTEGER NOT NULL DEFAULT 0, "
+        "config_json TEXT NOT NULL, "
+        "min_severity TEXT NOT NULL DEFAULT 'high', "
+        "filters_json TEXT NOT NULL DEFAULT '{}', "
+        "throttle_json TEXT NOT NULL DEFAULT '{}')"
+    )
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS notification_log ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "channel_id INTEGER NOT NULL, "
+        "incident_id INTEGER, "
+        "finding_id INTEGER, "
+        "sent_at TEXT NOT NULL, "
+        "status TEXT NOT NULL, "
+        "detail TEXT)"
+    )
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS changes ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "kind TEXT NOT NULL, "
+        "ref_id INTEGER NOT NULL, "
+        "at TEXT NOT NULL)"
+    )
+    for statement in (
+        "CREATE INDEX IF NOT EXISTS idx_cycle_runs_started ON cycle_runs(started_at)",
+        "CREATE INDEX IF NOT EXISTS idx_notification_log_sent ON notification_log(sent_at)",
+        "CREATE INDEX IF NOT EXISTS idx_changes_at ON changes(at)",
+    ):
+        connection.execute(statement)
+
+
+MIGRATIONS: list[Migration] = [
+    m001,
+    m002,
+    m003,
+    m004,
+    m005,
+    m006,
+    m007,
+    m008,
+    m009,
+]

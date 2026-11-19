@@ -16,7 +16,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 8 | `specs/08-baselines-anomalies.md` | baselines, baseline-metric rules, anomalies | ✅ | see below |
 | 9 | `specs/09-config-drift.md` | files, dirs, persistence, authorized_keys | ✅ | see below |
 | 10 | `specs/10-risk-scoring.md` | incident-meta rules, scoring, recency decay | ✅ | see below |
-| 11 | `specs/11-pipeline-engine-ops.md` | pipeline, engine loop, CLI, retention, notifications, exports, logging | ⬜ | |
+| 11 | `specs/11-pipeline-engine-ops.md` | pipeline, engine loop, CLI, retention, notifications, exports, logging | ✅ | see below |
 | 12 | `specs/12-api.md` | FastAPI, auth, RBAC, CSRF, SSE, OpenAPI | ⬜ | |
 | 13 | `specs/13-web-foundation.md` | Next.js scaffold, API client, auth, layout, design system | ⬜ | |
 | 14 | `specs/14-web-overview-events.md` | overview, events explorer | ⬜ | |
@@ -184,3 +184,15 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
   `make lint` → ruff check passed, ruff format check
   passed, mypy `Success: no issues found in 55 source files`.
 - **Commit**: `phase-10: explainable risk scoring and incident-meta rules`.
+
+## Phase 11 evidence (2026-11-19)
+
+- **Code**: `core/{pipeline,retention,export,health}.py`, `core/notifications/*`,
+  `engine/{runner,scheduler,notifier,logging_setup}.py`, `cli.py`, `m009`,
+  `storage/{notification_repository,retention_repository}.py`, `docs/OPERATIONS.md`, Makefile.
+- **Tests**: `tests/test_scheduler.py`, `test_retention.py`, `test_notifications.py`, `test_export.py`,
+  `test_pipeline_cli.py`, `test_health_logging.py`, updated `tests/test_database.py`.
+- **Commands run**: `make test` → `425 passed` (after reviewer and security-auditor fixes);
+  `make lint` → ruff check passed, ruff format check
+  passed, mypy `Success: no issues found in 68 source files`.
+- **Commit**: `phase-11: pipeline, engine daemon, CLI, retention and notifications`.

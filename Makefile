@@ -23,7 +23,7 @@ api:
 	@echo "FastAPI app is delivered in Phase 12; run 'make api' then."
 
 engine:
-	@echo "Engine CLI is delivered in Phase 11; run 'make engine' then."
+	./venv/bin/python cli.py engine
 
 web:
 	@echo "Next.js dashboard is delivered in Phase 13; run 'make web' then."

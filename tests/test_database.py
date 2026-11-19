@@ -67,7 +67,7 @@ def test_migrations_are_idempotent(tmp_db: Path) -> None:
     init_db(tmp_db, now="2026-11-17T00:00:00+00:00")
     connection = get_connection(tmp_db)
     before = connection.execute("SELECT name, sql FROM sqlite_master ORDER BY name").fetchall()
-    assert connection.execute("SELECT MAX(version) FROM schema_version").fetchone()[0] == 8
+    assert connection.execute("SELECT MAX(version) FROM schema_version").fetchone()[0] == 9
     connection.close()
 
     init_db(tmp_db, now="2026-11-18T00:00:00+00:00")
@@ -75,7 +75,7 @@ def test_migrations_are_idempotent(tmp_db: Path) -> None:
     after = connection.execute("SELECT name, sql FROM sqlite_master ORDER BY name").fetchall()
     versions = connection.execute("SELECT version FROM schema_version ORDER BY version").fetchall()
     assert after == before
-    assert [row[0] for row in versions] == [1, 2, 3, 4, 5, 6, 7, 8]
+    assert [row[0] for row in versions] == [1, 2, 3, 4, 5, 6, 7, 8, 9]
     connection.close()
 
 
@@ -93,7 +93,7 @@ def test_migration_upgrades_a_legacy_database(tmp_db: Path) -> None:
 
     init_db(tmp_db)
     connection = get_connection(tmp_db)
-    assert connection.execute("SELECT MAX(version) FROM schema_version").fetchone()[0] == 8
+    assert connection.execute("SELECT MAX(version) FROM schema_version").fetchone()[0] == 9
     tables = {
         row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type = 'table'")
     }
@@ -101,8 +101,8 @@ def test_migration_upgrades_a_legacy_database(tmp_db: Path) -> None:
     connection.close()
 
 
-def test_migration_list_has_eight_entries() -> None:
-    assert len(MIGRATIONS) == 8
+def test_migration_list_has_nine_entries() -> None:
+    assert len(MIGRATIONS) == 9
     assert all(callable(migration) for migration in MIGRATIONS)
 
 

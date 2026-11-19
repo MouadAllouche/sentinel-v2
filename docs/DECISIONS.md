@@ -477,3 +477,39 @@ Python packages installed in `./venv` on 2026-11-17 (`pip install -e ".[dev]"`):
 - Rule-floor reasons identify the deciding rule and tier; thresholds reject missing keys and
   non-increasing values; incident-meta rules validate metric and op at creation time; `m008` seeds
   the two `app_settings` keys; `explain_score` no longer repeats the tier label.
+
+### D-078 — Pipeline layering (Phase 11)
+- `core/pipeline.run_cycle` receives its steps via injection (with timing/isolation) so it does no
+  I/O; `engine/runner.default_steps` supplies the concrete collect → rules → baselines → correlate →
+  score → notify → publish steps. Failed steps are recorded and never stop later steps.
+
+### D-079 — CLI deferrals (Phase 11)
+- `user` commands require the auth tables from Phase 12 and `demo` arrives in Phase 18; both are
+  explicit commands with exit code 2 and a clear message, not silent stubs. `getpass` is used for
+  passwords, never argv.
+
+### D-080 — Notification safety (Phase 11)
+- Outbound delivery is off unless `notifications.enabled` is true; channels are admin-editable in
+  the DB with secret **env-var names** only. Webhook HMAC uses that env var, SMTP requires STARTTLS
+  unless explicitly disabled, transports have timeouts and bounded retries, and tests use fakes only.
+
+### D-081 — Retention (Phase 11)
+- `plan_prune` is pure, dry-run is the CLI default, evidence linked to an incident is protected,
+  baselines are always kept and audit rows are pruned last; every application writes an audit row.
+
+### D-082 — Phase 11 review and security fixes
+- Retention now performs real chunked deletes using per-severity ages, protects events linked to
+  open/investigating incidents and writes an audit row only after deletion. `--dry-run` remains the
+  default; `--apply` is explicit (`--dry-run` is a harmless alias).
+- The engine loop uses real sleeps, derives backoff from the cycle report, tracks both intervals and
+  installs SIGTERM/SIGINT handlers; `setup_logging` is installed at the CLI entrypoint and creates
+  the log directory.
+- Notifications now use real delivery history for cooldown/rate limits, deduplicate per channel and
+  trigger, include incident-created as well as escalation triggers, honour BOTH the static TOML flag
+  and the DB flag, and implement Telegram. Webhook URLs are validated with `urlparse` (loopback
+  HTTP or explicitly allowed HTTPS hosts), require a non-empty env secret, and use `config["url"]`;
+  SMTP uses a verifying TLS context. Retry attempts no longer sleep in the inline cycle.
+- `rules backtest` is wired, `severity set` preserves points, `m009` gains indexes and
+  `notification_log.finding_id`. HMAC and `run_notifier` kill-switch tests were added.
+- Deferred (non-blockers): finding-level `actions.notify` triggers, full export sections/status
+  history, and moving the spec-mandated `core/health`/`export` clock+I/O exceptions out of `core`.
