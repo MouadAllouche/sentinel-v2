@@ -413,3 +413,36 @@ Python packages installed in `./venv` on 2026-11-17 (`pip install -e ".[dev]"`):
 - The generic rule engine reports baseline rules as "evaluated by the baseline cycle" instead of a
   false `NotImplementedForKind`; `docs/RULES.md` lists all five baseline rules in the seeded table,
   and a 30-day × 50-subject performance test is included.
+
+### D-068 — Monitored path validation (Phase 9)
+- Paths must be absolute, normalised and within the allowed prefixes unless a caller explicitly
+  passes `allow_custom_paths=True` (used only by tests and API input). `/etc/shadow` and
+  `/etc/gshadow` are always forced to `metadata_only=true`; those files are stat-only and never
+  opened or hashed.
+
+### D-069 — Drift descriptions and flags (Phase 9)
+- Comparisons produce structured changes plus exact, content-free sentences (modes, ownership,
+  directory entries and key fingerprints). Flags are derived from mode bits and ownership, and
+  `only_mtime` is explicit. Authorized-key snapshots store fingerprints only.
+
+### D-070 — Drift baselines (Phase 9)
+- `drift init` records one baseline snapshot per enabled path only when none exists; `drift check`
+  compares against the previous snapshot so a change is reported once, and approval creates a new
+  baseline snapshot with an audit row. The monitored file is never modified.
+
+### D-071 — Limitations documentation (Phase 9)
+- `docs/LIMITATIONS.md` records polling gaps, no inotify in v1, capped hashes, unprivileged read
+  limits, uncalibrated points, indicative MITRE mapping and threshold-only backtesting.
+
+### D-072 — Phase 9 review decisions and deferrals
+- `check_drift` seeds both severity defaults and monitored paths, so it works standalone on a fresh
+  DB. `DriftReport.warnings` no longer double-prefixes paths (the collector already does).
+- `allow_custom_paths` is a real static setting (`[drift]` in `config/settings.toml`) read by
+  `add_monitored_path` unless the caller overrides it explicitly.
+- The service user's `~/.ssh/authorized_keys` cannot be known at seed time without resolving the
+  service account; it must be added by API/CLI at deployment. Deferring it here.
+- Snapshot retention ("baseline + last 200 per path") is deferred to the Phase 11 retention cycle.
+- `--force` path overwrite has a boolean in the engine; an explicit confirmation belongs to the
+  Phase 11 CLI and Phase 12 API.
+- Added tests for real key fingerprints, symlink target changes, shadow forced metadata-only on
+  reset, monitored-path reset and baseline_status transitions.

@@ -78,6 +78,22 @@ def _apply_pipeline(
     return enriched, bool(matched)
 
 
+def prepare_event(
+    raw: dict[str, Any],
+    db_path: str | Path | None = None,
+    now: datetime | None = None,
+) -> tuple[dict[str, Any], bool] | None:
+    """Normalise and resolve one raw event through the Phase 4 pipeline."""
+    reference = now or utc_now()
+    return _apply_pipeline(
+        normalize_event(raw),
+        get_defaults(db_path),
+        get_overrides(db_path),
+        get_allowlist_entries(db_path),
+        reference,
+    )
+
+
 def _collector_specs(
     settings: Settings, now: datetime
 ) -> list[tuple[str, str, Callable[..., CollectionResult]]]:

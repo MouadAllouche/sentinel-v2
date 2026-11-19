@@ -14,7 +14,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 6 | `specs/06-rules-engine-advanced.md` | sequence, new-value, field-match, seeded default rules | ✅ | see below |
 | 7 | `specs/07-correlation-incidents.md` | correlation, incidents, timeline, workflow, MITRE | ✅ | see below |
 | 8 | `specs/08-baselines-anomalies.md` | baselines, baseline-metric rules, anomalies | ✅ | see below |
-| 9 | `specs/09-config-drift.md` | files, dirs, persistence, authorized_keys | ⬜ | |
+| 9 | `specs/09-config-drift.md` | files, dirs, persistence, authorized_keys | ✅ | see below |
 | 10 | `specs/10-risk-scoring.md` | incident-meta rules, scoring, recency decay | ⬜ | |
 | 11 | `specs/11-pipeline-engine-ops.md` | pipeline, engine loop, CLI, retention, notifications, exports, logging | ⬜ | |
 | 12 | `specs/12-api.md` | FastAPI, auth, RBAC, CSRF, SSE, OpenAPI | ⬜ | |
@@ -158,3 +158,16 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
   `make lint` → ruff check passed, ruff format check
   passed, mypy `Success: no issues found in 49 source files`.
 - **Commit**: `phase-8: behavioral baselines and explained anomalies`.
+
+## Phase 9 evidence (2026-11-19)
+
+- **Code**: `core/drift_detection.py`, `collectors/filesystem.py` (`take_snapshot`),
+  `storage/migrations.py` (`m007`), `storage/drift_repository.py`, `engine/drift.py`,
+  `engine/ingest.py` (`prepare_event`), `docs/LIMITATIONS.md`.
+- **Tests**: `tests/test_drift_detection.py` (comparison, flags, metadata-only enforcement,
+  validation, hypothesis), `tests/test_drift_engine.py` (init/check/reported-once, approval audit,
+  worked example), updated `tests/test_database.py`.
+- **Commands run**: `make test` → `370 passed` (after reviewer gaps were addressed);
+  `make lint` → ruff check passed, ruff format check
+  passed, mypy `Success: no issues found in 52 source files`.
+- **Commit**: `phase-9: read-only config drift and persistence monitoring`.

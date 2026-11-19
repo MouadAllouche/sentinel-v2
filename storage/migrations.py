@@ -268,4 +268,40 @@ def m006(connection: sqlite3.Connection) -> None:
     )
 
 
-MIGRATIONS: list[Migration] = [m001, m002, m003, m004, m005, m006]
+def m007(connection: sqlite3.Connection) -> None:
+    """Create the phase-9 monitored-path and snapshot tables."""
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS monitored_paths ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "path TEXT NOT NULL UNIQUE, "
+        "kind TEXT NOT NULL, "
+        "sensitivity TEXT NOT NULL, "
+        "category TEXT NOT NULL, "
+        "metadata_only INTEGER NOT NULL DEFAULT 0, "
+        "enabled INTEGER NOT NULL DEFAULT 1, "
+        "recursive INTEGER NOT NULL DEFAULT 0, "
+        "max_entries INTEGER NOT NULL DEFAULT 2000, "
+        "builtin INTEGER NOT NULL DEFAULT 0, "
+        "default_definition_json TEXT NOT NULL DEFAULT '{}')"
+    )
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS file_snapshots ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "path TEXT NOT NULL, "
+        "exists_flag INTEGER NOT NULL, "
+        "sha256 TEXT, "
+        "owner TEXT, "
+        "group_name TEXT, "
+        "mode TEXT, "
+        "mtime TEXT, "
+        "size INTEGER, "
+        "extra_json TEXT NOT NULL, "
+        "captured_at TEXT NOT NULL, "
+        "is_baseline INTEGER NOT NULL DEFAULT 0)"
+    )
+    connection.execute(
+        "CREATE INDEX IF NOT EXISTS idx_snapshots_path_time ON file_snapshots(path, captured_at)"
+    )
+
+
+MIGRATIONS: list[Migration] = [m001, m002, m003, m004, m005, m006, m007]

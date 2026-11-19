@@ -127,6 +127,64 @@ def list_directory(
     return entries
 
 
+def take_snapshot(spec: Any, now: datetime | None = None) -> tuple[dict[str, Any], list[str]]:
+    """Capture metadata and hashes for a monitored path without ever modifying it.
+
+    A ``metadata_only`` path is never opened or hashed.
+    """
+    from core.timeutil import utc_now
+
+    reference = now or utc_now()
+    warnings: list[str] = []
+    snapshot: dict[str, Any] = {
+        "path": spec.path,
+        "exists": os.path.lexists(spec.path),
+        "kind": spec.kind,
+        "sha256": None,
+        "owner": None,
+        "group": None,
+        "mode": None,
+        "mtime": None,
+        "size": None,
+        "is_symlink": False,
+        "extra": {},
+        "captured_at": reference.isoformat(),
+    }
+    if not snapshot["exists"]:
+        return snapshot, warnings
+    metadata = get_file_metadata(spec.path)
+    if metadata is None:
+        warnings.append(f"{spec.path}: stat unavailable")
+        snapshot["exists"] = False
+        return snapshot, warnings
+    snapshot.update(
+        owner=metadata.get("owner"),
+        group=metadata.get("group"),
+        mode=metadata.get("mode"),
+        mtime=metadata.get("mtime"),
+        size=metadata.get("size"),
+        is_symlink=metadata.get("is_symlink", False),
+    )
+    snapshot["extra"]["link_target_scope"] = metadata.get("link_target_scope")
+    if spec.metadata_only:
+        return snapshot, warnings
+    if spec.kind == "file":
+        digest = hash_file(spec.path)
+        if digest is None:
+            warnings.append(f"{spec.path}: hash unavailable (permission denied)")
+        snapshot["sha256"] = digest
+    elif spec.kind == "dir":
+        entries = list_directory(spec.path, recursive=spec.recursive, max_entries=spec.max_entries)
+        snapshot["extra"]["entries"] = entries
+        snapshot["extra"]["truncated"] = len(entries) >= spec.max_entries
+    elif spec.kind == "authorized_keys":
+        snapshot["sha256"] = hash_file(spec.path)
+        fingerprints = ssh_key_fingerprints(spec.path)
+        snapshot["extra"]["fingerprints"] = fingerprints
+        snapshot["extra"]["key_count"] = len(fingerprints)
+    return snapshot, warnings
+
+
 def ssh_key_fingerprints(path: str | Path) -> list[str]:
     """Return SHA256 fingerprints for authorized_keys entries, never key text."""
     fingerprints: list[str] = []

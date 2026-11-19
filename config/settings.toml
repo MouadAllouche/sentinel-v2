@@ -31,3 +31,6 @@ session_absolute_hours = 12
 
 [notifications]
 enabled = false                     # global kill switch, default off
+
+[drift]
+allow_custom_paths = false          # allow monitored paths outside the default prefixes

@@ -64,6 +64,7 @@ def default_settings_dict() -> dict[str, dict[str, Any]]:
             "session_absolute_hours": 12,
         },
         "notifications": {"enabled": False},
+        "drift": {"allow_custom_paths": False},
     }
 
 
@@ -115,6 +116,11 @@ class NotificationSettings:
 
 
 @dataclass(frozen=True)
+class DriftSettings:
+    allow_custom_paths: bool
+
+
+@dataclass(frozen=True)
 class Settings:
     paths: PathsSettings
     time: TimeSettings
@@ -122,6 +128,7 @@ class Settings:
     engine: EngineSettings
     api: ApiSettings
     notifications: NotificationSettings
+    drift: DriftSettings
 
 
 def _check_keys(data: dict[str, Any], allowed: dict[str, Any], section: str) -> None:
@@ -184,6 +191,7 @@ def _build_settings(
     engine = merged["engine"]
     api = merged["api"]
     notifications = merged["notifications"]
+    drift = merged["drift"]
 
     naive_timezone = _as_str("time", "naive_timezone", time_section["naive_timezone"])
     if naive_timezone.lower() == "utc":
@@ -264,6 +272,9 @@ def _build_settings(
         ),
         notifications=NotificationSettings(
             enabled=_as_bool("notifications", "enabled", notifications["enabled"])
+        ),
+        drift=DriftSettings(
+            allow_custom_paths=_as_bool("drift", "allow_custom_paths", drift["allow_custom_paths"])
         ),
     )
 
