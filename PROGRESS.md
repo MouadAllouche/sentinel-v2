@@ -11,7 +11,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 3 | `specs/03-collectors-ingestion.md` | all collectors, ingestion, fuzz tests | ✅ | see below |
 | 4 | `specs/04-severity-allowlist-enrichment.md` | editable defaults/overrides, allowlist, enrichment | ✅ | see below |
 | 5 | `specs/05-rules-engine-core.md` | rule models, conditions, threshold evaluator, backtest | ✅ | see below |
-| 6 | `specs/06-rules-engine-advanced.md` | sequence, new-value, field-match, seeded default rules | ⬜ | |
+| 6 | `specs/06-rules-engine-advanced.md` | sequence, new-value, field-match, seeded default rules | ✅ | see below |
 | 7 | `specs/07-correlation-incidents.md` | correlation, incidents, timeline, workflow, MITRE | ⬜ | |
 | 8 | `specs/08-baselines-anomalies.md` | baselines, baseline-metric rules, anomalies | ⬜ | |
 | 9 | `specs/09-config-drift.md` | files, dirs, persistence, authorized_keys | ⬜ | |
@@ -119,3 +119,15 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
   passed, mypy `Success: no issues found in 36 source files`.
 - **Performance**: 200 000 events evaluated in **0.751 s** (budget 30 s; recorded in D-051).
 - **Commit**: `phase-5: rule models, threshold evaluator, persistence and backtest`.
+
+## Phase 6 evidence (2026-11-19)
+
+- **Code**: `core/rules/{models,sequence,new_value,field_match,engine,defaults}.py`,
+  `engine/rules.py` (history injection), `docs/RULES.md` (every kind and seeded rule).
+- **Tests**: `tests/test_rules_advanced.py` (sequence, new-value, field-match, reserved kinds,
+  property tests), `tests/test_rules_seeded.py` (16 rules, seeding/reset/disabled default,
+  cross-kind worked example), updated `tests/test_rules_backtest_engine.py`.
+- **Commands run**: `make test` → `307 passed` (after reviewer blockers were fixed);
+  `make lint` → ruff check passed, ruff format check
+  passed, mypy `Success: no issues found in 39 source files`.
+- **Commit**: `phase-6: sequence, new-value, field-match and seeded rules`.

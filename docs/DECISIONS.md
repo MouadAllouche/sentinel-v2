@@ -318,3 +318,36 @@ Python packages installed in `./venv` on 2026-11-17 (`pip install -e ".[dev]"`):
 ### D-051 — Phase 5 performance measurement
 - 200 000 synthetic events, one 3-tier threshold rule, 20 IPs: `evaluate_threshold` completed in
   **0.751 s** (measured 2026-11-19 with the bundled venv); test budget is 30 s.
+
+### D-052 — Reserved-kind document shape (Phase 6)
+- A before-validator renames `tiers` to `z_tiers` for `baseline_metric` and top-level `conditions` to
+  `meta_conditions` for `incident_meta`, so their distinct tier/condition shapes validate without
+  weakening threshold rules.
+
+### D-053 — Sequence window and evidence (Phase 6)
+- `window_start` is the first evidence timestamp of step 1 (not the moment the minimum count was
+  reached). Step evidence is bounded by the next step's satisfying moment; `within_seconds` is
+  measured from step 1's satisfying moment. Input order never affects the result.
+
+### D-054 — New-value history ownership (Phase 6)
+- Pre-aggregated history is supplied by `engine/rules.py`, keyed by rule id and then entity; the
+  pure evaluator receives it as an argument and never queries storage or the clock. Events older
+  than `learning_days` relative to injected `now` are ignored.
+
+### D-055 — Field-match identity (Phase 6)
+- Findings keep a real ISO `window_start` (D-010) and put the event id in `group_key`
+  (`event=<id>`); cooldown collapse uses the rule's `group_by` separately.
+
+### D-056 — Seeded rule set completeness (Phase 6)
+- All 16 built-in rules from spec 06 are seeded, documented in `docs/RULES.md`, and all points are
+  labelled uncalibrated starting values. `new-outbound-destination` stays disabled by default.
+
+### D-057 — Phase 6 reviewer fixes
+- Sequence evidence windows are anchored to each step's own satisfying moment, so widely spaced
+  steps keep step-1 evidence and `window_start`. A per-entity `cursor` now allows later episodes
+  separated by `cooldown_seconds`; cooldown is no longer dead code.
+- `reset_all_builtin_rules` restores every seeded rule and is audited. `seed_rules` honours each
+  definition's `enabled` flag in the promoted column, not only in `definition_json`.
+- The live rule event window includes sequence `within_seconds`; evaluators skip malformed events
+  with missing/invalid timestamps. `docs/RULES.md` states that backtesting currently supports only
+  threshold rules.

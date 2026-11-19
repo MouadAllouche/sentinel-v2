@@ -10,6 +10,7 @@ from typing import Any
 
 from core.normalizer import normalize_event
 from core.rules.engine import evaluate_rules
+from core.rules.new_value import ValueHistory
 from core.rules.threshold import Finding
 from core.timeutil import utc_now
 from storage.repositories import save_event
@@ -56,6 +57,46 @@ def _triggered_event(rule: Any, finding: Finding) -> dict[str, Any]:
     )
 
 
+def _new_value_history(
+    rules: list[Any], reference: datetime, db_path: str | Path | None
+) -> dict[str, dict[str, ValueHistory]]:
+    new_rules = [rule for rule in rules if rule.kind == "new_value"]
+    if not new_rules:
+        return {}
+    learning = max(rule.learning_days for rule in new_rules)
+    since = (reference - timedelta(days=learning)).isoformat()
+    past = [
+        item
+        for item in get_events_for_rules(since, db_path)
+        if str(item["timestamp"]) < reference.isoformat()
+    ]
+    history: dict[str, dict[str, ValueHistory]] = {}
+    for rule in new_rules:
+        values: dict[str, set[str]] = {}
+        counts: dict[str, int] = {}
+        for event in past:
+            if event.get("event_type") not in rule.match.event_types:
+                continue
+            entity = event.get(rule.per or "")
+            details = event.get("details") or {}
+            field_name = rule.field or ""
+            value = (
+                details.get(field_name.split(".", 1)[1])
+                if field_name.startswith("details.") and isinstance(details, dict)
+                else event.get(field_name)
+            )
+            if entity in (None, "") or value in (None, ""):
+                continue
+            key = str(entity)
+            values.setdefault(key, set()).add(str(value))
+            counts[key] = counts.get(key, 0) + 1
+        history[rule.id] = {
+            key: ValueHistory(values=values.get(key, set()), count=count)
+            for key, count in counts.items()
+        }
+    return history
+
+
 def run_rules(db_path: str | Path | None = None, now: datetime | None = None) -> RulesReport:
     """Run all enabled rules once; re-runs are idempotent by finding/event hash."""
     reference = now or utc_now()
@@ -65,13 +106,14 @@ def run_rules(db_path: str | Path | None = None, now: datetime | None = None) ->
     if not rules:
         return report
 
-    longest = max(
-        (tier.window_seconds for rule in rules for tier in rule.tiers),
-        default=60,
-    ) + max((rule.cooldown_seconds for rule in rules), default=0)
+    windows = [tier.window_seconds for rule in rules for tier in rule.tiers]
+    windows.extend(rule.within_seconds for rule in rules if rule.kind == "sequence")
+    longest = max(windows, default=60) + max((rule.cooldown_seconds for rule in rules), default=0)
     since = (reference - timedelta(seconds=longest)).isoformat()
     events = get_events_for_rules(since, db_path)
-    findings, warnings = evaluate_rules(rules, events, reference)
+    findings, warnings = evaluate_rules(
+        rules, events, reference, _new_value_history(rules, reference, db_path)
+    )
     report.warnings.extend(warnings)
 
     saved = save_findings(findings, db_path)

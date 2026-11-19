@@ -27,6 +27,7 @@ __all__ = [
     "get_rule_versions",
     "list_findings",
     "list_rules",
+    "reset_all_builtin_rules",
     "reset_rule",
     "save_findings",
     "seed_rules",
@@ -88,7 +89,7 @@ def seed_rules(db_path: str | Path | None = None) -> dict[str, int]:
                     definition["id"],
                     definition["name"],
                     definition["kind"],
-                    1,
+                    int(definition.get("enabled", True)),
                     1,
                     1,
                     json.dumps(definition, sort_keys=True, default=str),
@@ -256,6 +257,14 @@ def reset_rule(identifier: str, actor: str, db_path: str | Path | None = None) -
             raise ValueError(f"unknown rule: {identifier}")
         definition = json.loads(row["default_definition_json"])
     _update(identifier, definition, actor, db_path, "rule.reset")
+
+
+def reset_all_builtin_rules(actor: str, db_path: str | Path | None = None) -> int:
+    """Restore every built-in rule to its seed definition; returns the count."""
+    builtins = [rule.id for rule in list_rules(db_path=db_path) if rule.builtin]
+    for identifier in builtins:
+        reset_rule(identifier, actor, db_path)
+    return len(builtins)
 
 
 def get_rule_versions(identifier: str, db_path: str | Path | None = None) -> list[dict[str, Any]]:

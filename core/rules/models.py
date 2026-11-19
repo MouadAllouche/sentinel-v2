@@ -10,7 +10,7 @@ import json
 import re
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from core.conditions import validate_condition
 from core.events import (
@@ -59,6 +59,16 @@ class Aggregate(BaseModel):
     field: str | None = None
 
 
+class ZTier(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    label: str
+    z: float = Field(ge=0.5, le=100)
+    min_absolute: int = Field(ge=1)
+    severity: str
+    points: int = Field(ge=0, le=100)
+
+
 class Match(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -97,10 +107,39 @@ class Rule(BaseModel):
     window_mode: str = "sliding"
     fixed_alignment: str | None = None
     cooldown_seconds: int = 0
+    severity: str = "low"
+    points: int = 0
     tiers: list[Tier] = Field(default_factory=list)
+    z_tiers: list[ZTier] = Field(default_factory=list)
+    correlate_on: list[str] = Field(default_factory=list)
+    within_seconds: int = 0
+    steps: list[dict[str, Any]] = Field(default_factory=list)
+    field: str | None = None
+    per: str | None = None
+    learning_days: int = 30
+    min_history_events: int = 0
+    metric: str | None = None
+    subject: str | None = None
+    min_std: float = 1.0
+    window_days: int = 7
+    min_samples: int = 24
+    min_history_hours: int = 24
+    meta_conditions: list[dict[str, Any]] = Field(default_factory=list)
     version: int = 1
     builtin: bool = False
     default_definition_json: str = ""
+
+    @model_validator(mode="before")
+    @classmethod
+    def _reshape_reserved_kinds(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        reshaped = dict(data)
+        if reshaped.get("kind") == "baseline_metric" and "tiers" in reshaped:
+            reshaped["z_tiers"] = reshaped.pop("tiers")
+        if reshaped.get("kind") == "incident_meta" and "conditions" in reshaped:
+            reshaped["meta_conditions"] = reshaped.pop("conditions")
+        return reshaped
 
 
 def _error(path: str, message: str) -> dict[str, str]:
@@ -172,6 +211,65 @@ def _validate_threshold(obj: dict[str, Any], errors: list[dict[str, str]]) -> No
                     )
 
 
+def _validate_sequence(obj: dict[str, Any], errors: list[dict[str, str]]) -> None:
+    steps = obj["steps"]
+    if not 1 <= len(steps) <= 5:
+        errors.append(_error("steps", "between 1 and 5 steps are required"))
+    for index, step in enumerate(steps):
+        match = step.get("match") or {}
+        if not match.get("event_types"):
+            errors.append(_error(f"steps[{index}].match.event_types", "steps need event types"))
+        if not 1 <= int(step.get("min_count", 0)) <= 100_000:
+            errors.append(_error(f"steps[{index}].min_count", "min_count must be 1-100000"))
+        window = step.get("window_seconds")
+        if window is not None and not 10 <= window <= 2_592_000:
+            errors.append(_error(f"steps[{index}].window_seconds", "invalid step window"))
+    if not obj["correlate_on"] or not set(obj["correlate_on"]) <= _GROUP_BY:
+        errors.append(_error("correlate_on", "correlate_on needs known entity fields"))
+    if not 1 <= obj["within_seconds"] <= 2_592_000:
+        errors.append(_error("within_seconds", "within_seconds must be 1-2592000"))
+
+
+def _validate_new_value(obj: dict[str, Any], errors: list[dict[str, str]]) -> None:
+    allowed = set(REQUIRED_FIELDS) | set(OPTIONAL_FIELDS)
+    field = obj.get("field")
+    if not isinstance(field, str) or (field not in allowed and not field.startswith("details.")):
+        errors.append(_error("field", "field must be known or a details.* path"))
+    if obj.get("per") not in allowed:
+        errors.append(_error("per", "per must be a known event field"))
+    if not 1 <= obj["learning_days"] <= 365:
+        errors.append(_error("learning_days", "learning_days must be 1-365"))
+    if obj["min_history_events"] < 0:
+        errors.append(_error("min_history_events", "min_history_events must be non-negative"))
+
+
+def _validate_field_match(obj: dict[str, Any], errors: list[dict[str, str]]) -> None:
+    if not set(obj["group_by"]) <= _GROUP_BY:
+        errors.append(_error("group_by", "group_by contains an unsupported field"))
+    if not 0 <= obj["cooldown_seconds"] <= 604_800:
+        errors.append(_error("cooldown_seconds", "cooldown_seconds must be 0-604800"))
+
+
+def _validate_reserved(obj: dict[str, Any], errors: list[dict[str, str]]) -> None:
+    if obj["kind"] == "baseline_metric":
+        if not obj.get("metric") or not obj.get("subject"):
+            errors.append(_error("metric", "baseline_metric needs metric and subject"))
+        z_tiers = obj["z_tiers"]
+        if not 1 <= len(z_tiers) <= 10:
+            errors.append(_error("z_tiers", "between 1 and 10 z-tiers are required"))
+        z_values = [tier["z"] for tier in z_tiers]
+        if z_values != sorted(z_values):
+            errors.append(_error("z_tiers", "z thresholds must increase"))
+        if obj["min_std"] < 0.1:
+            errors.append(_error("min_std", "min_std must be at least 0.1"))
+    elif obj["kind"] == "incident_meta":
+        conditions = obj["meta_conditions"]
+        if not 1 <= len(conditions) <= 5:
+            errors.append(_error("conditions", "between 1 and 5 meta conditions are required"))
+        if any(not item.get("metric") for item in conditions):
+            errors.append(_error("conditions", "meta conditions need a metric"))
+
+
 def _dominance_warnings(tiers: list[Tier]) -> list[str]:
     warnings: list[str] = []
     for index, tier in enumerate(tiers):
@@ -205,8 +303,21 @@ def validate_rule(obj: object) -> tuple[Rule, list[str]]:
     _validate_definition(raw, validation_errors)
     if rule.kind == "threshold":
         _validate_threshold(raw, validation_errors)
-    elif rule.kind not in _KNOWN_KINDS:
+    elif rule.kind == "sequence":
+        _validate_sequence(raw, validation_errors)
+    elif rule.kind == "new_value":
+        _validate_new_value(raw, validation_errors)
+    elif rule.kind == "field_match":
+        _validate_field_match(raw, validation_errors)
+    elif rule.kind in {"baseline_metric", "incident_meta"}:
+        _validate_reserved(raw, validation_errors)
+    else:
         validation_errors.append(_error("kind", f"unknown rule kind: {rule.kind}"))
+    if rule.kind in {"sequence", "new_value", "field_match", "baseline_metric", "incident_meta"}:
+        if rule.severity not in VALID_SEVERITIES:
+            validation_errors.append(_error("severity", "invalid severity"))
+        if not 0 <= rule.points <= 100:
+            validation_errors.append(_error("points", "points must be 0-100"))
     if validation_errors:
         raise RuleValidationError(validation_errors)
     return rule, _dominance_warnings(rule.tiers) if rule.kind == "threshold" else []

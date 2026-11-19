@@ -99,7 +99,22 @@ def test_backtest_range_and_should_stop(make_event: Callable[..., dict[str, Any]
 
 def test_evaluate_rules_marks_reserved_kinds() -> None:
     rule, _warnings = validate_rule(
-        _definition(id="reserved-rule", name="Reserved rule", kind="baseline_metric")
+        _definition(
+            id="reserved-rule",
+            name="Reserved rule",
+            kind="baseline_metric",
+            metric="failed_logins_per_hour",
+            subject="global",
+            tiers=[
+                {
+                    "label": "Elevated",
+                    "z": 3.0,
+                    "min_absolute": 5,
+                    "severity": "medium",
+                    "points": 10,
+                }
+            ],
+        )
     )
     findings, warnings = evaluate_rules([rule], [], now=BASE_TIME)
     assert findings == []
