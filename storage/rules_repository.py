@@ -29,6 +29,7 @@ __all__ = [
     "list_rules",
     "reset_all_builtin_rules",
     "reset_rule",
+    "restore_rule_version",
     "save_findings",
     "seed_rules",
     "set_rule_enabled",
@@ -273,6 +274,62 @@ def get_rule_versions(identifier: str, db_path: str | Path | None = None) -> lis
             "SELECT * FROM rule_versions WHERE rule_id = ? ORDER BY version", (identifier,)
         ).fetchall()
     return [dict(row) for row in rows]
+
+
+def restore_rule_version(
+    identifier: str, version: int, actor: str, db_path: str | Path | None = None
+) -> int:
+    """Restore an older definition as a new version (never rewrites history)."""
+    with closing(get_connection(db_path)) as connection:
+        row = connection.execute(
+            "SELECT * FROM rules WHERE id = ? AND deleted_at IS NULL", (identifier,)
+        ).fetchone()
+        if row is None:
+            raise ValueError(f"unknown rule: {identifier}")
+        snapshot = connection.execute(
+            "SELECT definition_json FROM rule_versions WHERE rule_id = ? AND version = ?",
+            (identifier, version),
+        ).fetchone()
+        if snapshot is None:
+            raise ValueError(f"unknown rule version: {identifier}@{version}")
+        definition = json.loads(snapshot["definition_json"])
+        rule, _warnings = validate_rule(definition)
+        new_version = int(row["version"]) + 1
+        data = _definition_for(rule)
+        with connection:
+            connection.execute(
+                "UPDATE rules SET name = ?, kind = ?, enabled = ?, version = ?, "
+                "definition_json = ?, updated_at = ? WHERE id = ?",
+                (
+                    rule.name,
+                    rule.kind,
+                    int(row["enabled"]),
+                    new_version,
+                    json.dumps(data, sort_keys=True, default=str),
+                    utc_now().isoformat(),
+                    identifier,
+                ),
+            )
+            connection.execute(
+                "INSERT INTO rule_versions(rule_id, version, definition_json, changed_by, "
+                "changed_at) VALUES (?, ?, ?, ?, ?)",
+                (
+                    identifier,
+                    new_version,
+                    json.dumps(data, sort_keys=True, default=str),
+                    actor,
+                    utc_now().isoformat(),
+                ),
+            )
+            _audit(
+                connection,
+                actor,
+                "rule.version_restored",
+                identifier,
+                json.loads(row["definition_json"]),
+                data,
+            )
+    return new_version
 
 
 def save_findings(

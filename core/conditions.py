@@ -40,6 +40,7 @@ OPS = frozenset(
 MAX_DEPTH = 4
 MAX_LIST_ITEMS = 500
 MAX_REGEX_LENGTH = 200
+MAX_UNBOUNDED_QUANTIFIERS = 2
 _REGEX_EVAL_LIMIT = 500
 
 
@@ -59,9 +60,35 @@ def _has_nested_quantifier(pattern: str) -> bool:
     return False
 
 
+def _unbounded_quantifiers(pattern: str) -> int:
+    """Count `*`/`+`/`{n,}` outside escapes and character classes."""
+    count = 0
+    in_class = False
+    escaped = False
+    for index, char in enumerate(pattern):
+        if escaped:
+            escaped = False
+            continue
+        if char == "\\":
+            escaped = True
+            continue
+        if char == "[":
+            in_class = True
+            continue
+        if char == "]":
+            in_class = False
+            continue
+        if in_class:
+            continue
+        if char in "*+" or char == "{" and re.match(r"\{\d+,", pattern[index:]):
+            count += 1
+    return count
+
+
 _FIELD_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")
 _MISSING = object()
 _REGEX_CACHE: dict[str, re.Pattern[str]] = {}
+MAX_REGEX_CACHE = 128
 
 _OP_TEXT = {
     "eq": "is",
@@ -106,6 +133,8 @@ def _validate_regex(pattern: str, path: str) -> None:
         raise ValueError(f"{path}: regex pattern exceeds {MAX_REGEX_LENGTH} characters")
     if _has_nested_quantifier(pattern):
         raise ValueError(f"{path}: regex pattern contains a nested quantifier")
+    if _unbounded_quantifiers(pattern) > MAX_UNBOUNDED_QUANTIFIERS:
+        raise ValueError(f"{path}: regex pattern has too many unbounded quantifiers")
     try:
         re.compile(pattern)
     except re.error as exc:
@@ -210,6 +239,8 @@ def _compare(left: Any, right: Any, op: str, ci: bool) -> bool:
         pattern = _REGEX_CACHE.get(str(right))
         if pattern is None:
             pattern = re.compile(str(right))
+            if len(_REGEX_CACHE) >= MAX_REGEX_CACHE:
+                _REGEX_CACHE.pop(next(iter(_REGEX_CACHE)))
             _REGEX_CACHE[str(right)] = pattern
         return pattern.search(str(left)[:_REGEX_EVAL_LIMIT]) is not None
     if op in {"gt", "gte", "lt", "lte"}:

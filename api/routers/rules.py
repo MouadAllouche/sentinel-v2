@@ -34,6 +34,25 @@ def _deadline() -> Any:
     return lambda: time.monotonic() > end
 
 
+def _range(payload: dict[str, Any]) -> tuple[datetime, datetime]:
+    try:
+        until = datetime.fromisoformat(payload.get("until") or datetime.now(UTC).isoformat())
+        start = (
+            datetime.fromisoformat(payload["since"])
+            if payload.get("since")
+            else until - timedelta(days=7)
+        )
+    except (ValueError, TypeError) as exc:
+        raise ApiError(
+            422, "validation_error", "since and until must be ISO-8601 timestamps"
+        ) from exc
+    if start > until:
+        raise ApiError(422, "validation_error", "since must not be after until")
+    if until - start > timedelta(days=30):
+        raise ApiError(422, "validation_error", "backtest range exceeds 30 days")
+    return start, until
+
+
 def _definition_model(data: dict[str, Any]) -> dict[str, Any]:
     try:
         return validate_rule(data)[0].model_dump()
@@ -56,8 +75,24 @@ def findings(
 @router.get("/schema", response_model=dict[str, Any])
 def schema(_user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     from core.conditions import OPS
-    from core.events import EVENT_TYPES
+    from core.events import (
+        EVENT_TYPES,
+        OPTIONAL_FIELDS,
+        REQUIRED_FIELDS,
+        VALID_SEVERITIES,
+    )
+    from core.mitre import mitre_table
 
+    fields = [
+        {"name": name, "type": "time" if name == "timestamp" else "text"}
+        for name in (*REQUIRED_FIELDS, *OPTIONAL_FIELDS)
+    ]
+    fields.extend(
+        [
+            {"name": "details.*", "type": "text"},
+            {"name": "enrichment.*", "type": "text"},
+        ]
+    )
     return {
         "ops": sorted(OPS),
         "event_types": list(EVENT_TYPES),
@@ -69,6 +104,29 @@ def schema(_user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
             "file_path",
             "source",
         ],
+        "fields": fields,
+        "kinds": [
+            "threshold",
+            "sequence",
+            "new_value",
+            "field_match",
+            "baseline_metric",
+            "incident_meta",
+        ],
+        "severities": list(VALID_SEVERITIES),
+        "window_modes": ["sliding", "fixed"],
+        "fixed_alignments": ["minute", "hour", "day"],
+        "aggregates": ["count", "distinct_count"],
+        "mitre": [
+            {"id": identifier, "name": value["name"], "label": value.get("label", identifier)}
+            for identifier, value in sorted(mitre_table().items())
+        ],
+        "limits": {
+            "max_tiers": 10,
+            "min_window_seconds": 10,
+            "max_window_seconds": 2_592_000,
+            "max_condition_depth": 4,
+        },
     }
 
 
@@ -91,14 +149,7 @@ def preview(
     if not isinstance(definition, dict):
         raise ApiError(422, "validation_error", "definition is required")
     rule, _warnings = validate_rule(definition)
-    until = datetime.fromisoformat(payload.get("until") or datetime.now(UTC).isoformat())
-    start = (
-        datetime.fromisoformat(payload["since"])
-        if payload.get("since")
-        else until - timedelta(days=7)
-    )
-    if until - start > timedelta(days=30):
-        raise ApiError(422, "validation_error", "backtest range exceeds 30 days")
+    start, until = _range(payload)
     events = get_events_for_rules(start.isoformat(), db_path(request))
     result = backtest_rule(
         rule, events, start.isoformat(), until.isoformat(), should_stop=_deadline()
@@ -125,11 +176,9 @@ def create(
 
 @router.get("/export", response_model=list[dict[str, Any]])
 def export_rules(
-    _user: dict[str, Any] = Depends(current_user),
+    request: Request, _user: dict[str, Any] = Depends(current_user)
 ) -> list[dict[str, Any]]:
-    from core.rules.defaults import DEFAULT_RULES
-
-    return [definition for definition in DEFAULT_RULES]
+    return [rule.model_dump() for rule in list_rules(db_path=db_path(request))]
 
 
 @router.post("/import", response_model=dict[str, Any])
@@ -141,12 +190,39 @@ def import_rules(
     definitions = payload.get("rules", [])
     if not isinstance(definitions, list):
         raise ApiError(422, "validation_error", "rules must be a list")
-    created = []
-    for definition in definitions:
+    if len(definitions) > 100:
+        raise ApiError(422, "validation_error", "import is limited to 100 rules")
+    created: list[str] = []
+    errors: list[dict[str, Any]] = []
+    for index, definition in enumerate(definitions):
         if not isinstance(definition, dict):
-            raise ApiError(422, "validation_error", "each rule must be an object")
+            errors.append(
+                {"index": index, "path": f"rules[{index}]", "message": "must be an object"}
+            )
+            continue
+        try:
+            validate_rule(definition)
+            if get_rule(str(definition.get("id")), db_path(request)) is not None:
+                errors.append(
+                    {
+                        "index": index,
+                        "path": f"rules[{index}].id",
+                        "message": "a rule with this id already exists",
+                    }
+                )
+                continue
+        except RuleValidationError as exc:
+            errors.extend(
+                {
+                    "index": index,
+                    "path": f"rules[{index}].{error['path']}",
+                    "message": error["message"],
+                }
+                for error in exc.errors
+            )
+            continue
         created.append(create_rule(definition, _admin["username"], db_path(request)))
-    return {"created": created}
+    return {"created": created, "errors": errors}
 
 
 @router.get("/{identifier}", response_model=dict[str, Any])
@@ -217,6 +293,26 @@ def versions(
     return get_rule_versions(identifier, db_path(request))
 
 
+@router.post("/{identifier}/versions/{version}/restore", response_model=dict[str, Any])
+def restore_version(
+    identifier: str,
+    version: int,
+    request: Request,
+    _admin: dict[str, Any] = Depends(admin_user),
+) -> dict[str, Any]:
+    from storage.rules_repository import restore_rule_version
+
+    try:
+        new_version = restore_rule_version(
+            identifier, version, _admin["username"], db_path(request)
+        )
+    except RuleValidationError as exc:
+        raise ApiError(422, "validation_error", "stored version is invalid", exc.errors) from exc
+    except ValueError as exc:
+        raise ApiError(404, "not_found", str(exc)) from exc
+    return {"version": new_version}
+
+
 @router.post("/{identifier}/backtest", response_model=dict[str, Any])
 def backtest(
     identifier: str,
@@ -227,14 +323,7 @@ def backtest(
     rule = get_rule(identifier, db_path(request))
     if rule is None:
         raise ApiError(404, "not_found", "rule not found")
-    until = datetime.fromisoformat(payload.get("until") or datetime.now(UTC).isoformat())
-    start = (
-        datetime.fromisoformat(payload["since"])
-        if payload.get("since")
-        else until - timedelta(days=7)
-    )
-    if until - start > timedelta(days=30):
-        raise ApiError(422, "validation_error", "backtest range exceeds 30 days")
+    start, until = _range(payload)
     result = backtest_rule(
         rule,
         get_events_for_rules(start.isoformat(), db_path(request)),

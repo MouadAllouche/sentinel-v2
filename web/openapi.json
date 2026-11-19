@@ -4028,6 +4028,59 @@
         ]
       }
     },
+    "/api/rules/{identifier}/versions/{version}/restore": {
+      "post": {
+        "operationId": "restore_version_api_rules__identifier__versions__version__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Restore Version Api Rules  Identifier  Versions  Version  Restore Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Restore Version",
+        "tags": [
+          "rules"
+        ]
+      }
+    },
     "/api/settings/retention": {
       "get": {
         "operationId": "retention_api_settings_retention_get",
@@ -4349,6 +4402,52 @@
           }
         },
         "summary": "Reorder Overrides",
+        "tags": [
+          "configuration"
+        ]
+      }
+    },
+    "/api/severity/overrides/test": {
+      "post": {
+        "description": "Explain which default/override would apply to a sample event (no writes).",
+        "operationId": "test_override_api_severity_overrides_test_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "title": "Payload",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Test Override Api Severity Overrides Test Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Test Override",
         "tags": [
           "configuration"
         ]

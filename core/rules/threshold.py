@@ -72,11 +72,17 @@ def _suppressed(event: dict[str, Any]) -> bool:
     return isinstance(enrichment, dict) and enrichment.get("allowlist_suppressed") is True
 
 
-def _filter_events(rule: Rule, events: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+def _filter_events(
+    rule: Rule,
+    events: list[dict[str, Any]],
+    should_stop: Callable[[], bool] | None = None,
+) -> dict[str, list[dict[str, Any]]]:
     condition = validate_condition(rule.match.conditions) if rule.match.conditions else None
     allowed = set(rule.match.event_types)
     buckets: dict[str, list[dict[str, Any]]] = {}
     for event in events:
+        if should_stop is not None and should_stop():
+            break
         if event.get("event_type") not in allowed:
             continue
         if rule.scope.exclude_allowlisted and _suppressed(event):
@@ -206,7 +212,7 @@ def evaluate_threshold(
 ) -> list[Finding]:
     """Return all findings for a threshold rule; output is order-independent."""
     del now  # the window semantics are defined entirely by event timestamps.
-    buckets = _filter_events(rule, events)
+    buckets = _filter_events(rule, events, should_stop)
     findings: list[Finding] = []
     for group_key, group in buckets.items():
         if should_stop is not None and should_stop():

@@ -1,11 +1,5 @@
-import { ApiTable } from "@/components/data-table/ApiTable";
+import { AllowlistRoute } from "@/components/allowlist/AllowlistRoute";
 
 export default function AllowlistPage() {
-  return (
-    <ApiTable<Record<string, unknown>>
-      path="/api/allowlist"
-      columns={["id", "scope", "subject", "reason", "created_at"]}
-      title="Allowlist"
-    />
-  );
+  return <AllowlistRoute />;
 }

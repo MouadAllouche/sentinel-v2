@@ -101,6 +101,7 @@ def test_depth_limit_rejected() -> None:
         {"field": "username", "op": "regex", "value": "(a|aa)+"},
         {"field": "username", "op": "regex", "value": "(a+){2,}"},
         {"field": "username", "op": "regex", "value": "((a+))+"},
+        {"field": "username", "op": "regex", "value": ".*.*.*.*.*.*Z"},
         {"field": "username", "op": "eq", "value": "root", "junk": 1},
     ],
 )

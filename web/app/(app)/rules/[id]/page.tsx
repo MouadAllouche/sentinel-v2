@@ -1,5 +1,5 @@
-import { RuleEditor } from "@/components/forms/RuleEditor";
+import { RuleBuilderRoute } from "@/components/rules/RuleBuilderRoute";
 
 export default function EditRulePage() {
-  return <RuleEditor />;
+  return <RuleBuilderRoute />;
 }

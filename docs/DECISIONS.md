@@ -713,3 +713,52 @@ Run `make api` and `make web`, then verify by hand (no screenshots):
   callback. Both have regression tests.
 - Final re-review caught one more detail: the polling fallback now forwards `ref_id` (the incident
   id) rather than the change-row `id` to the highlight callback, with a dedicated test.
+
+### D-098 — Phase 16 rule API additions
+- `/api/rules/schema` now publishes the field catalogue (including `details.*` and `enrichment.*`),
+  operators, event types, group-by fields, kinds, severities, window modes, MITRE catalogue and
+  limits, so the builder is driven by the server catalogue rather than duplicated constants.
+- `/api/rules/export` exports all stored rules (not only built-ins). `/api/rules/import` validates
+  each document before creating it and returns `{created, errors}` with document paths, so the UI
+  can show per-field errors. `POST /api/rules/{id}/versions/{version}/restore` creates a **new**
+  version from an older definition; history is never rewritten and the action is audited.
+
+### D-099 — Phase 16 UI decisions
+- `web/lib/rules/helpers.ts` contains the pure builder logic: tier window conversion, the exact
+  sentence preview required by the spec, `describe` for conditions, lossless form↔JSON round trips,
+  diffs, regex limits (200 chars, no nested quantifiers), threshold validation and server-path
+  mapping. The server remains authoritative via debounced `/rules/validate`.
+- The rule editor keeps form and JSON modes synchronised and blocks a switch back from invalid JSON.
+  Preview/backtest is debounced, cancellable and labelled a simulation; save shows a diff dialog;
+  built-in rules can be reset and any version restored. Unsaved changes are guarded.
+- Severity defaults are edited locally then saved in one batch; overrides use keyboard-accessible
+  reorder controls (mouse reorder uses the same handler) with condition editing and a test box;
+  re-apply requires a typed confirmation and explicitly states that defaults affect new events only.
+  Allowlist entries require a reason and convert relative expiries to ISO-8601 ("never" warns); the
+  stored-evidence banner is always shown.
+- The builder uses react-hook-form + zod for client-side field validation, while the server remains
+  authoritative. Server `details[].path` messages are shown inline and passed to the tier editor.
+- No new dependencies were added. Rendered definitions never include file contents or secrets, and
+  all mutation controls are hidden from viewers while the API independently enforces RBAC.
+
+### D-100 — Phase 16 review/security fixes
+- Regex validation rejects more than two unbounded quantifiers in addition to nested quantifiers,
+  the compiled-pattern cache is bounded to 128 entries, and the threshold evaluator checks the
+  cooperative deadline inside its event loop. Both Python and client validators share the rule
+  (test pattern `.*.*.*.*.*.*Z`).
+- The rule editor now uses react-hook-form + zod, fetches the server catalogue directly, mirrors
+  server validation paths into inline field errors, and covers all six rule kinds. Duplicating a
+  rule loads its stored definition first; delete/reset/restores and allowlist deletion require
+  confirmation. Severity defaults are editable and batch-saved; "reset all" requires a typed
+  phrase; overrides support conditions, reordering by mouse/keyboard, a test box and CRUD.
+- Import rejects duplicate ids with a path-aware error and caps lists at 100 documents; inverted or
+  malformed backtest ranges return 422. Allowlist relative expiries are converted to ISO-8601.
+  The authoritative docs/RULES.md content was restored and the builder walkthrough appended.
+- Re-review fixes: the event-type `enabled` flag is now persisted on batch save; every non-threshold
+  kind builds a server-valid definition (sequence steps, baseline z-tiers, meta conditions,
+  new-value fields) with an optional-tiers zod schema; the override test box calls a new
+  read-only `POST /api/severity/overrides/test` endpoint and shows the resulting severity/source,
+  and override rows carry badges/conditions with create and duplicate actions.
+- Final re-review: `baseline_metric` now emits z-tier objects under the canonical `tiers` key (the
+  server reshapes on key presence), the zod schema accepts both tier shapes, and a helper unit test
+  covers the UI-shaped definition.

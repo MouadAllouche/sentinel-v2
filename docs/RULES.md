@@ -24,8 +24,10 @@ of an attack.
 `id` is a 3–64 character lowercase slug. `match.conditions` uses the shared condition DSL
 (`all`/`any`/`not`, depth ≤ 4, operators `eq/ne/in/not_in/contains/not_contains/startswith/
 endswith/regex/gt/gte/lt/lte/exists/not_exists/cidr_in/cidr_not_in`). Regex patterns are capped at
-200 characters, compiled at validation, reject nested quantifiers and evaluate on at most 500
-characters. No DNS, GeoIP or network lookups occur in rule evaluation.
+200 characters, compiled at validation, reject nested quantifiers and more than two unbounded
+quantifiers (to prevent catastrophic backtracking), and evaluate on at most 500 characters. The
+compiled-pattern cache is bounded to 128 entries. No DNS, GeoIP or network lookups occur in rule
+evaluation.
 
 ## Kinds
 
@@ -182,3 +184,57 @@ future evaluations only; history is not rewritten by an edit. Every change is au
 `audit_log` with actor, before/after and time. Backtesting currently supports **threshold** rules;
 the other kinds return an empty result until their backtest support lands, and the API must report
 that explicitly rather than presenting an empty result as "no findings".
+
+# Building a rule in the dashboard
+
+All steps are performed in the browser at `http://127.0.0.1:3000`. Only administrators can save
+rules; viewers see a read-only view. The API remains authoritative: every value is validated again
+on save.
+
+## The user's example: 5 → medium, 20 → high, 10-minute window, grouped by source IP
+
+1. Sign in as an administrator and open **Rules → New rule**.
+2. **Basics**: set *Rule id* to `failed-logins-by-source-ip` and *Name* to `Failed logins by source IP`.
+   The id is editable only when creating a rule.
+3. **What to match**: check event type `failed_login` under Authentication. Optionally add conditions
+   with *Add condition*; each row has a field, an operator and a value. The plain-language rendering
+   under the builder updates as you type. Nested ALL/ANY/NOT groups are limited to depth 4.
+4. **Group and count**: choose `source_ip` from *Group by* and `sliding` from *Window mode*. Sliding
+   windows use `(t − window, t]`: two events exactly 10 minutes apart are **not** in the same window.
+5. **Tiers**: the first tier already reads
+   *"If ≥ 5 failed logins from the same source IP occur within 10 minutes → MEDIUM"*.
+   Change its *Count* to `5`, *Window* to `10 minutes` and *Severity* to `medium`. Click **Add tier**,
+   set the second tier to `20`, `10 minutes`, `high`, points `30`. Use ↑/↓ to reorder, remove with
+   **Remove tier**. At most 10 tiers are allowed; server warnings such as dominated tiers appear
+   below the cards.
+6. **Actions**: keep *Exclude allowlisted events* on (the default). Decide whether to create an
+   incident and whether to notify.
+7. **Preview & backtest** (right rail): choose *last 7 days* (maximum 30) and wait for the debounced
+   simulation. It shows total findings, severity counts and an approximate findings/day figure.
+   *"No data in this range"* and *"Too much data — narrow the range"* are explicit states. Nothing is
+   saved by a preview.
+8. **Edit JSON** switches to a synchronised JSON view. It validates live; invalid JSON blocks the
+   switch back with an explanation, so no state is lost.
+9. **Save rule**: review the before/after diff dialog and confirm. A toast confirms the save and the
+   version number increases. The rule appears in the list with the generated summary sentence:
+   *"Failed logins grouped by source IP: ≥5 in 10 min → medium; ≥20 in 10 min → high"*.
+
+## Other kinds
+
+The kind selector is available on create only. `sequence` edits ordered steps with counts and a
+correlation field; `new_value` uses a field, entity field and learning days; `field_match` uses the
+condition builder; `baseline_metric` uses metric/subject and z-score tiers; `incident_meta` uses
+conditions on incident aggregates. All kinds share validation, preview and diff-on-save.
+
+## Version history and reset
+
+Open an existing rule to see **Version history**. *Restore version N* creates a new version from the
+older definition; history is never rewritten. Built-in rules offer **Reset** on the list and a reset
+action in the editor. Import/Export JSON is available on the list; import errors are shown with the
+exact document path.
+
+## Safety
+
+Regex conditions are limited to 200 characters, compiled at validation, reject nested quantifiers and
+are evaluated against at most 500 characters. Viewers cannot bypass the server: the
+builder's zod checks are advisory, and `POST /api/rules/validate` plus the save endpoint decide.

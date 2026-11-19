@@ -65,6 +65,7 @@ def set_event_default(
         event_type,
         payload["severity"],
         int(payload["points"]),
+        enabled=bool(payload.get("enabled", True)),
         actor=admin["username"],
         db_path=db_path(request),
     )
@@ -302,6 +303,24 @@ def retention_apply(
     return apply_prune(
         plan, db_path(request), dry_run=False, actor=admin["username"], policy=policy
     )
+
+
+@router.post("/severity/overrides/test", response_model=dict[str, Any])
+def test_override(
+    payload: dict[str, Any], request: Request, _user: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    """Explain which default/override would apply to a sample event (no writes)."""
+    from core.severity import resolve_severity
+
+    event = payload.get("event")
+    if not isinstance(event, dict):
+        raise ApiError(422, "validation_error", "event must be an object")
+    severity, source = resolve_severity(
+        event,
+        get_defaults(db_path(request)),
+        get_overrides(db_path(request)),
+    )
+    return {"severity": severity, "severity_source": source}
 
 
 @router.post("/severity/overrides", response_model=dict[str, Any], status_code=201)

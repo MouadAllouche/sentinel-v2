@@ -21,7 +21,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 13 | `specs/13-web-foundation.md` | Next.js scaffold, API client, auth, layout, design system | ✅ | see below |
 | 14 | `specs/14-web-overview-events.md` | overview, events explorer | ✅ | see below |
 | 15 | `specs/15-web-incidents.md` | incident list/detail, timeline, graph, workflow, export | ✅ | see below |
-| 16 | `specs/16-web-rules-severity.md` | rule builder, backtest, severities, allowlist | ⬜ | |
+| 16 | `specs/16-web-rules-severity.md` | rule builder, backtest, severities, allowlist | ✅ | see below |
 | 17 | `specs/17-web-behavior-drift-admin.md` | behavior, drift, notifications, settings, users, audit, health | ⬜ | |
 | 18 | `specs/18-demo-e2e-deploy.md` | demo, integration + e2e tests, deployment docs | ⬜ | |
 | 19 | `specs/19-final-audit.md` | audit against definition of done | ⬜ | |
@@ -252,3 +252,14 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 - **Commands run**: `make test` → `531 passed`; `make lint` → ruff/format/mypy clean;
   `npm test` → `87 passed`; `npm run typecheck`, `npm run lint`, `npm run build` → pass.
 - **Commit**: `phase-15: Incident investigation UI, workflow and explanations`.
+
+## Phase 16 evidence (2026-11-19)
+
+- **Code**: `api/routers/rules.py` (catalogue, all-rule export, path-aware import, version restore),
+  `storage/rules_repository.py`, `web/lib/rules/helpers.ts`, `web/components/{rules,conditions,severity,allowlist}/**`,
+  the rules/severity/allowlist pages, `docs/RULES.md`.
+- **Tests**: `web/tests/lib/rules/helpers.test.ts`, `web/tests/components/rules.test.tsx`,
+  `web/e2e/rules.spec.ts`, `tests/api/test_rules_ui_api.py`.
+- **Commands run**: `make test` → `541 passed`; `make lint` → ruff/format/mypy clean;
+  `npm test` → `110 passed`; `npm run typecheck`, `npm run lint`, `npm run build` → pass.
+- **Commit**: `phase-16: Rule builder, backtest, severity and allowlist UI`.
