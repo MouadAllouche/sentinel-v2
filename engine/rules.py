@@ -43,6 +43,7 @@ def _triggered_event(rule: Any, finding: Finding) -> dict[str, Any]:
         "evidence_event_ids": finding.evidence_event_ids,
         "mitre": rule.mitre,
         "points": finding.points,
+        "create_incident": rule.actions.create_incident,
     }
     return normalize_event(
         {

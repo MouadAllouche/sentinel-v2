@@ -276,9 +276,8 @@ def test_scalar_list_filter_rejected(filtered_db: Path) -> None:
         query_events({"event_type": "failed_login"}, db_path=filtered_db)
 
 
-def test_incident_filter_deferred_until_phase_7(filtered_db: Path) -> None:
-    with pytest.raises(ValueError, match="incident"):
-        query_events({"incident_id": 1}, db_path=filtered_db)
+def test_incident_filter_uses_incident_events(filtered_db: Path) -> None:
+    assert query_events({"incident_id": 1}, db_path=filtered_db)["items"] == []
 
 
 def test_query_ordering_and_keyset_pagination(

@@ -167,10 +167,11 @@ def _build_where(filters: Mapping[str, Any]) -> tuple[list[str], list[Any]]:
     unknown = set(filters) - _EVENT_FILTERS
     if unknown:
         raise ValueError(f"unknown event filter(s): {', '.join(sorted(unknown))}")
-    if "incident_id" in filters:
-        raise ValueError("incident_id filter requires the Phase 7 incident schema")
     clauses: list[str] = []
     parameters: list[Any] = []
+    if "incident_id" in filters:
+        clauses.append("id IN (SELECT event_id FROM incident_events WHERE incident_id = ?)")
+        parameters.append(filters["incident_id"])
     for key in ("event_type", "severity", "source"):
         values = filters.get(key)
         if values:

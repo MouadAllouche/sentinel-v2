@@ -351,3 +351,35 @@ Python packages installed in `./venv` on 2026-11-17 (`pip install -e ".[dev]"`):
 - The live rule event window includes sequence `within_seconds`; evaluators skip malformed events
   with missing/invalid timestamps. `docs/RULES.md` states that backtesting currently supports only
   threshold rules.
+
+### D-058 — Correlation identity and weak proximity (Phase 7)
+- Component identity is the earliest anchor event hash (`correlation_key`). Weak host-proximity
+  links are only created when the preceding event already has a strong link in the pair set; this
+  prevents a lone low-severity anchor from being absorbed into an unrelated incident merely because
+  a host event followed it (worked example). Other weak kinds follow the spec table verbatim.
+
+### D-059 — Incident creation rule (Phase 7)
+- An incident is created only when a component contains a rule-triggered event or an anchor of
+  severity ≥ medium. Lone low events remain visible events with no incident (D-002).
+
+### D-060 — MITRE mapping (Phase 7)
+- The 16 seeded technique IDs map through a static table with tactic ordering and an "indicative
+  mapping; verify at attack.mitre.org" label. No network lookup was performed; names are treated as
+  unverified until an online check is possible.
+
+### D-061 — Incident application (Phase 7)
+- `apply_incidents` inserts by unique `correlation_key`, so re-running a plan is idempotent. Merge
+  marks absorbed incidents `merged` with `merged_into`; notes, status changes and assignee edits
+  write audit rows in the same transaction.
+
+### D-062 — Phase 7 reviewer fixes
+- System-created `incident_events` now persist the real link's `relation_reason`/`link_strength`;
+  a stale closed incident reopens as a **new** incident via a deterministic `correlation_key` suffix;
+  a merge keeps the older incident id and reassociates absorbed events.
+- Findings derived from `rule_triggered` events now reach planning, so titles, summaries and
+  `mitre_json` are populated from contributing rules. The creation gate requires a **medium+ anchor**
+  or a rule finding with `actions.create_incident` (D-002); `create_incident` is carried in the
+  rule-triggered event details.
+- Extending a non-open incident moves it to `open` with a status-history row; status transitions are
+  enforced by `set_incident_status`. The `incident_id` event filter is implemented (D-025).
+- Span-split parts without anchors are dropped; MITRE names remain unverified until online review.

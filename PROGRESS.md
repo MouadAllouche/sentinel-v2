@@ -12,7 +12,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 4 | `specs/04-severity-allowlist-enrichment.md` | editable defaults/overrides, allowlist, enrichment | ✅ | see below |
 | 5 | `specs/05-rules-engine-core.md` | rule models, conditions, threshold evaluator, backtest | ✅ | see below |
 | 6 | `specs/06-rules-engine-advanced.md` | sequence, new-value, field-match, seeded default rules | ✅ | see below |
-| 7 | `specs/07-correlation-incidents.md` | correlation, incidents, timeline, workflow, MITRE | ⬜ | |
+| 7 | `specs/07-correlation-incidents.md` | correlation, incidents, timeline, workflow, MITRE | ✅ | see below |
 | 8 | `specs/08-baselines-anomalies.md` | baselines, baseline-metric rules, anomalies | ⬜ | |
 | 9 | `specs/09-config-drift.md` | files, dirs, persistence, authorized_keys | ⬜ | |
 | 10 | `specs/10-risk-scoring.md` | incident-meta rules, scoring, recency decay | ⬜ | |
@@ -131,3 +131,16 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
   `make lint` → ruff check passed, ruff format check
   passed, mypy `Success: no issues found in 39 source files`.
 - **Commit**: `phase-6: sequence, new-value, field-match and seeded rules`.
+
+## Phase 7 evidence (2026-11-19)
+
+- **Code**: `core/{correlation,incidents,timeline,mitre}.py`, `storage/migrations.py` (`m005`),
+  `storage/incident_repository.py`, `engine/correlation.py`.
+- **Tests**: `tests/test_correlation.py` (all link kinds, strengths, anchors, root/ignore, span
+  split, allowlist, shuffle determinism), `tests/test_incidents.py` (plan actions, title/summary,
+  timeline/caveats, status matrix, MITRE, storage round trips, `test_incident_worked_example`),
+  updated `tests/test_database.py`.
+- **Commands run**: `make test` → `327 passed` (after reviewer blockers were fixed);
+  `make lint` → ruff check passed, ruff format check
+  passed, mypy `Success: no issues found in 45 source files`.
+- **Commit**: `phase-7: correlation, incidents, timeline, workflow and MITRE`.

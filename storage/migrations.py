@@ -196,4 +196,53 @@ def m004(connection: sqlite3.Connection) -> None:
     )
 
 
-MIGRATIONS: list[Migration] = [m001, m002, m003, m004]
+def m005(connection: sqlite3.Connection) -> None:
+    """Create the phase-7 incident store and analyst workflow tables."""
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS incidents ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "correlation_key TEXT NOT NULL UNIQUE, "
+        "title TEXT NOT NULL, "
+        "status TEXT NOT NULL DEFAULT 'open', "
+        "merged_into INTEGER, "
+        "first_seen TEXT NOT NULL, "
+        "last_seen TEXT NOT NULL, "
+        "primary_ip TEXT, "
+        "primary_username TEXT, "
+        "severity TEXT NOT NULL DEFAULT 'low', "
+        "risk_score REAL NOT NULL DEFAULT 0, "
+        "summary TEXT, "
+        "mitre_json TEXT NOT NULL DEFAULT '[]', "
+        "assignee TEXT, "
+        "created_at TEXT NOT NULL, "
+        "updated_at TEXT NOT NULL)"
+    )
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS incident_events ("
+        "incident_id INTEGER NOT NULL, "
+        "event_id INTEGER NOT NULL, "
+        "relation_reason TEXT, "
+        "link_strength TEXT, "
+        "PRIMARY KEY(incident_id, event_id))"
+    )
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS incident_notes ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "incident_id INTEGER NOT NULL, "
+        "author TEXT NOT NULL, "
+        "body TEXT NOT NULL, "
+        "created_at TEXT NOT NULL)"
+    )
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS incident_status_history ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "incident_id INTEGER NOT NULL, "
+        "from_status TEXT, "
+        "to_status TEXT NOT NULL, "
+        "actor TEXT, "
+        "reason TEXT, "
+        "at TEXT NOT NULL)"
+    )
+
+
+MIGRATIONS: list[Migration] = [m001, m002, m003, m004, m005]
