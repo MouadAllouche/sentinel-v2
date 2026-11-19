@@ -245,4 +245,27 @@ def m005(connection: sqlite3.Connection) -> None:
     )
 
 
-MIGRATIONS: list[Migration] = [m001, m002, m003, m004, m005]
+def m006(connection: sqlite3.Connection) -> None:
+    """Create the phase-8 baseline summary table."""
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS baselines ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "metric TEXT NOT NULL, "
+        "subject TEXT NOT NULL, "
+        "bucket TEXT NOT NULL, "
+        "window_start TEXT NOT NULL, "
+        "window_end TEXT NOT NULL, "
+        "mean REAL NOT NULL, "
+        "stddev REAL NOT NULL, "
+        "sample_count INTEGER NOT NULL, "
+        "buckets_json TEXT NOT NULL DEFAULT '[]', "
+        "computed_at TEXT NOT NULL, "
+        "UNIQUE(metric, subject, bucket))"
+    )
+    connection.execute(
+        "CREATE INDEX IF NOT EXISTS idx_baselines_metric_subject "
+        "ON baselines(metric, subject, window_end)"
+    )
+
+
+MIGRATIONS: list[Migration] = [m001, m002, m003, m004, m005, m006]

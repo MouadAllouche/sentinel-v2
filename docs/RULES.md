@@ -107,11 +107,38 @@ The finding identity uses the event id in `group_key` (`event=123`) with a real 
 }
 ```
 
+### `baseline_metric`
+
+Compares the last completed hour against zero-filled hourly statistics from a configurable window.
+A tier fires when `observed ≥ min_absolute` **and** `observed > mean + z × max(stddev, min_std)`.
+An immature baseline produces `insufficient_baseline` and **no** anomaly event — never a fake
+"all clear". Anomalies are unusual, not necessarily malicious.
+
+```json
+{
+  "kind": "baseline_metric", "id": "baseline-failed-logins",
+  "name": "Failed logins above normal",
+  "metric": "failed_logins_per_hour", "subject": "global",
+  "window_days": 7, "min_samples": 24, "min_history_hours": 24,
+  "tiers": [
+    {"label": "Elevated", "z": 3.0, "min_absolute": 5, "severity": "medium", "points": 10},
+    {"label": "Extreme", "z": 6.0, "min_absolute": 20, "severity": "high", "points": 20}
+  ],
+  "min_std": 1.0, "cooldown_seconds": 3600,
+  "actions": {"create_incident": false, "notify": true, "tags": []},
+  "mitre": ["T1110"]
+}
+```
+
+Seeded baseline rules: `baseline-failed-logins`, `baseline-new-connections-by-process`,
+`baseline-distinct-destinations-by-process`, `baseline-successful-logins-by-user`,
+`baseline-sudo-by-user`. `subject: "*"` evaluates every subject of the metric (top 50 by volume).
+
 ### Reserved kinds
 
-`baseline_metric` (Phase 8) and `incident_meta` (Phase 10) are validated and stored now. The rule
-engine returns an explicit `NotImplementedForKind` warning for them; they are never silently
-skipped.
+`incident_meta` (Phase 10) is validated and stored now. The generic rule engine returns an explicit
+`NotImplementedForKind` warning for it; it is never silently skipped. `baseline_metric` is evaluated
+by the dedicated baseline cycle described above.
 
 ## Seeded rules
 
@@ -135,6 +162,11 @@ All seeded rules are built-in (`builtin=true`), resettable and enabled except wh
 | `new-listening-port-all-interfaces` | field_match | new listener bound to all interfaces | 10 |
 | `suspicious-process` | field_match | executable from a temporary location | 20 |
 | `recon-or-attack-tool-installed` | field_match | nmap/ncat/hydra/... installed | 10 |
+| `baseline-failed-logins` | baseline_metric | failed logins/hour above the learned baseline | 10/20 |
+| `baseline-new-connections-by-process` | baseline_metric | outbound connections/hour above baseline | 10/20 |
+| `baseline-distinct-destinations-by-process` | baseline_metric | distinct destinations/hour above baseline | 5/10 |
+| `baseline-successful-logins-by-user` | baseline_metric | successful logins/hour above baseline | 10 |
+| `baseline-sudo-by-user` | baseline_metric | sudo commands/hour above baseline | 10 |
 
 MITRE technique IDs are indicative mappings; verify them at attack.mitre.org.
 

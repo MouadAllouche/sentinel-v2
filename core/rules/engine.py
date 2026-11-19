@@ -32,6 +32,10 @@ def evaluate_rules(
             findings.extend(evaluate_new_value(rule, events, (history or {}).get(rule.id, {}), now))
         elif rule.kind == "field_match":
             findings.extend(evaluate_field_match(rule, events, now))
+        elif rule.kind == "baseline_metric":
+            warnings.append(
+                f"rule '{rule.id}' is evaluated by the baseline cycle, not the generic rule cycle"
+            )
         else:
             warnings.append(
                 f"rule '{rule.id}' has kind '{rule.kind}': NotImplementedForKind "

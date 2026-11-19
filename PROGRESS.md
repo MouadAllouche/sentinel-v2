@@ -13,7 +13,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 5 | `specs/05-rules-engine-core.md` | rule models, conditions, threshold evaluator, backtest | ✅ | see below |
 | 6 | `specs/06-rules-engine-advanced.md` | sequence, new-value, field-match, seeded default rules | ✅ | see below |
 | 7 | `specs/07-correlation-incidents.md` | correlation, incidents, timeline, workflow, MITRE | ✅ | see below |
-| 8 | `specs/08-baselines-anomalies.md` | baselines, baseline-metric rules, anomalies | ⬜ | |
+| 8 | `specs/08-baselines-anomalies.md` | baselines, baseline-metric rules, anomalies | ✅ | see below |
 | 9 | `specs/09-config-drift.md` | files, dirs, persistence, authorized_keys | ⬜ | |
 | 10 | `specs/10-risk-scoring.md` | incident-meta rules, scoring, recency decay | ⬜ | |
 | 11 | `specs/11-pipeline-engine-ops.md` | pipeline, engine loop, CLI, retention, notifications, exports, logging | ⬜ | |
@@ -144,3 +144,17 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
   `make lint` → ruff check passed, ruff format check
   passed, mypy `Success: no issues found in 45 source files`.
 - **Commit**: `phase-7: correlation, incidents, timeline, workflow and MITRE`.
+
+## Phase 8 evidence (2026-11-19)
+
+- **Code**: `core/{baseline,anomaly_detection}.py`, five seeded `baseline_metric` rules in
+  `core/rules/defaults.py`, `storage/migrations.py` (`m006`), `storage/baseline_repository.py`,
+  `engine/baselines.py`, `docs/RULES.md` baseline section.
+- **Tests**: `tests/test_baseline.py` (zero-fill, exact stats, exclusions, maturity, hour-of-week,
+  hypothesis), `tests/test_anomaly_detection.py` (worked example, floors, tiers, dedup),
+  `tests/test_baseline_engine.py` (seeding, idempotent anomaly cycle, series), updated
+  `tests/test_rules_seeded.py` and `tests/test_database.py`.
+- **Commands run**: `make test` → `347 passed` (after reviewer blockers were fixed);
+  `make lint` → ruff check passed, ruff format check
+  passed, mypy `Success: no issues found in 49 source files`.
+- **Commit**: `phase-8: behavioral baselines and explained anomalies`.

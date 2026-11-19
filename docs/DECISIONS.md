@@ -383,3 +383,33 @@ Python packages installed in `./venv` on 2026-11-17 (`pip install -e ".[dev]"`):
 - Extending a non-open incident moves it to `open` with a status-history row; status transitions are
   enforced by `set_incident_status`. The `incident_id` event filter is implemented (D-025).
 - Span-split parts without anchors are dropped; MITRE names remain unverified until online review.
+
+### D-063 — Baseline window semantics (Phase 8)
+- Hourly buckets are zero-filled over `window_days`, ending at the last completed hour; the same
+  hour supplies the "current" anomaly value per spec 8.1/8.3. A single outlier barely shifts a
+  168-sample baseline. `sample_count` counts buckets; maturity additionally requires the oldest
+  relevant event to be at least `min_history_hours` old.
+
+### D-064 — Test data uniqueness (Phase 8)
+- Event hashes deduplicate identical events, so burst fixtures give each event a distinct
+  description; otherwise 25 identical failures collapse to one stored row and no anomaly occurs.
+
+### D-065 — Baseline storage and series (Phase 8)
+- Only one summary row per metric/subject/window is stored (`m006`); `get_baseline_series` returns
+  mean/std and a configurable `mean ± z·std` band for charting rather than raw hourly rows.
+
+### D-066 — Seeded baseline rules (Phase 8)
+- Five `baseline_metric` defaults are seeded and editable; `subject: "*"` expands to the top 50
+  subjects by event volume. `docs/RULES.md` documents the kind and the z/min_absolute math.
+
+### D-067 — Phase 8 reviewer fixes
+- One baseline row per metric/subject/**day** is now enforced by a `UNIQUE(metric, subject, bucket)`
+  key and an upsert in `save_baseline`; the day row also stores the hourly buckets so
+  `get_baseline_series` can return hourly values plus the mean ± z·std band.
+- Subject expansion is now the **top 50 by matching-event volume** (`subjects_for_metric`), with a
+  real test; unrelated event types no longer create spurious subjects.
+- Anomaly `tier_index` now follows the canonical ascending z order while the highest satisfied tier
+  still wins; z-tier severities are validated and z thresholds must strictly increase.
+- The generic rule engine reports baseline rules as "evaluated by the baseline cycle" instead of a
+  false `NotImplementedForKind`; `docs/RULES.md` lists all five baseline rules in the seeded table,
+  and a 30-day × 50-subject performance test is included.

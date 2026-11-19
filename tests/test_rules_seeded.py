@@ -22,9 +22,9 @@ from storage.rules_repository import (
 
 
 def test_all_seeded_rules_validate() -> None:
-    assert len(DEFAULT_RULES) == 16
+    assert len(DEFAULT_RULES) == 21
     ids = [definition["id"] for definition in DEFAULT_RULES]
-    assert len(set(ids)) == 16
+    assert len(set(ids)) == 21
     assert "ssh-bruteforce-by-ip" in ids
     assert "success-after-failures" in ids
     assert "new-outbound-destination" in ids
@@ -34,7 +34,7 @@ def test_all_seeded_rules_validate() -> None:
 
 
 def test_seeding_idempotent_reset_and_disabled_default(tmp_initialised_db: Path) -> None:
-    assert seed_rules(tmp_initialised_db)["rules"] == 16
+    assert seed_rules(tmp_initialised_db)["rules"] == 21
     disabled = get_rule("new-outbound-destination", tmp_initialised_db)
     assert disabled is not None and disabled.enabled is False
     assert seed_rules(tmp_initialised_db)["rules"] == 0
@@ -45,7 +45,7 @@ def test_seeding_idempotent_reset_and_disabled_default(tmp_initialised_db: Path)
     assert get_rule("ssh-bruteforce-by-ip", tmp_initialised_db).enabled is False
     reset_rule("ssh-bruteforce-by-ip", "alice", tmp_initialised_db)
     assert get_rule("ssh-bruteforce-by-ip", tmp_initialised_db).enabled is True
-    assert len(list_rules(db_path=tmp_initialised_db)) == 16
+    assert len(list_rules(db_path=tmp_initialised_db)) == 21
 
 
 def test_disabled_default_column_and_bulk_reset(tmp_initialised_db: Path) -> None:
@@ -59,7 +59,7 @@ def test_disabled_default_column_and_bulk_reset(tmp_initialised_db: Path) -> Non
     connection.close()
     assert enabled == 0
     set_rule_enabled("ssh-bruteforce-by-ip", False, "alice", tmp_initialised_db)
-    assert reset_all_builtin_rules("alice", tmp_initialised_db) == 16
+    assert reset_all_builtin_rules("alice", tmp_initialised_db) == 21
     assert get_rule("ssh-bruteforce-by-ip", tmp_initialised_db).enabled is True
 
 

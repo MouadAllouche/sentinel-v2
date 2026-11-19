@@ -118,7 +118,7 @@ def test_evaluate_rules_marks_reserved_kinds() -> None:
     )
     findings, warnings = evaluate_rules([rule], [], now=BASE_TIME)
     assert findings == []
-    assert warnings and "baseline_metric" in warnings[0]
+    assert warnings and "baseline cycle" in warnings[0]
 
 
 def test_engine_emits_deterministic_rule_triggered_events(

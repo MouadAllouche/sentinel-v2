@@ -258,8 +258,11 @@ def _validate_reserved(obj: dict[str, Any], errors: list[dict[str, str]]) -> Non
         if not 1 <= len(z_tiers) <= 10:
             errors.append(_error("z_tiers", "between 1 and 10 z-tiers are required"))
         z_values = [tier["z"] for tier in z_tiers]
-        if z_values != sorted(z_values):
-            errors.append(_error("z_tiers", "z thresholds must increase"))
+        if z_values != sorted(z_values) or len(set(z_values)) != len(z_values):
+            errors.append(_error("z_tiers", "z thresholds must strictly increase"))
+        for index, tier in enumerate(z_tiers):
+            if tier["severity"] not in VALID_SEVERITIES:
+                errors.append(_error(f"z_tiers[{index}].severity", "invalid severity"))
         if obj["min_std"] < 0.1:
             errors.append(_error("min_std", "min_std must be at least 0.1"))
     elif obj["kind"] == "incident_meta":

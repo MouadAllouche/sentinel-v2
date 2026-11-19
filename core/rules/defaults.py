@@ -336,6 +336,92 @@ _RECON_TOOL = _field_match(
     ["T1595"],
 )
 
+
+def _baseline_rule(
+    identifier: str,
+    name: str,
+    description: str,
+    metric: str,
+    subject: str,
+    tiers: list[dict[str, Any]],
+    mitre: list[str],
+) -> dict[str, Any]:
+    return {
+        "id": identifier,
+        "name": name,
+        "description": description,
+        "kind": "baseline_metric",
+        "enabled": True,
+        "match": {"event_types": ["failed_login"], "conditions": {"all": []}},
+        "scope": {"exclude_allowlisted": True},
+        "actions": {"create_incident": False, "notify": True, "tags": []},
+        "mitre": mitre,
+        "metric": metric,
+        "subject": subject,
+        "window_days": 7,
+        "min_samples": 24,
+        "min_history_hours": 24,
+        "tiers": tiers,
+        "min_std": 1.0,
+        "cooldown_seconds": 3600,
+    }
+
+
+_BASELINE_FAILED = _baseline_rule(
+    "baseline-failed-logins",
+    "Failed logins above normal",
+    "Unusual number of failed logins per hour",
+    "failed_logins_per_hour",
+    "global",
+    [
+        {"label": "Elevated", "z": 3.0, "min_absolute": 5, "severity": "medium", "points": 10},
+        {"label": "Extreme", "z": 6.0, "min_absolute": 20, "severity": "high", "points": 20},
+    ],
+    ["T1110"],
+)
+_BASELINE_CONNECTIONS = _baseline_rule(
+    "baseline-new-connections-by-process",
+    "New connections above normal",
+    "Unusual new outbound connections",
+    "new_connections_per_hour",
+    "*",
+    [
+        {"label": "Elevated", "z": 3.0, "min_absolute": 20, "severity": "medium", "points": 10},
+        {"label": "Extreme", "z": 6.0, "min_absolute": 40, "severity": "high", "points": 20},
+    ],
+    [],
+)
+_BASELINE_DESTINATIONS = _baseline_rule(
+    "baseline-distinct-destinations-by-process",
+    "Distinct destinations above normal",
+    "Unusual count of distinct outbound destinations",
+    "distinct_destinations_per_hour",
+    "*",
+    [
+        {"label": "Elevated", "z": 3.0, "min_absolute": 10, "severity": "low", "points": 5},
+        {"label": "Extreme", "z": 6.0, "min_absolute": 20, "severity": "medium", "points": 10},
+    ],
+    [],
+)
+_BASELINE_LOGINS = _baseline_rule(
+    "baseline-successful-logins-by-user",
+    "Successful logins above normal",
+    "Unusual number of successful logins",
+    "successful_logins_per_hour",
+    "*",
+    [{"label": "Elevated", "z": 3.0, "min_absolute": 5, "severity": "medium", "points": 10}],
+    ["T1078"],
+)
+_BASELINE_SUDO = _baseline_rule(
+    "baseline-sudo-by-user",
+    "Sudo commands above normal",
+    "Unusual number of sudo commands",
+    "sudo_commands_per_hour",
+    "*",
+    [{"label": "Elevated", "z": 3.0, "min_absolute": 5, "severity": "medium", "points": 10}],
+    ["T1548.003"],
+)
+
 DEFINITIONS: tuple[dict[str, Any], ...] = (
     _SSH_BRUTEFORCE,
     _SSH_SPRAYING,
@@ -353,6 +439,11 @@ DEFINITIONS: tuple[dict[str, Any], ...] = (
     _LISTEN_ALL,
     _SUSPICIOUS_PROCESS,
     _RECON_TOOL,
+    _BASELINE_FAILED,
+    _BASELINE_CONNECTIONS,
+    _BASELINE_DESTINATIONS,
+    _BASELINE_LOGINS,
+    _BASELINE_SUDO,
 )
 
 DEFAULT_RULES: tuple[dict[str, Any], ...] = tuple(
