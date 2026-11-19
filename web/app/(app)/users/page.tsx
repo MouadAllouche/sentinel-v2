@@ -1,11 +1,10 @@
-import { ApiTable } from "@/components/data-table/ApiTable";
+import { RequireAdmin } from "@/components/ui/RequireAdmin";
+import { UsersRoute } from "@/components/users/UsersRoute";
 
-export default function UsersPage() {
+export default function UsersPageRoute() {
   return (
-    <ApiTable<Record<string, unknown>>
-      path="/api/users"
-      columns={["id", "username", "role", "disabled", "created_at"]}
-      title="Users"
-    />
+    <RequireAdmin>
+      <UsersRoute />
+    </RequireAdmin>
   );
 }

@@ -762,3 +762,32 @@ Run `make api` and `make web`, then verify by hand (no screenshots):
 - Final re-review: `baseline_metric` now emits z-tier objects under the canonical `tiers` key (the
   server reshapes on key presence), the zod schema accepts both tier shapes, and a helper unit test
   covers the UI-shaped definition.
+
+### D-101 — Phase 17 API support
+- `/api/system/info` now reports the global notification switch, schema version, engine intervals
+  and **booleans** for known secret environment variables (never their values). Channel config keys
+  ending in `_env` must be uppercase environment variable names (`^[A-Z][A-Z0-9_]{2,63}$`).
+- `/api/audit` supports actor/action-prefix/target-type/time filters and keyset cursors;
+  `POST /api/users/{id}/sessions/revoke` revokes a user's sessions. Disabling or demoting the last
+  active admin returns 409 and is audited. All Phase 17 writes use existing CSRF/RBAC middleware.
+
+### D-102 — Phase 17 UI decisions
+- `web/lib/admin/helpers.ts` owns pure band/zero-fill math, maturity wording, env-name validation,
+  audit before/after diffs, password strength, retention validation and health hints. Immature
+  baselines explicitly say "Not enough data yet — no anomalies will be reported", never "all clear".
+- Drift pages render snapshot metadata only (mode, owner, hash prefix, flags) — never file contents;
+  shadow paths show a locked metadata-only control. Accepting a baseline requires a reason and
+  states that only Sentinel's reference changes.
+- Notification secret inputs are env-var **names** with a set/not-set indicator; display settings
+  live in `localStorage`; user creation shows a generated one-time password; audit CSV escapes
+  formula-leading cells. Viewer pages are read-only and mutation controls are disabled.
+- No new dependencies were added; every page uses the generated typed client.
+
+### D-103 — Phase 17 reviewer fixes
+- Dict-returning endpoints (`/system/info`, `/settings/retention`, `/health`) are read through
+  dedicated hooks, not the generic `useApiList` dict-to-rows adapter; the notifications, settings and
+  health pages now display real values.
+- The retention form edits the nested `policy.events` ages and saves via `PUT /api/settings/retention`.
+  Viewer redirects, hidden admin links, read-only channel editors, stricter baseline-accept reasons,
+  extended RBAC coverage and audited session revocation were added. Immature baselines always carry
+  the explicit "no anomalies will be reported" caveat.

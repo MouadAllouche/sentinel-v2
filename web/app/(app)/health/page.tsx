@@ -1,5 +1,5 @@
-import { HealthPanel } from "@/components/layout/HealthPanel";
+import { HealthRoute } from "@/components/health/HealthRoute";
 
-export default function HealthPage() {
-  return <HealthPanel />;
+export default function HealthPageRoute() {
+  return <HealthRoute />;
 }

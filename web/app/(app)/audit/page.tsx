@@ -1,11 +1,10 @@
-import { ApiTable } from "@/components/data-table/ApiTable";
+import { AuditRoute } from "@/components/audit/AuditRoute";
+import { RequireAdmin } from "@/components/ui/RequireAdmin";
 
-export default function AuditPage() {
+export default function AuditPageRoute() {
   return (
-    <ApiTable<Record<string, unknown>>
-      path="/api/audit"
-      columns={["ts", "actor", "action", "target_type", "target_id", "ip"]}
-      title="Audit log"
-    />
+    <RequireAdmin>
+      <AuditRoute />
+    </RequireAdmin>
   );
 }

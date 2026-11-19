@@ -18,6 +18,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+import { useMe } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -45,9 +46,15 @@ function ShieldCheckIcon({ size = 18 }: { size?: number }) {
   );
 }
 
+const ADMIN_PATHS = new Set(["/notifications", "/settings", "/users", "/audit"]);
+
 export function Sidebar() {
   const pathname = usePathname();
+  const me = useMe();
   const [collapsed, setCollapsed] = useState(false);
+  const visible = NAV.filter(
+    (item) => !(me.username && me.role !== "admin" && ADMIN_PATHS.has(item.href)),
+  );
 
   return (
     <aside className={cn("shrink-0 border-r border-slate-200 dark:border-slate-700", collapsed ? "w-16" : "w-56")}>
@@ -64,7 +71,7 @@ export function Sidebar() {
         </button>
       </div>
       <nav aria-label="Main" className="flex flex-col gap-0.5 px-2">
-        {NAV.map(({ href, label, icon: Icon }) => {
+        {visible.map(({ href, label, icon: Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
             <Link

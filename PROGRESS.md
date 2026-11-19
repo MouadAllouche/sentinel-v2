@@ -22,7 +22,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 14 | `specs/14-web-overview-events.md` | overview, events explorer | ✅ | see below |
 | 15 | `specs/15-web-incidents.md` | incident list/detail, timeline, graph, workflow, export | ✅ | see below |
 | 16 | `specs/16-web-rules-severity.md` | rule builder, backtest, severities, allowlist | ✅ | see below |
-| 17 | `specs/17-web-behavior-drift-admin.md` | behavior, drift, notifications, settings, users, audit, health | ⬜ | |
+| 17 | `specs/17-web-behavior-drift-admin.md` | behavior, drift, notifications, settings, users, audit, health | ✅ | see below |
 | 18 | `specs/18-demo-e2e-deploy.md` | demo, integration + e2e tests, deployment docs | ⬜ | |
 | 19 | `specs/19-final-audit.md` | audit against definition of done | ⬜ | |
 
@@ -263,3 +263,15 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 - **Commands run**: `make test` → `541 passed`; `make lint` → ruff/format/mypy clean;
   `npm test` → `110 passed`; `npm run typecheck`, `npm run lint`, `npm run build` → pass.
 - **Commit**: `phase-16: Rule builder, backtest, severity and allowlist UI`.
+
+## Phase 17 evidence (2026-11-19)
+
+- **Code**: enriched `api/routers/system.py` (`/system/info`, filters/cursors on `/audit`, users
+  guard rails, session revocation), `api/routers/config_router.py` (env-name validation for channel
+  secrets), `storage/repositories.py` (audit cursors), `web/lib/admin/helpers.ts`,
+  `web/components/{behavior,drift,notifications,settings,users,audit,health}/**`, all seven pages.
+- **Tests**: `web/tests/lib/admin/helpers.test.ts`, `web/tests/components/admin.test.tsx`,
+  `web/e2e/admin.spec.ts`, `tests/api/test_admin_ui_api.py`.
+- **Commands run**: `make test` → `551 passed`; `make lint` → ruff/format/mypy clean;
+  `npm test` → `125 passed`; `npm run typecheck`, `npm run lint`, `npm run build` → pass.
+- **Commit**: `phase-17: Behavior, drift and administration UI`.

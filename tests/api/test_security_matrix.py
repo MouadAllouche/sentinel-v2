@@ -34,6 +34,14 @@ ADMIN_ROUTES = {
     ("post", "/api/incidents/1/status"),
     ("post", "/api/incidents/1/notes"),
     ("patch", "/api/incidents/1"),
+    ("post", "/api/users/1/password-reset"),
+    ("post", "/api/users/1/sessions/revoke"),
+    ("post", "/api/notifications/channels/1/test"),
+    ("post", "/api/retention/dry-run"),
+    ("post", "/api/retention/apply"),
+    ("put", "/api/settings/retention"),
+    ("post", "/api/drift/check"),
+    ("post", "/api/drift/accept"),
 }
 
 

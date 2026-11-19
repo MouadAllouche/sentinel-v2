@@ -478,6 +478,7 @@ def list_audit(
     filters: Mapping[str, Any] | None = None,
     limit: int = 100,
     db_path: str | Path | None = None,
+    cursor: str | None = None,
 ) -> dict[str, Any]:
     """Return latest audit rows with a keyset cursor on ``id``."""
     if not 1 <= limit <= 500:
@@ -498,6 +499,14 @@ def list_audit(
     if criteria.get("until"):
         clauses.append("ts <= ?")
         parameters.append(criteria["until"])
+    if cursor:
+        try:
+            padded = cursor + "=" * (-len(cursor) % 4)
+            identifier = int(json.loads(base64.urlsafe_b64decode(padded.encode("ascii")))["i"])
+        except (ValueError, KeyError, TypeError, UnicodeError) as exc:
+            raise ValueError("invalid cursor") from exc
+        clauses.append("id < ?")
+        parameters.append(identifier)
     statement = "SELECT * FROM audit_log"
     if clauses:
         statement += " WHERE " + " AND ".join(clauses)

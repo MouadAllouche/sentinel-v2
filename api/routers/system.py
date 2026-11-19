@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+from contextlib import closing
 from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, Request
 
-from api.deps import admin_user, current_user, db_path, optional_user
+from api.deps import ApiError, admin_user, current_user, db_path, optional_user
 from core.health import get_health
 from engine.runner import run_once
 from storage.auth_repository import (
@@ -20,7 +21,7 @@ from storage.auth_repository import (
     update_role,
 )
 from storage.ops_repository import list_collector_runs, list_cycle_runs
-from storage.repositories import list_audit
+from storage.repositories import list_audit, write_audit
 
 router = APIRouter(prefix="/api", tags=["system"])
 
@@ -91,6 +92,20 @@ def patch_user(
     request: Request,
     admin: dict[str, Any] = Depends(admin_user),
 ) -> dict[str, Any]:
+    users = list_users(db_path(request))
+    target = next((item for item in users if int(item["id"]) == identifier), None)
+    if target is None:
+        raise ApiError(404, "not_found", "user not found")
+    demoting = "role" in payload and payload["role"] != target["role"] and target["role"] == "admin"
+    disabling = "disabled" in payload and bool(payload["disabled"]) and not target["disabled"]
+    if demoting or disabling:
+        active_admins = [
+            item
+            for item in users
+            if item["role"] == "admin" and not item["disabled"] and int(item["id"]) != identifier
+        ]
+        if not active_admins:
+            raise ApiError(409, "conflict", "cannot disable or demote the last admin")
     if "role" in payload:
         update_role(identifier, payload["role"], db_path(request), actor=admin["username"])
     if "disabled" in payload:
@@ -113,12 +128,55 @@ def reset_user_password(
     return {"ok": True}
 
 
+@router.post("/users/{identifier}/sessions/revoke", response_model=dict[str, Any])
+def revoke_user_sessions_endpoint(
+    identifier: int, request: Request, admin: dict[str, Any] = Depends(admin_user)
+) -> dict[str, Any]:
+    from storage.auth_repository import revoke_user_sessions
+
+    if not any(int(item["id"]) == identifier for item in list_users(db_path(request))):
+        raise ApiError(404, "not_found", "user not found")
+    revoke_user_sessions(identifier, db_path(request))
+    write_audit(
+        admin["username"],
+        "user.sessions_revoked",
+        target_type="user",
+        target_id=str(identifier),
+        before={"sessions": "present"},
+        after={"sessions": "revoked"},
+        ip=request.client.host if request.client else None,
+        db_path=db_path(request),
+    )
+    return {"ok": True}
+
+
 @router.get("/audit", response_model=dict[str, Any])
 def audit(
-    request: Request, limit: int = 50, _admin: dict[str, Any] = Depends(admin_user)
+    request: Request,
+    actor: str | None = None,
+    action_prefix: str | None = None,
+    target_type: str | None = None,
+    since: str | None = None,
+    until: str | None = None,
+    cursor: str | None = None,
+    limit: int = 50,
+    _admin: dict[str, Any] = Depends(admin_user),
 ) -> dict[str, Any]:
-    rows = list_audit({}, db_path=db_path(request), limit=limit)
-    return {"items": rows, "next_cursor": None}
+    filters = {
+        key: value
+        for key, value in {
+            "actor": actor,
+            "action_prefix": action_prefix,
+            "target_type": target_type,
+            "since": since,
+            "until": until,
+        }.items()
+        if value
+    }
+    try:
+        return list_audit(filters, limit=limit, db_path=db_path(request), cursor=cursor)
+    except ValueError as exc:
+        raise ApiError(422, "validation_error", str(exc)) from exc
 
 
 @router.get("/filters/saved", response_model=list[dict[str, Any]])
@@ -153,8 +211,32 @@ def remove_filter(
 
 @router.get("/system/info", response_model=dict[str, Any])
 def system_info(request: Request, _user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    import os
+
+    from storage.database import get_connection
+    from storage.migrations import current_version
+
     health = get_health(db_path(request))
-    return {"version": "sentinel-2", "db": health["db"]}
+    settings = request.app.state.settings
+    with closing(get_connection(db_path(request))) as connection:
+        schema_version = current_version(connection)
+    secret_names = (
+        "SENTINEL_WEBHOOK_SECRET",
+        "SENTINEL_SMTP_PASSWORD",
+        "SENTINEL_TELEGRAM_TOKEN",
+    )
+    return {
+        "version": "sentinel-2",
+        "db": health["db"],
+        "schema_version": schema_version,
+        "notifications_enabled": settings.notifications.enabled,
+        "engine": {
+            "interval_seconds": settings.engine.analyze_interval_seconds,
+            "collect_interval_seconds": settings.engine.collect_interval_seconds,
+            "retention_interval_hours": settings.engine.retention_interval_hours,
+        },
+        "env_vars": {name: bool(os.environ.get(name)) for name in secret_names},
+    }
 
 
 @router.get("/anomalies", response_model=list[dict[str, Any]])

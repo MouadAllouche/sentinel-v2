@@ -382,6 +382,54 @@ export function useRiskThresholds() {
   });
 }
 
+export function useSystemInfo() {
+  return useQuery({
+    queryKey: queryKeys.systemInfo,
+    queryFn: async () => {
+      const { data } = await client.GET("/api/system/info");
+      return (
+        (data as unknown as {
+          version: string;
+          schema_version: number;
+          notifications_enabled: boolean;
+          db: { size_bytes?: number; event_count?: number; oldest_event?: string };
+          engine: Record<string, number>;
+          env_vars: Record<string, boolean>;
+        }) ?? { version: "", schema_version: 0, notifications_enabled: false, db: {}, engine: {}, env_vars: {} }
+      );
+    },
+    staleTime: 30_000,
+  });
+}
+
+export function useRetentionPolicy() {
+  return useQuery({
+    queryKey: ["settings", "retention"],
+    queryFn: async (): Promise<Record<string, unknown>> => {
+      const { data } = await client.GET("/api/settings/retention");
+      return (data as unknown as Record<string, unknown> | undefined) ?? { events: {} };
+    },
+  });
+}
+
+export function useHealthFull() {
+  return useQuery({
+    queryKey: ["health", "full"],
+    queryFn: async () => {
+      const { data } = await client.GET("/api/health");
+      return (
+        (data as unknown as {
+          status: string;
+          reasons?: string[];
+          db?: { size_bytes?: number; event_count?: number; oldest_event?: string };
+          last_cycle?: Record<string, unknown> | null;
+        }) ?? { status: "unknown" }
+      );
+    },
+    staleTime: 30_000,
+  });
+}
+
 export function useHealth() {
   return useQuery({
     queryKey: queryKeys.health,

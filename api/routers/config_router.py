@@ -183,10 +183,34 @@ def channels(
     return [vars(item) for item in list_channels(db_path(request))]
 
 
+def _validate_channel_config(config: Any) -> None:
+    import re
+
+    if not isinstance(config, dict):
+        raise ApiError(422, "validation_error", "config must be an object")
+    for key, value in config.items():
+        secret_field = key.endswith("_env") or key in {"secret_env", "token_env", "password_env"}
+        if secret_field and (
+            not isinstance(value, str) or not re.fullmatch(r"[A-Z][A-Z0-9_]{2,63}", value)
+        ):
+            raise ApiError(
+                422,
+                "validation_error",
+                "secrets must be environment variable names",
+                [
+                    {
+                        "path": f"config.{key}",
+                        "message": "use an uppercase environment variable name",
+                    }
+                ],
+            )
+
+
 @router.post("/notifications/channels", response_model=dict[str, Any], status_code=201)
 def create_channel(
     payload: dict[str, Any], request: Request, admin: dict[str, Any] = Depends(admin_user)
 ) -> dict[str, Any]:
+    _validate_channel_config(payload.get("config", {}))
     identifier = add_channel(payload, admin["username"], db_path(request))
     return {"id": identifier}
 
@@ -198,6 +222,8 @@ def edit_channel(
     request: Request,
     admin: dict[str, Any] = Depends(admin_user),
 ) -> dict[str, Any]:
+    if "config" in payload:
+        _validate_channel_config(payload["config"])
     update_channel(identifier, payload, admin["username"], db_path(request))
     return {"id": identifier}
 

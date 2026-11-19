@@ -69,4 +69,4 @@ class ReapplyRequest(StrictModel):
 
 class BaselineAccept(StrictModel):
     path: str
-    reason: str
+    reason: str = Field(min_length=5)

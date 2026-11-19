@@ -1388,6 +1388,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/users/{identifier}/sessions/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke User Sessions Endpoint */
+        post: operations["revoke_user_sessions_endpoint_api_users__identifier__sessions_revoke_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1665,6 +1682,12 @@ export interface operations {
     audit_api_audit_get: {
         parameters: {
             query?: {
+                actor?: string | null;
+                action_prefix?: string | null;
+                target_type?: string | null;
+                since?: string | null;
+                until?: string | null;
+                cursor?: string | null;
                 limit?: number;
             };
             header?: never;
@@ -4532,6 +4555,39 @@ export interface operations {
                 };
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_user_sessions_endpoint_api_users__identifier__sessions_revoke_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
