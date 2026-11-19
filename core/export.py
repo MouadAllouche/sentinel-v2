@@ -62,7 +62,9 @@ def _markdown(report: dict[str, Any]) -> str:
         )
     lines.extend(["", "## MITRE"])
     for item in report["mitre"]:
-        lines.append(f"- {item.get('id')} {item.get('name', '')} (indicative mapping)")
+        technique = item if isinstance(item, str) else str(item.get("id", ""))
+        name = "" if isinstance(item, str) else str(item.get("name", ""))
+        lines.append(f"- {technique} {name} (indicative mapping)")
     lines.extend(["", "## Notes"])
     for note in report["notes"]:
         lines.append(f"- {note.get('author', '')}: {note.get('body', '')}")

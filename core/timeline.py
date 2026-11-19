@@ -9,6 +9,19 @@ from core.mitre import mitre_for_rules
 
 __all__ = ["build_timeline", "explain_incident"]
 
+ANCHOR_TYPES = frozenset(
+    {
+        "failed_login",
+        "invalid_user",
+        "rule_triggered",
+        "config_drift",
+        "anomaly",
+        "suspicious_process",
+        "user_created",
+        "group_member_added",
+    }
+)
+
 CAVEAT = (
     "Grouping is based on shared attributes and time proximity and is not proof of a single actor."
 )
@@ -97,6 +110,15 @@ def explain_incident(
     caveats.extend(f"Weak link: {reason}" for reason in weak)
     return {
         "grouping": {"strong": strong, "weak": weak},
+        "anchors": [
+            {
+                "event_id": int(event.get("id", 0)),
+                "timestamp": str(event.get("timestamp", "")),
+                "event_type": str(event.get("event_type", "")),
+            }
+            for event in sorted(events, key=lambda item: str(item.get("timestamp", "")))
+            if str(event.get("event_type", "")) in ANCHOR_TYPES
+        ],
         "rules": [
             {"rule_id": finding.get("rule_id"), "tier_label": finding.get("tier_label")}
             for finding in findings

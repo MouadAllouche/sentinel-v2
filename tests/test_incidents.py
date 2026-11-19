@@ -129,6 +129,7 @@ def test_title_summary_timeline_and_caveats(make_event: Callable[..., dict[str, 
     assert all(entry["kind"] == "observed" for entry in timeline)
     explanation = explain_incident(component, events, [])
     assert any("not proof of a single actor" in caveat for caveat in explanation["caveats"])
+    assert [anchor["event_id"] for anchor in explanation["anchors"]] == [1, 2]
 
 
 def test_status_transition_matrix() -> None:

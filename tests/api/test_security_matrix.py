@@ -30,6 +30,10 @@ ADMIN_ROUTES = {
     ("post", "/api/users"),
     ("patch", "/api/users/1"),
     ("post", "/api/notifications/channels"),
+    ("post", "/api/incidents/bulk-status"),
+    ("post", "/api/incidents/1/status"),
+    ("post", "/api/incidents/1/notes"),
+    ("patch", "/api/incidents/1"),
 }
 
 

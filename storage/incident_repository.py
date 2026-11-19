@@ -5,8 +5,9 @@ All SQL is parameterised; mutations write audit rows in the same transaction.
 
 from __future__ import annotations
 
+import base64
 import json
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from contextlib import closing
 from pathlib import Path
 from typing import Any
@@ -14,6 +15,13 @@ from typing import Any
 from core.incidents import IncidentChange, apply_status_transition
 from core.timeutil import utc_now
 from storage.database import get_connection
+
+
+def _record_change(connection: Any, kind: str, identifier: int) -> None:
+    connection.execute(
+        "INSERT INTO changes(kind, ref_id, at) VALUES (?, ?, ?)",
+        (kind, identifier, utc_now().isoformat()),
+    )
 
 
 def _audit(
@@ -46,6 +54,7 @@ __all__ = [
     "apply_incidents",
     "get_incident",
     "list_incidents",
+    "list_incidents_page",
     "list_notes",
     "list_status_history",
     "set_assignee",
@@ -56,13 +65,26 @@ __all__ = [
 def _row_to_incident(connection: Any, row: Any) -> dict[str, Any]:
     data = dict(row)
     data["mitre"] = json.loads(data.pop("mitre_json", "[]") or "[]")
-    data["event_ids"] = [
-        item[0]
+    event_ids = [
+        int(item[0])
         for item in connection.execute(
             "SELECT event_id FROM incident_events WHERE incident_id = ? ORDER BY event_id",
             (row["id"],),
         ).fetchall()
     ]
+    data["event_ids"] = event_ids
+    rules: list[str] = []
+    if event_ids:
+        placeholders = ", ".join("?" for _ in event_ids)
+        # Only '?' placeholders are interpolated; values stay bound.
+        statement = (
+            "SELECT DISTINCT rf.rule_id FROM rule_findings rf, "  # noqa: S608
+            "json_each(rf.evidence_event_ids_json) j "
+            f"WHERE CAST(j.value AS INTEGER) IN ({placeholders}) "
+            "ORDER BY rf.rule_id LIMIT 3"
+        )
+        rules = [str(item[0]) for item in connection.execute(statement, event_ids).fetchall()]
+    data["rules_fired"] = rules
     return data
 
 
@@ -130,6 +152,8 @@ def apply_incidents(
             if identifier is None:
                 continue
             identifier = int(identifier)
+            if change.action == "create" and cursor.rowcount > 0:
+                _record_change(connection, "incident.created", identifier)
             for absorbed in change.absorbed:
                 connection.execute(
                     "UPDATE incidents SET status = 'merged', merged_into = ?, updated_at = ? "
@@ -227,6 +251,78 @@ def list_incidents(
         return [_row_to_incident(connection, row) for row in rows]
 
 
+def _encode(page_value: str, identifier: int) -> str:
+    payload = json.dumps({"v": page_value, "i": identifier}, separators=(",", ":"))
+    return base64.urlsafe_b64encode(payload.encode("utf-8")).decode("ascii").rstrip("=")
+
+
+def _decode(cursor: str) -> tuple[str, int]:
+    try:
+        padded = cursor + "=" * (-len(cursor) % 4)
+        payload = json.loads(base64.urlsafe_b64decode(padded.encode("ascii")).decode("utf-8"))
+        return str(payload["v"]), int(payload["i"])
+    except (ValueError, KeyError, TypeError, UnicodeError) as exc:
+        raise ValueError("invalid cursor") from exc
+
+
+def list_incidents_page(
+    filters: Mapping[str, Any] | None = None,
+    cursor: str | None = None,
+    limit: int = 50,
+    sort: str = "risk",
+    db_path: str | Path | None = None,
+) -> dict[str, Any]:
+    """Keyset-paginated incident list for the investigation UI."""
+    if not 1 <= limit <= 500:
+        raise ValueError("limit must be between 1 and 500")
+    if sort not in {"risk", "recent"}:
+        raise ValueError("sort must be risk or recent")
+    criteria = filters or {}
+    clauses: list[str] = []
+    parameters: list[Any] = []
+    for key in ("status", "severity"):
+        values = criteria.get(key)
+        if values:
+            if isinstance(values, (str, bytes)) or not isinstance(values, Sequence):
+                raise ValueError(key + " filter must be a sequence")
+            placeholders = ", ".join("?" for _ in values)
+            clauses.append(f"{key} IN ({placeholders})")  # noqa: S608 - fixed column names
+            parameters.extend(values)
+    if criteria.get("assignee"):
+        clauses.append("assignee = ?")
+        parameters.append(criteria["assignee"])
+    if criteria.get("since"):
+        clauses.append("last_seen >= ?")
+        parameters.append(criteria["since"])
+    if criteria.get("until"):
+        clauses.append("last_seen <= ?")
+        parameters.append(criteria["until"])
+    if criteria.get("search"):
+        term = str(criteria["search"]).replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        clauses.append("(title LIKE ? ESCAPE '\\' OR summary LIKE ? ESCAPE '\\')")
+        parameters.extend([f"%{term}%", f"%{term}%"])
+    if criteria.get("needs_attention"):
+        clauses.append("status = 'open' AND severity IN ('high', 'critical')")
+    column = "risk_score" if sort == "risk" else "last_seen"
+    if cursor:
+        value, identifier = _decode(cursor)
+        clauses.append(f"({column} < ? OR ({column} = ? AND id < ?))")  # noqa: S608
+        parameters.extend([value, value, identifier])
+    statement = "SELECT * FROM incidents"
+    if clauses:
+        statement += " WHERE " + " AND ".join(clauses)
+    statement += f" ORDER BY {column} DESC, id DESC LIMIT ?"  # noqa: S608 - fixed column
+    parameters.append(limit + 1)
+    with closing(get_connection(db_path)) as connection:
+        rows = connection.execute(statement, parameters).fetchall()
+        items = [_row_to_incident(connection, row) for row in rows[:limit]]
+    next_cursor = None
+    if len(rows) > limit:
+        boundary = rows[limit - 1]
+        next_cursor = _encode(str(boundary[column]), int(boundary["id"]))
+    return {"items": items, "next_cursor": next_cursor}
+
+
 def add_incident_event(
     incident_id: int,
     event_id: int,
@@ -249,6 +345,7 @@ def add_note(incident_id: int, author: str, body: str, db_path: str | Path | Non
             (incident_id, author, body, utc_now().isoformat()),
         )
         _audit(connection, author, "incident.note.add", incident_id, None, {"body": body})
+        _record_change(connection, "incident.note_added", incident_id)
         return int(cursor.lastrowid or 0)
 
 
@@ -287,6 +384,7 @@ def set_incident_status(
             {"status": from_status},
             {"status": to_status},
         )
+        _record_change(connection, "incident.status_changed", incident_id)
 
 
 def list_status_history(
@@ -309,3 +407,4 @@ def set_assignee(
             (assignee, utc_now().isoformat(), incident_id),
         )
         _audit(connection, actor, "incident.assignee", incident_id, None, {"assignee": assignee})
+        _record_change(connection, "incident.assignee_changed", incident_id)

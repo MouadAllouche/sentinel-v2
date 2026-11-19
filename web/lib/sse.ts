@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 export type StreamStatus = "connecting" | "live" | "reconnecting" | "polling" | "paused";
 
-interface StreamMessage {
+export interface StreamMessage {
   type: string;
   id?: number | string;
   at?: string;
@@ -19,8 +19,11 @@ const POLL_INTERVAL_MS = 10_000;
  * backoff, pause when the tab is hidden, and fall back to polling if streaming
  * cannot be established (for example through a buffering proxy).
  */
-export function useLiveUpdates(options: { paused?: boolean } = {}): { status: StreamStatus } {
+export function useLiveUpdates(
+  options: { paused?: boolean; onMessage?: (message: StreamMessage) => void } = {},
+): { status: StreamStatus } {
   const paused = options.paused ?? false;
+  const onMessage = options.onMessage;
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<StreamStatus>("connecting");
   const [retry, setRetry] = useState(0);
@@ -54,11 +57,13 @@ export function useLiveUpdates(options: { paused?: boolean } = {}): { status: St
         });
         if (response.ok) {
           const body = (await response.json()) as {
-            items?: Array<{ id: number; type?: string }>;
+            items?: Array<{ id: number; ref_id?: number; type?: string }>;
           };
           for (const item of body.items ?? []) {
             lastChange.current = Math.max(lastChange.current, item.id);
-            invalidate({ type: item.type ?? "change", id: item.id });
+            const message = { type: item.type ?? "change", id: item.ref_id ?? item.id };
+            invalidate(message);
+            onMessage?.(message);
           }
         }
       } catch {
@@ -70,7 +75,7 @@ export function useLiveUpdates(options: { paused?: boolean } = {}): { status: St
       pollTimer.current = setInterval(() => void poll(), POLL_INTERVAL_MS);
       timers.current.push(pollTimer.current);
     }
-  }, [invalidate]);
+  }, [invalidate, onMessage]);
 
   const connect = useCallback(() => {
     stopPolling();
@@ -93,7 +98,9 @@ export function useLiveUpdates(options: { paused?: boolean } = {}): { status: St
         lastChange.current = Math.max(lastChange.current, frameId);
       }
       try {
-        invalidate(JSON.parse(event.data) as StreamMessage);
+        const message = JSON.parse(event.data) as StreamMessage;
+        invalidate(message);
+        onMessage?.(message);
       } catch {
         // Ignore malformed frames; the next valid one invalidates again.
       }
@@ -108,7 +115,7 @@ export function useLiveUpdates(options: { paused?: boolean } = {}): { status: St
       setStatus("reconnecting");
       setRetry((current) => current + 1);
     };
-  }, [invalidate, startPolling, stopPolling]);
+  }, [invalidate, onMessage, startPolling, stopPolling]);
 
   useEffect(() => {
     if (paused) {

@@ -36,9 +36,16 @@ class ErrorResponse(StrictModel):
     error: ErrorBody
 
 
+class BulkStatusChange(StrictModel):
+    ids: list[int]
+    status: str
+    reason: str | None = None
+
+
 class StatusChange(StrictModel):
     status: str
     reason: str | None = None
+    updated_at: str | None = None
 
 
 class NoteCreate(StrictModel):

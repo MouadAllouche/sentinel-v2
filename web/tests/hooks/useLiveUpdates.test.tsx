@@ -61,6 +61,30 @@ describe("useLiveUpdates", () => {
     expect(FakeEventSource.instances).toHaveLength(0);
   });
 
+  it("forwards the entity id from the polling fallback", async () => {
+    vi.stubGlobal("EventSource", FakeEventSource);
+    const onMessage = vi.fn();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({ items: [{ id: 99, ref_id: 7, type: "incident.status_changed" }] }),
+          { status: 200 },
+        ),
+      ),
+    );
+    renderHook(() => useLiveUpdates({ onMessage }), { wrapper });
+    await waitFor(() => expect(FakeEventSource.instances[0]).toBeDefined());
+    act(() => {
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        FakeEventSource.instances[0]?.onerror?.();
+      }
+    });
+    await waitFor(() => expect(onMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "incident.status_changed", id: 7 }),
+    ));
+  });
+
   it("falls back to polling after three stream failures", async () => {
     vi.stubGlobal("EventSource", FakeEventSource);
     const fetchMock = vi

@@ -29,11 +29,19 @@ export interface IncidentRecord {
   status: string;
   severity: string;
   score?: number;
+  risk_score?: number;
   title?: string;
+  summary?: string;
   created_at?: string;
   assignee?: string | null;
+  updated_at?: string;
   mitre?: string[];
   event_ids?: number[];
+  assessment?: { reasons?: Array<Record<string, unknown>> } | null;
+  merged_into?: number | null;
+  primary_ip?: string | null;
+  primary_username?: string | null;
+  rules_fired?: string[];
   first_seen?: string;
   last_seen?: string;
 }
@@ -121,7 +129,12 @@ export function useIncidents(filters: Record<string, unknown> = {}) {
       const { data } = await client.GET("/api/incidents", {
         params: { query: filters as never },
       });
-      return (data as IncidentRecord[] | undefined) ?? [];
+      const value = data as unknown;
+      if (Array.isArray(value)) return value as IncidentRecord[];
+      if (value && typeof value === "object" && "items" in value) {
+        return (value as ListPage<IncidentRecord>).items;
+      }
+      return [];
     },
     staleTime: 15_000,
   });
@@ -137,6 +150,164 @@ export function useIncident(id: number) {
       return data as IncidentRecord | undefined;
     },
     enabled: Number.isFinite(id) && id > 0,
+  });
+}
+
+export function useIncidentPage(
+  filters: Record<string, unknown>,
+  cursor: string | null,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: ["incidents", "page", filters, cursor],
+    queryFn: async (): Promise<ListPage<IncidentRecord>> => {
+      const { data } = await client.GET("/api/incidents", {
+        params: { query: { ...filters, ...(cursor ? { cursor } : {}) } as never },
+      });
+      return (data as unknown as ListPage<IncidentRecord> | undefined) ?? { items: [] };
+    },
+    enabled,
+    staleTime: 15_000,
+  });
+}
+
+export function useIncidentHistory(id: number) {
+  return useQuery({
+    queryKey: queryKeys.incidentHistory(id),
+    queryFn: async () => {
+      const { data } = await client.GET("/api/incidents/{identifier}/history", {
+        params: { path: { identifier: id } },
+      });
+      return (
+        (data as unknown as {
+          history: Array<Record<string, unknown>>;
+          audit: Array<Record<string, unknown>>;
+        }) ?? { history: [], audit: [] }
+      );
+    },
+    enabled: Number.isFinite(id) && id > 0,
+  });
+}
+
+export function useIncidentNotes(id: number) {
+  return useQuery({
+    queryKey: queryKeys.incidentNotes(id),
+    queryFn: async (): Promise<Array<{ id: number; author: string; body: string; created_at: string }>> => {
+      const { data } = await client.GET("/api/incidents/{identifier}/notes", {
+        params: { path: { identifier: id } },
+      });
+      return (data as Array<{ id: number; author: string; body: string; created_at: string }> | undefined) ?? [];
+    },
+    enabled: Number.isFinite(id) && id > 0,
+  });
+}
+
+export function useIncidentGraph(id: number) {
+  return useQuery({
+    queryKey: queryKeys.incidentGraph(id),
+    queryFn: async (): Promise<{ nodes: Array<{ id: string; kind: string; value: string; count: number }>; edges: Array<{ a: string; b: string; strength: string; reason: string }> }> => {
+      const { data } = await client.GET("/api/incidents/{identifier}/graph", {
+        params: { path: { identifier: id } },
+      });
+      return (
+        (data as unknown as {
+          nodes: Array<{ id: string; kind: string; value: string; count: number }>;
+          edges: Array<{ a: string; b: string; strength: string; reason: string }>;
+        }) ?? { nodes: [], edges: [] }
+      );
+    },
+    enabled: Number.isFinite(id) && id > 0,
+  });
+}
+
+export function useIncidentEvents(id: number, cursor: string | null) {
+  return useQuery({
+    queryKey: queryKeys.incidentEvents(id, cursor),
+    queryFn: async (): Promise<ListPage<EventRecord>> => {
+      const { data } = await client.GET("/api/events", {
+        params: { query: { incident_id: id, limit: 50, ...(cursor ? { cursor } : {}) } as never },
+      });
+      return (data as unknown as ListPage<EventRecord> | undefined) ?? { items: [] };
+    },
+    enabled: Number.isFinite(id) && id > 0,
+  });
+}
+
+export function useIncidentStatusMutation(id: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      status,
+      reason,
+      updatedAt,
+    }: {
+      status: string;
+      reason?: string;
+      updatedAt?: string;
+    }) => {
+      await client.POST("/api/incidents/{identifier}/status", {
+        params: { path: { identifier: id } },
+        body: { status, reason: reason ?? null, updated_at: updatedAt ?? null },
+      });
+    },
+    onMutate: async ({ status }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.incident(id) });
+      const previous = queryClient.getQueryData<IncidentRecord>(queryKeys.incident(id));
+      queryClient.setQueryData<IncidentRecord>(queryKeys.incident(id), (current) =>
+        current ? { ...current, status } : current,
+      );
+      return { previous };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.incident(id), context.previous);
+      }
+    },
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: ["incidents"] }),
+  });
+}
+
+export function useSetAssignee(id: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (assignee: string) => {
+      await client.PATCH("/api/incidents/{identifier}", {
+        params: { path: { identifier: id } },
+        body: { assignee },
+      });
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: queryKeys.incident(id) }),
+  });
+}
+
+export function useAddIncidentNote(id: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: string) => {
+      await client.POST("/api/incidents/{identifier}/notes", {
+        params: { path: { identifier: id } },
+        body: { body },
+      });
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: queryKeys.incidentNotes(id) }),
+  });
+}
+
+export function useBulkIncidentStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      ids,
+      status,
+      reason,
+    }: {
+      ids: number[];
+      status: string;
+      reason: string;
+    }) => {
+      await client.POST("/api/incidents/bulk-status", { body: { ids, status, reason } });
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: queryKeys.incidents() }),
   });
 }
 
@@ -194,13 +365,17 @@ export function useRule(id: string | undefined) {
 export function useRiskThresholds() {
   return useQuery({
     queryKey: queryKeys.riskThresholds,
-    queryFn: async (): Promise<{ low: number; medium: number; high: number }> => {
+    queryFn: async (): Promise<{ low: number; medium: number; high: number; critical: number }> => {
       const { data } = await client.GET("/api/risk/thresholds");
-      const value = (data ?? {}) as { low?: number; medium?: number; high?: number };
+      const value = (data ?? {}) as {
+        low?: number; medium?: number; high?: number; critical?: number;
+      };
+      const high = value.high ?? 75;
       return {
         low: value.low ?? 25,
         medium: value.medium ?? 50,
-        high: value.high ?? 75,
+        high,
+        critical: value.critical ?? high,
       };
     },
     staleTime: 5 * 60 * 1000,

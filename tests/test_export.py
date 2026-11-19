@@ -41,6 +41,27 @@ def test_incident_report_and_markdown() -> None:
     assert b"SENTINEL" in pdf or b"Possible" in pdf
 
 
+def test_markdown_accepts_string_mitre_ids() -> None:
+    report = {
+        "generated_at": "2026-11-19T12:00:00+00:00",
+        "id": 2,
+        "title": "Demo scenario",
+        "severity": "high",
+        "score": 85,
+        "first_seen": "2026-11-19T10:00:00+00:00",
+        "last_seen": "2026-11-19T10:10:00+00:00",
+        "summary": "Repeated failures",
+        "mitre": ["T1110"],
+        "timeline": [],
+        "reasons": [],
+        "notes": [],
+        "caveat": "Grouping is inferred, not proof.",
+    }
+    markdown = render_incident(report, "md")
+    assert "T1110" in markdown
+    assert render_incident(report, "pdf")[:4] == b"%PDF"
+
+
 def test_csv_injection_protection_and_cap() -> None:
     rows = [
         {"description": "=cmd|'/c calc'!A0", "source_ip": "203.0.113.45"},

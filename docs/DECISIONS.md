@@ -666,3 +666,50 @@ Run `make api` and `make web`, then verify by hand (no screenshots):
   `allowlisted=true` (which the API reads as *only* allowlisted events), and `in_incident` is
   forwarded to `/events/export` so the downloaded file matches the visible table. A regression
   test asserts the exact query string for both cases.
+
+### D-095 — Phase 15 API and demo scenario
+- `list_incidents_page` adds keyset pagination with `risk`/`recent` sort and the documented filters
+  (`status`/`severity` lists, time range, assignee, text, `needs_attention`). The incident endpoint
+  returns `{items,next_cursor}`; `useIncidents` still normalises older list responses so existing
+  pages keep working.
+- Added `GET /api/incidents/{id}/history` (status history plus related audit rows) and
+  `POST /api/incidents/bulk-status` (admin only, 1..500 ids, transition/reason validation).
+  `explanation` now includes the incident's rule findings; `graph` returns entity nodes with counts
+  and link reasons instead of raw event-id endpoints. Export returns a real `application/pdf`
+  response with a `Content-Disposition` filename for PDF, and text/JSON for the other formats.
+- `scripts/seed_demo_db.py` now creates one deterministic standard scenario incident with four
+  evidence events, a finding, a note, a status change and a stored assessment (85/high), so the
+  Playwright incident journeys have stable data. It remains idempotent and workspace-scoped.
+
+### D-096 — Phase 15 UI decisions
+- `lib/incident/helpers.ts` holds the pure arithmetic and layout: `whatIfScore` mirrors the server's
+  capped sum and severity-basis logic (verified against the Phase 10 worked example: 170 → 100),
+  `layoutGraph` is order-independent, `collapseRepeats` keeps first/last timestamps, and
+  `sanitizeMarkdown` renders only bold/inline-code/safe links so notes cannot inject HTML.
+- The caveat is rendered by the incident header so it is visible on every tab and deep link.
+  The what-if panel is explicitly labelled "simulation, not saved"; inferred entries and weak
+  relations carry both text and styling. Status changes surface 409 as "Incident changed, reload".
+- Response payloads remain untyped dicts in the generated schema; small structural projections
+  (`IncidentRecord` extensions, `ScoreReason`) are used instead of hand-copied API models. No new
+  dependency was added; the entity graph is plain SVG.
+
+### D-097 — Phase 15 reviewer fixes
+- Status changes carry an optional `updated_at`; a stale value returns 409 `conflict`, the client
+  updates optimistically with rollback, and only a real 409 shows "Incident changed, reload".
+- The timeline collapses consecutive observed repeats into expandable "×N … between …" summaries
+  and offers "Show all N entries" above 2 000 rows; SSE `incident.*` messages highlight changed
+  incident rows for three seconds.
+- Stored findings are normalised before entering the timeline (evidence ids, explanation, tier),
+  `explain_incident` returns anchor events, inferred entries cite evidence and highlight it on
+  hover, and the explanation panel lists anchors.
+- Markdown/JSON/PDF exports now include the timeline, score reasons and notes. `rules_fired` is
+  derived from findings (top 3) and the Evidence tab lists finding rows with per-row actions.
+- Also added: incident time-range inputs, assignee editing and duration, a real "Copy summary",
+  audit entries in history, RBAC coverage for the new admin endpoints, and `core/export.py`
+  tolerance for string MITRE ids (demo seed data).
+- Re-review found two remaining gaps, both fixed: expanding a collapsed repeat now renders its
+  member events, and incident create/status/assignee/note mutations write `changes` rows so the
+  live feed emits `incident.*` events; the polling fallback also forwards messages to the highlight
+  callback. Both have regression tests.
+- Final re-review caught one more detail: the polling fallback now forwards `ref_id` (the incident
+  id) rather than the change-row `id` to the highlight callback, with a dedicated test.

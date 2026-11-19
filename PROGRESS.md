@@ -20,7 +20,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 12 | `specs/12-api.md` | FastAPI, auth, RBAC, CSRF, SSE, OpenAPI | ✅ | see below |
 | 13 | `specs/13-web-foundation.md` | Next.js scaffold, API client, auth, layout, design system | ✅ | see below |
 | 14 | `specs/14-web-overview-events.md` | overview, events explorer | ✅ | see below |
-| 15 | `specs/15-web-incidents.md` | incident list/detail, timeline, graph, workflow, export | ⬜ | |
+| 15 | `specs/15-web-incidents.md` | incident list/detail, timeline, graph, workflow, export | ✅ | see below |
 | 16 | `specs/16-web-rules-severity.md` | rule builder, backtest, severities, allowlist | ⬜ | |
 | 17 | `specs/17-web-behavior-drift-admin.md` | behavior, drift, notifications, settings, users, audit, health | ⬜ | |
 | 18 | `specs/18-demo-e2e-deploy.md` | demo, integration + e2e tests, deployment docs | ⬜ | |
@@ -239,3 +239,16 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
   `npm test` → `61 passed`; `npm run typecheck`, `npm run lint`, `npm run build` → pass;
   `npx playwright test --list` → `6 tests in 2 files`.
 - **Commit**: `phase-14: Overview and Events explorer with typed filters and exports`.
+
+## Phase 15 evidence (2026-11-19)
+
+- **Code**: `api/routers/incidents.py` (cursor list, history, bulk status, graph entities,
+  proper export responses), `api/schemas.py`, `storage/incident_repository.py`
+  (`list_incidents_page`), `scripts/seed_demo_db.py` (standard scenario incident),
+  `web/lib/incident/*`, `web/components/incidents/*`, both incident pages.
+- **Tests**: `web/tests/lib/incident/helpers.test.ts`, `web/tests/components/{incidents,incident-list}.test.tsx`,
+  `web/e2e/incidents.spec.ts`, `tests/api/test_incidents_extended.py`,
+  `tests/test_incident_list_page.py`, updated seed test.
+- **Commands run**: `make test` → `531 passed`; `make lint` → ruff/format/mypy clean;
+  `npm test` → `87 passed`; `npm run typecheck`, `npm run lint`, `npm run build` → pass.
+- **Commit**: `phase-15: Incident investigation UI, workflow and explanations`.

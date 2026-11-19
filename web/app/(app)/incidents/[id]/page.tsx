@@ -1,5 +1,5 @@
-import { IncidentDetail } from "@/components/explain/IncidentDetail";
+import { IncidentDetailRoute } from "@/components/incidents/IncidentDetailRoute";
 
 export default function IncidentPage() {
-  return <IncidentDetail />;
+  return <IncidentDetailRoute />;
 }

@@ -15,6 +15,7 @@ def test_seed_is_deterministic_and_idempotent(tmp_path: Path) -> None:
     db = tmp_path / "demo.db"
     first = seed(db, "demo-password-123", now="2026-11-19T12:00:00+00:00")
     assert first["events"] >= 10
+    assert first["incidents"] == 1
     assert count_events(db_path=db) == first["events"]
     assert get_user_by_name("admin", db) is not None
     assert get_user_by_name("viewer", db) is not None

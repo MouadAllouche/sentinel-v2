@@ -590,6 +590,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/incidents/bulk-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bulk Status */
+        post: operations["bulk_status_api_incidents_bulk_status_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/incidents/{identifier}": {
         parameters: {
             query?: never;
@@ -651,6 +668,23 @@ export interface paths {
         };
         /** Graph */
         get: operations["graph_api_incidents__identifier__graph_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/incidents/{identifier}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** History */
+        get: operations["history_api_incidents__identifier__history_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1333,6 +1367,15 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /** BulkStatusChange */
+        BulkStatusChange: {
+            /** Ids */
+            ids: number[];
+            /** Reason */
+            reason?: string | null;
+            /** Status */
+            status: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1382,6 +1425,8 @@ export interface components {
             reason?: string | null;
             /** Status */
             status: string;
+            /** Updated At */
+            updated_at?: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -2562,8 +2607,16 @@ export interface operations {
     incidents_api_incidents_get: {
         parameters: {
             query?: {
-                status?: string | null;
-                severity?: string | null;
+                status?: string[] | null;
+                severity?: string[] | null;
+                since?: string | null;
+                until?: string | null;
+                assignee?: string | null;
+                search?: string | null;
+                needs_attention?: boolean | null;
+                sort?: string;
+                cursor?: string | null;
+                limit?: number;
             };
             header?: never;
             path?: never;
@@ -2579,7 +2632,42 @@ export interface operations {
                 content: {
                     "application/json": {
                         [key: string]: unknown;
-                    }[];
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bulk_status_api_incidents_bulk_status_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkStatusChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Validation Error */
@@ -2715,7 +2803,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string;
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -2730,6 +2818,39 @@ export interface operations {
         };
     };
     graph_api_incidents__identifier__graph_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    history_api_incidents__identifier__history_get: {
         parameters: {
             query?: never;
             header?: never;
