@@ -24,7 +24,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 16 | `specs/16-web-rules-severity.md` | rule builder, backtest, severities, allowlist | ✅ | see below |
 | 17 | `specs/17-web-behavior-drift-admin.md` | behavior, drift, notifications, settings, users, audit, health | ✅ | see below |
 | 18 | `specs/18-demo-e2e-deploy.md` | demo, integration + e2e tests, deployment docs | ✅ | see below |
-| 19 | `specs/19-final-audit.md` | audit against definition of done | ⬜ | |
+| 19 | `specs/19-final-audit.md` | audit against definition of done | ✅ | Phase 19 evidence below; `docs/AUDIT_REPORT.md` |
 
 ## Phase 0 evidence (2026-11-17)
 
@@ -334,7 +334,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 - **Commands run**: `make test` → `580 passed`; `make lint` → ruff/format/mypy clean;
   `make web-test` → build, `136 passed` in 27 files, typecheck and lint clean;
   `make web-e2e` → **`22 passed`** against the production build (fresh demo DB).
-- No Phase 19 work started.
+- Superseded by the Phase 19 section below.
 
 ## Post-Phase 18 fix — demo/spec gaps (2026-11-21)
 
@@ -362,4 +362,22 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 - **Commands run**: `make test` → `594 passed`; `make lint` → ruff/format/mypy clean;
   `make web-test` → build, `137 passed` in 28 files, typecheck and lint clean;
   `make web-e2e` → **`22 passed`** on the production build with a fresh demo DB.
-- No Phase 19 work started.
+- Superseded by the Phase 19 section below.
+
+## Phase 19 evidence (2026-11-21)
+
+- **Code/tests**: `tests/test_time_windows_audit.py` (8 boundary/property tests over hourly
+  buckets, threshold sliding/fixed windows, correlation and retention cutoffs; reverting the
+  `hourly_buckets` fix makes the boundary test fail), `tests/test_engine_lookback.py` (pure
+  `event_lookback_seconds()` extracted from `engine/rules.py` and a real 60 s-interval engine
+  cycle), `tests/test_phase19_security.py` (no outbound sockets; no secrets in demo DB),
+  `tests/fixtures/real_events.py` (events from the real auth.log parser/normalizer), plus
+  fixture replacement in `tests/test_event_explorer_api.py` and collector isolation in
+  `tests/integration/test_full_scenario.py`.
+- **Real smoke test**: `cli.py init && collect && analyze` as user `mouad` (no sudo) produced
+  124 local events, no collector warnings, no incidents/findings/baselines (quiet host). Full
+  details and the fixture-drift inventory are in `docs/AUDIT_REPORT.md`.
+- **Commands run**: `make test` → `608 passed`; `make coverage` → `TOTAL 88%`; `make lint` → clean;
+  `make web-test` → build, 137 tests in 28 files, typecheck and lint clean;
+  `make web-e2e` → `22 passed`. `npm audit --omit=dev` → 0 vulnerabilities; `pip-audit` absent.
+- **Commit**: `phase-19: final audit and extra audit items`.

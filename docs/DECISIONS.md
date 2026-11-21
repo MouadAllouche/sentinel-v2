@@ -948,3 +948,33 @@ Run `make api` and `make web`, then verify by hand (no screenshots):
   made exact.
 - **Verification**: `make test` 594 passed; `make lint` clean; `make web-test` build + 137 tests in
   28 files + typecheck + lint clean; `make web-e2e` 22/22 passing on a freshly seeded demo DB.
+
+### D-110 — Phase 19 final audit and extra audit items
+- **Boundary audit**: added `tests/test_time_windows_audit.py` because the original
+  `hourly_buckets` bug passed the old tests. It pins `:00:00`, `:30:00`, `:59:59.999999`, midnight,
+  the current partial hour, and a Hypothesis property over bucket count/sum; the same treatment was
+  applied to threshold sliding/fixed windows, correlation windows and retention cutoffs. Drift has
+  no time window (snapshot comparison only) — recorded rather than invented.
+- **Lookback**: replaced the opaque `max(window) + max(cooldown)` expression with the pure,
+  tested `event_lookback_seconds()` helper so the "covers every enabled rule" invariant is explicit.
+  A real 60 s-interval engine cycle still evaluates the last completed hour; baselines query seven
+  days independently, so there was no mismatch to fix beyond extracting the helper.
+- **Real smoke test**: ran `cli.py init/collect/analyze` as the current unprivileged user (in group
+  `adm`, no sudo) against the project-local DB. No warnings; the quiet host produced no incidents
+  or findings. Kept out of tests (tests must never touch real logs), recorded in `AUDIT_REPORT.md`.
+- **Fixture drift**: generated `tests/fixtures/real_events.py` from the real auth.log parser and
+  replaced the hand-written `auth.log`-shaped events in `test_event_explorer_api.py`. The full
+  inventory of remaining hand-written data, with reasons it must stay crafted, is in
+  `docs/AUDIT_REPORT.md` §6. Web fixtures were already generated from the real API.
+- **Isolation fixes found during the audit**: `test_full_scenario` now disables machine collectors
+  (a live network snapshot made the second cycle non-idempotent), and engine-lookback tests disable
+  collectors too. Vitest timeout raised to 20 s because regenerated fixtures contain full link
+  reasons and graph data.
+- **Verification**: `make test` 608 passed; coverage 88%; `make lint` clean; `make web-test` build +
+  137 tests in 28 files + typecheck/lint clean; `make web-e2e` 22/22; `npm audit --omit=dev` 0
+  vulnerabilities; `pip-audit` unavailable (not installed without asking).
+- **Review outcome**: reviewer (no blockers) required full auth_log isolation in engine tests
+  (`paths.auth_log` now an empty tmp file) and a checked `PROGRESS.md` phase table; both fixed.
+  Security auditor (no production regression) required the no-network test to exercise real
+  defaults with the notifier enabled and to use the actual planted demo secrets; both fixed.
+  Remaining non-blockers and the full audit evidence are in `docs/AUDIT_REPORT.md` §11.

@@ -14,35 +14,14 @@ from storage.repositories import (
     query_events_bulk,
     save_events,
 )
+from tests.fixtures.real_events import failed_login_events
 
 
 def _events() -> list[dict]:
-    return [
-        {
-            "timestamp": "2026-11-19T10:00:00+00:00",
-            "source": "auth.log",
-            "event_type": "failed_login",
-            "severity": "low",
-            "description": "failure one",
-            "source_ip": "203.0.113.45",
-        },
-        {
-            "timestamp": "2026-11-19T10:05:00+00:00",
-            "source": "auth.log",
-            "event_type": "failed_login",
-            "severity": "high",
-            "description": "failure two",
-            "source_ip": "203.0.113.46",
-        },
-        {
-            "timestamp": "2026-11-19T10:10:00+00:00",
-            "source": "auth.log",
-            "event_type": "failed_login",
-            "severity": "low",
-            "description": "failure three",
-            "source_ip": "198.51.100.7",
-        },
-    ]
+    # Real parser/normalizer output; only severity is pinned for the mixed-series test.
+    events = failed_login_events()
+    events[1]["severity"] = "high"
+    return events
 
 
 def test_source_cidr_filter_boundaries(tmp_initialised_db: Path) -> None:

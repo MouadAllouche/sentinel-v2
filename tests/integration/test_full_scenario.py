@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import random
 from collections.abc import Callable
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from core.config import load_settings
+from core.config import CollectorSettings, load_settings
 from engine.ingest import prepare_event
 from engine.runner import run_once
 from storage.incident_repository import list_incidents
@@ -34,7 +35,27 @@ def _raw(identifier: int, seconds: int, event_type: str, **extra: Any) -> dict[s
 def test_full_scenario_outcomes_and_idempotence(
     tmp_initialised_db: Path, make_event: Callable[..., dict[str, Any]]
 ) -> None:
-    settings = load_settings(config_path=None)
+    # This is a pipeline test, not a live-collection test: disable machine
+    # collectors and point auth_log at an empty tmp file, so nothing reads
+    # /var/log or the live network/process state.
+    base_settings = load_settings(config_path=None)
+    auth_log = tmp_initialised_db.parent / "auth.log"
+    auth_log.write_text("", encoding="utf-8")
+    settings = replace(
+        base_settings,
+        paths=replace(base_settings.paths, auth_log=str(auth_log)),
+        collectors=CollectorSettings(
+            auth_source="auth_log",
+            journald_unit="ssh",
+            network=False,
+            listening=False,
+            processes=False,
+            filesystem=False,
+            dpkg=False,
+            system=False,
+            max_process_events_per_run=0,
+        ),
+    )
     raw = [_raw(index + 1, index * 2, "failed_login") for index in range(25)]
     raw.extend(_raw(200 + index, 400 + index, "failed_login") for index in range(55))
     raw.append(_raw(100, 60, "successful_login"))

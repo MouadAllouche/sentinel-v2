@@ -23,6 +23,27 @@ from storage.rules_repository import (
 logger = logging.getLogger(__name__)
 
 
+def event_lookback_seconds(rules: list[Any]) -> int:
+    """How far back the rules cycle must read to evaluate every enabled rule.
+
+    A rule needs its longest tier/step window plus its cooldown so repeated
+    findings can be suppressed correctly; sequence rules also need
+    ``within_seconds``. Computing one maximum per rule (instead of a global
+    ``max(window) + max(cooldown)``) keeps the lookback just large enough and
+    makes the invariant directly testable.
+    """
+    required: list[int] = []
+    for rule in rules:
+        windows = [tier.window_seconds for tier in rule.tiers]
+        for step in getattr(rule, "steps", []) or []:
+            if isinstance(step, dict) and step.get("window_seconds"):
+                windows.append(int(step["window_seconds"]))
+        if rule.kind == "sequence" and rule.within_seconds:
+            windows.append(rule.within_seconds)
+        required.append(max(windows, default=60) + rule.cooldown_seconds)
+    return max(required, default=60)
+
+
 @dataclass
 class RulesReport:
     rules_evaluated: int = 0
@@ -107,10 +128,7 @@ def run_rules(db_path: str | Path | None = None, now: datetime | None = None) ->
     if not rules:
         return report
 
-    windows = [tier.window_seconds for rule in rules for tier in rule.tiers]
-    windows.extend(rule.within_seconds for rule in rules if rule.kind == "sequence")
-    longest = max(windows, default=60) + max((rule.cooldown_seconds for rule in rules), default=0)
-    since = (reference - timedelta(seconds=longest)).isoformat()
+    since = (reference - timedelta(seconds=event_lookback_seconds(rules))).isoformat()
     events = get_events_for_rules(since, db_path)
     findings, warnings = evaluate_rules(
         rules, events, reference, _new_value_history(rules, reference, db_path)

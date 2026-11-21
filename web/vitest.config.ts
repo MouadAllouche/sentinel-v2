@@ -10,6 +10,9 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    // Generated API fixtures now include full link reasons/graph data, so
+    // renders legitimately take longer than the 5 s default on a loaded host.
+    testTimeout: 20_000,
     setupFiles: ["./vitest.setup.ts"],
     exclude: ["e2e/**", "node_modules/**", ".next/**"],
   },
