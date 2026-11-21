@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query, Request, Response
@@ -20,7 +21,7 @@ from core.correlation import Component
 from core.export import incident_report, render_incident
 from core.incidents import apply_status_transition
 from core.normalizer import compute_event_hash
-from core.timeline import build_timeline, explain_incident
+from core.timeline import build_timeline, component_with_links, explain_incident
 from storage.incident_repository import (
     add_note,
     get_incident,
@@ -43,7 +44,9 @@ def _component(
     events = list(get_events_by_ids(incident.get("event_ids", []), db_path(request)).values())
     for event in events:
         event.setdefault("event_hash", compute_event_hash(event))
-    return Component(events=events), events
+    # Stored incidents do not persist Link rows; recompute them so explanations
+    # and timeline relation connectors contain every strong/weak reason.
+    return component_with_links(events, datetime.now(UTC)), events
 
 
 def _findings_for(incident: dict[str, Any], request: Request) -> list[dict[str, Any]]:

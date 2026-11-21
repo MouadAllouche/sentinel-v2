@@ -197,12 +197,13 @@ def describe_changes(
         elif change.field == "fingerprints_added":
             count = len(change.new)
             plural = "s" if count != 1 else ""
-            first = change.new[0] if change.new else ""
-            descriptions.append(f"{spec.path}: {count} key{plural} added ({first})")
+            descriptions.append(f"{spec.path}: {count} key{plural} added ({', '.join(change.new)})")
         elif change.field == "fingerprints_removed":
             count = len(change.new)
             plural = "s" if count != 1 else ""
-            descriptions.append(f"{spec.path}: {count} key{plural} removed")
+            descriptions.append(
+                f"{spec.path}: {count} key{plural} removed ({', '.join(change.new)})"
+            )
         elif change.field == "symlink_target_changed":
             descriptions.append(f"{spec.path} symlink target changed")
     return descriptions

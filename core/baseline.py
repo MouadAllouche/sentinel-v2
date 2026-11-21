@@ -98,7 +98,10 @@ def hourly_buckets(
             stamp = _parse(event["timestamp"])
         except ValueError:
             continue
-        if not start <= stamp <= end:
+        # ``end`` is the *start* of the last completed hour. Count the whole
+        # hour [end, end + 1h) in its bucket; the current partial hour is still
+        # excluded because it begins at end + 1h.
+        if not start <= stamp < end + timedelta(hours=1):
             continue
         key = stamp.replace(minute=0, second=0, microsecond=0).isoformat()
         if spec.distinct_field:

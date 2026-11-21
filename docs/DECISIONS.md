@@ -911,8 +911,40 @@ Run `make api` and `make web`, then verify by hand (no screenshots):
   `--host 127.0.0.1`). The double-submit HMAC token remains an independent CSRF layer. If an operator
   deliberately exposes the API remotely through `allow_remote`/`trusted_proxy`, the proxy must strip
   client-supplied forwarded headers and a trusted-proxy source-IP check must be added; that is a
-  deployment hardening item, not a change to this fix.
+  deployment hardening item, not a change to this fix. This is now enforced at startup:
+  `_assert_runtime_guard()` still refuses any non-loopback bind without `allow_remote` **and**
+  `trusted_proxy`, and emits a WARNING naming the trusted proxy when forwarded-header trust is
+  enabled on a non-loopback bind (regression test: `tests/test_api_security_startup.py`).
 - **Verification**: `make test` 580 passed; `make lint` clean; `make web-test` build + 136 tests in
   27 files + typecheck + lint clean; `make web-e2e` 22/22 passing against `npm run start` with a
   freshly seeded demo DB. All journeys share one DB, so `workers: 1` remains and a fresh demo DB is
   required for a clean run.
+
+### D-109 — Demo/spec gap fixes (post-Phase 18)
+- **Grouping reasons**: the API and the demo printed an empty "Grouping reasons:" section because
+  `Component(events=...)` reconstructed no `Link` rows. `component_with_links()` in
+  `core/timeline.py` deterministically recomputes them with the same pure `correlate()` used by the
+  engine; both callers now use it, and the demo prints every distinct reason with a count (pairwise
+  correlation otherwise produces hundreds of near-duplicate lines). The UI already rendered the
+  payload; it now avoids prefixing `Weak:` twice.
+- **Anomaly**: replaced the hand-written `anomaly` event with a real baseline cycle — seven benign
+  days plus a spike in the last completed hour, which fires the seeded `baseline-failed-logins`
+  rule. This exposed a latent bug in `hourly_buckets()`: it only counted events stamped exactly at
+  the hour boundary, so the evaluated hour was effectively empty. The filter now covers the whole
+  completed hour while still excluding the current partial hour. Anomaly descriptions now include
+  observed value, window, mean, std, sample count and standard deviations above normal (spec 08).
+- **authorized_keys drift**: demo key lines are valid base64 blobs, so `ssh_key_fingerprints()`
+  produces fingerprints and the drift description names `SHA256:…` keys added/removed. Only hashes
+  ever enter the database; no key material is stored.
+- **Session keys**: the demo now creates a random 0600 `session.key` in its workdir, reused across
+  idempotent re-runs. The Makefile `demo-api` target, the printed API command and the Playwright
+  webServer read that file via shell command substitution; no literal demo/e2e keys remain in
+  tooling. The recorded literal keys were a convenience, not a requirement — environment variables
+  remain the only input to the API.
+- **Forwarded-header trust**: recorded explicitly in D-108 and enforced at startup (warning on a
+  non-loopback bind with `trusted_proxy`, continued refusal without the opt-ins).
+- **E2E**: because the baseline anomaly legitimately creates its own incident, the main incident is
+  no longer id 1; journeys resolve it by its seeded title. An ambiguous "Events" link assertion was
+  made exact.
+- **Verification**: `make test` 594 passed; `make lint` clean; `make web-test` build + 137 tests in
+  28 files + typecheck + lint clean; `make web-e2e` 22/22 passing on a freshly seeded demo DB.

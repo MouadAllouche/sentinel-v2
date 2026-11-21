@@ -56,9 +56,11 @@ def detect_anomaly(
     z_observed = (observed - baseline.mean) / floor if floor else 0.0
     end = hour_start + timedelta(hours=1)
     description = (
-        f"{baseline.metric} was {observed} against a baseline mean of {baseline.mean:.1f} "
-        f"(std {baseline.stddev:.1f}, {baseline.sample_count} hourly samples over "
-        f"{rule.window_days} days), {z_observed:.1f} standard deviations above normal. "
+        f"{baseline.metric}: observed {observed} in the last completed hour "
+        f"({hour_start.isoformat()}..{end.isoformat()}), against a baseline mean of "
+        f"{baseline.mean:.1f} (std {baseline.stddev:.1f}, {baseline.sample_count} hourly "
+        f"samples over {rule.window_days} days, window {baseline.window_start} to "
+        f"{baseline.window_end}); {z_observed:.1f} standard deviations above normal. "
         "This is unusual, not necessarily malicious."
     )
     details = {

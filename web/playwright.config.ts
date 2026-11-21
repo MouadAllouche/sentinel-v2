@@ -13,8 +13,11 @@ process.env.SENTINEL_DEMO_PASSWORD = demo.password;
 process.env.SENTINEL_DEMO_USER = demo.username;
 process.env.SENTINEL_DEMO_VIEWER = demo.viewer;
 
+// The demo generator writes a random 0600 session key into its workdir; never
+// embed a literal key in the harness (or print it in the server command).
+const sessionKeyPath = path.join(root, ".demo-e2e", "session.key");
 const apiCommand =
-  `SENTINEL_SESSION_KEY=e2e-session-key-0123456789abcdef ` +
+  `SENTINEL_SESSION_KEY=$(cat "${sessionKeyPath}") ` +
   `SENTINEL_CONFIG="${path.join(root, ".demo-e2e", "settings.toml")}" ` +
   `"${path.join(root, "venv", "bin", "python")}" -m uvicorn api.main:app ` +
   `--host 127.0.0.1 --port 8000`;

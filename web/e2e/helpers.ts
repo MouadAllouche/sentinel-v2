@@ -11,6 +11,23 @@ export function credentials() {
   };
 }
 
+/**
+ * The baseline cycle emits its own anomaly incident, so the main brute-force
+ * incident is not always id 1. Discover it by its seeded title instead of
+ * hard-coding an id that depends on event-hash ordering.
+ */
+export async function mainIncidentId(page: Page): Promise<number> {
+  await page.goto("/incidents");
+  const href = await page
+    .getByRole("link", { name: /possible brute force from 203\.0\.113\.45/i })
+    .first()
+    .getAttribute("href");
+  if (!href) throw new Error("seeded brute-force incident link not found");
+  const id = Number(new URL(href, page.url()).pathname.split("/").pop());
+  if (!Number.isFinite(id)) throw new Error(`unexpected incident href: ${href}`);
+  return id;
+}
+
 export async function login(page: Page, username = credentials().admin) {
   await page.goto("/login");
   await page.getByLabel("Username").fill(username);

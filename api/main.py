@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import time
 from collections import defaultdict
@@ -39,10 +40,22 @@ def _assert_runtime_guard(config: Settings) -> None:
         raise RuntimeError("SENTINEL_SESSION_KEY must be set before starting the API")
     if len(key) < 32:
         raise RuntimeError("SENTINEL_SESSION_KEY must be at least 32 characters")
-    if config.api.host not in {"127.0.0.1", "localhost", "::1"} and not (
-        config.api.allow_remote and config.api.trusted_proxy
-    ):
-        raise RuntimeError("non-loopback binds require allow_remote and a trusted_proxy/TLS note")
+    if config.api.host not in {"127.0.0.1", "localhost", "::1"}:
+        if not (config.api.allow_remote and config.api.trusted_proxy):
+            raise RuntimeError(
+                "non-loopback binds require allow_remote and a trusted_proxy/TLS note"
+            )
+        # valid_origin() trusts X-Forwarded-* so the browser-facing origin can be
+        # reconstructed behind the proxy. That is only safe when the API is
+        # reachable exclusively through that proxy: strip client-supplied
+        # forwarded headers at the proxy edge and bind to loopback where possible.
+        logging.getLogger(__name__).warning(
+            "API bound to non-loopback host %s with forwarded-header trust enabled "
+            "(trusted_proxy=%s); ensure the proxy overwrites X-Forwarded-* headers "
+            "and blocks direct access to the backend",
+            config.api.host,
+            config.api.trusted_proxy,
+        )
 
 
 def create_app(settings: Settings | None = None, db_path: str | None = None) -> FastAPI:

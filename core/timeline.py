@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 
-from core.correlation import Component
+from core.correlation import Component, CorrelationSettings, correlate
 from core.mitre import mitre_for_rules
 
-__all__ = ["build_timeline", "explain_incident"]
+__all__ = ["build_timeline", "component_with_links", "explain_incident"]
 
 ANCHOR_TYPES = frozenset(
     {
@@ -29,6 +30,19 @@ CAVEAT = (
 
 def _links_between(links: list[Any], first: int, second: int) -> list[Any]:
     return [link for link in links if {link.a, link.b} == {first, second}]
+
+
+def component_with_links(events: list[dict[str, Any]], now: datetime) -> Component:
+    """Rebuild a stored incident's link reasons deterministically.
+
+    Stored incidents keep event ids but not the ``Link`` objects, so callers that
+    want an explanation (API and demo) must recompute them from the same pure
+    correlation logic. Links from all components are retained so a long incident
+    split across components still explains every relationship.
+    """
+    components = correlate(events, CorrelationSettings(), now)
+    links = [link for component in components for link in component.links]
+    return Component(events=events, links=links)
 
 
 def build_timeline(

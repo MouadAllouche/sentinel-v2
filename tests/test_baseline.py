@@ -51,6 +51,20 @@ def test_zero_filled_buckets_and_completed_hour(make_event: Callable[..., dict[s
     assert buckets[-1]["value"] == 0  # last completed hour had no events
 
 
+def test_last_completed_hour_counts_every_event_in_the_hour(
+    make_event: Callable[..., dict[str, Any]],
+) -> None:
+    """The evaluated hour is [hour_start, hour_start + 1h), not a single instant."""
+    hour = BASE.replace(minute=0, second=0) - timedelta(hours=1)
+    events = [_event(make_event, i, hour + timedelta(minutes=i * 5)) for i in range(6)]
+    buckets = hourly_buckets(events, "failed_logins_per_hour", "global", window_days=1, now=BASE)
+    assert buckets[-1]["value"] == 6
+    # The current partial hour is still excluded.
+    events.append(_event(make_event, 99, BASE.replace(minute=0)))
+    buckets = hourly_buckets(events, "failed_logins_per_hour", "global", window_days=1, now=BASE)
+    assert buckets[-1]["value"] == 6
+
+
 def test_exact_stats_and_maturity(make_event: Callable[..., dict[str, Any]]) -> None:
     start = BASE.replace(minute=0, second=0) - timedelta(hours=47)
     events = [

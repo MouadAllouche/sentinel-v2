@@ -25,7 +25,7 @@ api:
 		./venv/bin/uvicorn api.main:app --host 127.0.0.1 --port 8000
 
 demo-api:
-	SENTINEL_SESSION_KEY=demo-session-key-0123456789abcdef \
+	SENTINEL_SESSION_KEY=$$(cat demo_workdir/session.key) \
 		SENTINEL_CONFIG=demo_workdir/settings.toml \
 		./venv/bin/uvicorn api.main:app --host 127.0.0.1 --port 8000
 

@@ -8,11 +8,13 @@ mode-0600 credentials file for the Playwright harness.
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import secrets
 import shutil
 import sys
+from collections import Counter
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -43,29 +45,80 @@ def _safe_workdir(path: str | Path) -> Path:
     return resolved
 
 
+def _session_key(target: Path) -> str:
+    """Create (or reuse) a private demo session key at mode 0600 in the workdir."""
+    path = target / "session.key"
+    if path.exists():
+        existing = path.read_text(encoding="utf-8").strip()
+        if len(existing) >= 32:
+            os.chmod(path, 0o600)
+            return existing
+    key = secrets.token_urlsafe(48)
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+        handle.write(key + "\n")
+    os.chmod(path, 0o600)
+    return key
+
+
+def _fake_key_line(label: str, seed: str) -> str:
+    """A syntactically valid *fake* public key line (base64 blob, never key material).
+
+    The collector stores only a SHA-256 fingerprint of the blob, so the demo can
+    demonstrate key-added drift without ever persisting key material.
+    """
+    blob = base64.b64encode(f"ssh-ed25519-demo-{seed}".encode()).decode("ascii")
+    return f"ssh-ed25519 {blob} {label}\n"
+
+
 def _auth_lines(now: datetime) -> list[str]:
+    """Seven benign days of history, then a spike in the last completed hour.
+
+    The spike is deliberately placed in the last *completed* hour because the
+    baseline cycle only evaluates that hour; this makes the demo's anomaly come
+    from the real baseline pipeline rather than a hand-written event.
+    """
     lines: list[str] = []
     for day in range(7):
         for index in range(3):
-            stamp = now - timedelta(days=7 - day, minutes=index * 5)
+            stamp = now - timedelta(days=7 - day, hours=index * 3, minutes=index * 5)
             user = "alice" if index % 2 else "bob"
-            line = f"{stamp.isoformat()} sshd[1]: Accepted password for {user} from 198.51.100.7"
-            lines.append(line + " port 22")
+            lines.append(
+                f"{stamp.isoformat()} sshd[1]: Accepted password for {user} "
+                "from 198.51.100.7 port 22"
+            )
             lines.append(f"{stamp.isoformat()} sudo:   {user} : USER=root ; COMMAND=/usr/bin/id")
-    # Two bursts from the simulated attacker: 6 in 5 minutes, then 30 in 40 seconds.
-    for index in range(6):
-        stamp = now - timedelta(minutes=8, seconds=index * 50)
-        line = f"{stamp.isoformat()} sshd[1]: Failed password for admin from 203.0.113.45"
-        lines.append(f"{line} port {2200 + index}")
-    for index in range(30):
-        stamp = now - timedelta(minutes=3, seconds=index)
-        line = f"{stamp.isoformat()} sshd[1]: Failed password for invalid user admin"
-        lines.append(f"{line} from 203.0.113.45 port {3200 + index}")
-    stamp = now - timedelta(minutes=2)
+            # A little benign failed-login noise keeps the learned mean realistic.
+            failed = stamp + timedelta(minutes=2)
+            lines.append(
+                f"{failed.isoformat()} sshd[1]: Failed password for {user} "
+                "from 198.51.100.7 port 2200"
+            )
+
+    hour_start = now.replace(minute=0, second=0, microsecond=0) - timedelta(hours=1)
+    # Two early probes make the attack cluster the incident's earliest anchor,
+    # while staying inside the rules engine's recent-event lookback.
+    for index in range(2):
+        stamp = hour_start + timedelta(minutes=38 + index)
+        lines.append(
+            f"{stamp.isoformat()} sshd[1]: Failed password for admin from 203.0.113.45 "
+            f"port {2100 + index}"
+        )
+    # 36 failed logins inside ~6 minutes: well above the seeded z/min_absolute
+    # tiers, and close enough to the anomaly to stay in the same incident.
+    for index in range(36):
+        stamp = hour_start + timedelta(minutes=40, seconds=index * 10)
+        user = "invalid user admin" if index % 2 else "admin"
+        lines.append(
+            f"{stamp.isoformat()} sshd[1]: Failed password for {user} "
+            f"from 203.0.113.45 port {2200 + index}"
+        )
+    follow_up = hour_start + timedelta(minutes=50)
     lines.append(
-        f"{stamp.isoformat()} sshd[1]: Accepted password for admin from 203.0.113.45 port 4000"
+        f"{follow_up.isoformat()} sshd[1]: Accepted password for admin from 203.0.113.45 port 4000"
     )
-    lines.append(f"{stamp.isoformat()} sudo:   admin : USER=root ; COMMAND=/usr/sbin/visudo")
+    lines.append(f"{follow_up.isoformat()} sudo:   admin : USER=root ; COMMAND=/usr/sbin/visudo")
+
     # Benign noise from a trusted IP (allowlisted in the demo settings).
     for index in range(4):
         trusted = now - timedelta(minutes=4, seconds=index * 10)
@@ -83,8 +136,9 @@ def _files(workdir: Path, now: datetime) -> dict[str, Path]:
     sshd.write_text("# sentinel demo configuration\nPermitRootLogin no\n", encoding="utf-8")
     sudoers = "demo ALL=(ALL) NOPASSWD: /usr/bin/id\n"
     (etc / "sudoers.d" / "demo").write_text(sudoers, encoding="utf-8")
-    key = f"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDEMO{secrets.token_hex(6)} sentinel-demo\n"
-    (etc / "authorized_keys").write_text(key, encoding="utf-8")
+    (etc / "authorized_keys").write_text(
+        _fake_key_line("sentinel-demo", "baseline"), encoding="utf-8"
+    )
     auth_log = workdir / "auth.log"
     auth_log.write_text("\n".join(_auth_lines(now)) + "\n", encoding="utf-8")
     return {
@@ -162,14 +216,6 @@ def _synthetic_events(db: Path, now: datetime) -> None:
             "description": "install nmap",
             "process_name": "apt",
         },
-        {
-            "timestamp": now.isoformat(),
-            "source": "baseline",
-            "event_type": "anomaly",
-            "severity": "medium",
-            "description": "failed_login count is far above the expected band",
-            "source_ip": "203.0.113.45",
-        },
     ]
     prepared = [prepare_event(item, db, now=now) for item in raw_events]
     save_events([item[0] for item in prepared if item], db)
@@ -181,11 +227,11 @@ def _print_demo_details(
     findings: list[dict[str, Any]],
     assessment: dict[str, Any] | None,
     db: Path,
+    now: datetime,
 ) -> None:
     """Print the explained highlights the demo exists to showcase (spec 18.1 step 4)."""
-    from core.correlation import Component
     from core.normalizer import compute_event_hash
-    from core.timeline import build_timeline, explain_incident
+    from core.timeline import build_timeline, component_with_links, explain_incident
     from storage.incident_repository import get_incident
     from storage.notification_repository import list_notifications
     from storage.repositories import get_events_by_ids
@@ -205,7 +251,7 @@ def _print_demo_details(
             events = list(get_events_by_ids(stored.get("event_ids", []), db).values())
             for event in events:
                 event.setdefault("event_hash", compute_event_hash(event))
-            component = Component(events=events)
+            component = component_with_links(events, now)
             rule_findings = list_findings({}, db_path=db, limit=500)
             timeline = build_timeline(component, events, component.links, rule_findings)
             print("Timeline excerpt:")
@@ -213,10 +259,12 @@ def _print_demo_details(
                 print(f"  {entry['timestamp']} [{entry['kind']}] {entry['summary'][:90]}")
             explanation = explain_incident(component, events, rule_findings)
             print("Grouping reasons:")
-            for reason in explanation["grouping"]["strong"][:3]:
-                print(f"  strong: {reason}")
-            for reason in explanation["grouping"]["weak"][:3]:
-                print(f"  weak: {reason}")
+            # Correlation emits one reason per event pair; collapse identical
+            # reasons so the demo stays readable without dropping any of them.
+            for strength in ("strong", "weak"):
+                for reason, count in sorted(Counter(explanation["grouping"][strength]).items()):
+                    suffix = f" (×{count})" if count > 1 else ""
+                    print(f"  {strength}: {reason}{suffix}")
 
     print("Rule findings by tier:")
     severities: dict[str, int] = {}
@@ -294,6 +342,7 @@ def build_demo(
     settings_path = _settings(target, db, target / "auth.log")
     settings = load_settings(config_path=settings_path)
 
+    _session_key(target)
     credentials = target / "credentials.json"
     if get_user_by_name("demo-admin", db) is not None and credentials.exists():
         # Re-run without --reset: reuse the existing password so credentials still authenticate.
@@ -352,9 +401,7 @@ def build_demo(
         files["cron"].write_text("#!/bin/sh\ntrue\n", encoding="utf-8")
         files["authorized_keys"].write_text(
             files["authorized_keys"].read_text(encoding="utf-8")
-            + "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDEMO"
-            + secrets.token_hex(6)
-            + " demo-added\n",
+            + _fake_key_line("demo-added", secrets.token_hex(6)),
             encoding="utf-8",
         )
         run_once(settings, db, reference, notify=True)
@@ -363,6 +410,9 @@ def build_demo(
         events_new = count_events(db_path=db)
 
     incidents = list_incidents(db_path=db)
+    # The richest incident is the one the demo exists to showcase; anomalies
+    # from the baseline cycle can create smaller single-event incidents too.
+    incidents.sort(key=lambda item: len(item.get("event_ids") or []), reverse=True)
     assessment = get_assessment("incident", incidents[0]["id"], db) if incidents else None
     findings = query_events({"event_type": ["rule_triggered"]}, db_path=db)["items"]
     summary = {
@@ -382,12 +432,12 @@ def build_demo(
         print("Summary:", json.dumps(summary, sort_keys=True))
         print("Start the API (from the project root):")
         print(
-            f"  SENTINEL_SESSION_KEY=demo-session-key-0123456789abcdef "
+            f"  SENTINEL_SESSION_KEY=$(cat {target / 'session.key'}) "
             f"SENTINEL_CONFIG={settings_path} ./venv/bin/uvicorn api.main:app "
             f"--host 127.0.0.1 --port 8000"
         )
         print("Start the web: cd web && npm run start")
-        _print_demo_details(target, incidents, findings, assessment, db)
+        _print_demo_details(target, incidents, findings, assessment, db, reference)
     else:
         print("Summary:", json.dumps(summary, sort_keys=True))
     if live:

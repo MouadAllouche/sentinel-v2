@@ -11,11 +11,15 @@
     "timestamp": "2026-11-19T12:00:00+00:00"
   },
   {
-    "event_id": 115,
+    "event_id": 117,
     "event_type": "config_drift",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "time_proximity_host",
+      "reason": "Weak: config_drift occurred 0s after failed_login; time proximity only",
+      "strength": "weak"
+    },
     "rule_findings": [],
     "severity": "high",
     "summary": "/etc/ssh/sshd_config removed",
@@ -37,7 +41,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -48,7 +56,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -59,18 +71,26 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
     "timestamp": "2026-11-19T12:00:04+00:00"
   },
   {
-    "event_id": 116,
+    "event_id": 118,
     "event_type": "rule_triggered",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "rule_evidence",
+      "reason": "Rule evidence: 'ssh-bruteforce-by-ip' matched this failed_login; 0s apart",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "medium",
     "summary": "5 failed_login/invalid_user events from source_ip=203.0.113.45 within 10 minutes (threshold: \u22655 in 10min \u2192 medium). First at 12:00:00, last at 12:00:04.",
@@ -123,7 +143,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -134,7 +158,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -145,7 +173,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -156,7 +188,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -167,7 +203,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -178,7 +218,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -189,7 +233,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -200,7 +248,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -211,7 +263,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -222,7 +278,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -233,7 +293,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -244,7 +308,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -255,7 +323,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -266,18 +338,26 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
     "timestamp": "2026-11-19T12:00:19+00:00"
   },
   {
-    "event_id": 117,
+    "event_id": 119,
     "event_type": "rule_triggered",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "rule_evidence",
+      "reason": "Rule evidence: 'ssh-bruteforce-by-ip' matched this failed_login; 0s apart",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "high",
     "summary": "20 failed_login/invalid_user events from source_ip=203.0.113.45 within 10 minutes (threshold: \u226520 in 10min \u2192 high). First at 12:00:00, last at 12:00:19.",
@@ -345,7 +425,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -356,7 +440,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -367,7 +455,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -378,7 +470,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -389,7 +485,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -400,7 +500,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -411,7 +515,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -422,7 +530,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -433,7 +545,11 @@
     "event_type": "failed_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 1s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "failed_login from 203.0.113.45",
@@ -444,18 +560,26 @@
     "event_type": "successful_login",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 11s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "successful_login from 203.0.113.45",
     "timestamp": "2026-11-19T12:00:40+00:00"
   },
   {
-    "event_id": 118,
+    "event_id": 120,
     "event_type": "rule_triggered",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "rule_evidence",
+      "reason": "Rule evidence: 'success-after-failures' matched this successful_login; 0s apart",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "high",
     "summary": "Possible sequence for source_ip=203.0.113.45: 2 steps completed from 12:00:00 to 12:00:40; shared attributes and order only, not proof of a single actor.",
@@ -541,7 +665,11 @@
     "event_type": "config_drift",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 5s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "high",
     "summary": "config_drift from 203.0.113.45",
@@ -552,7 +680,11 @@
     "event_type": "network_connection",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 5s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "network_connection from 203.0.113.45",
@@ -563,7 +695,11 @@
     "event_type": "package_installed",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 5s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "low",
     "summary": "package_installed from 203.0.113.45",
@@ -574,7 +710,11 @@
     "event_type": "anomaly",
     "kind": "observed",
     "mitre": [],
-    "relation_to_previous": null,
+    "relation_to_previous": {
+      "link_kind": "shared_ip",
+      "reason": "Same source IP 203.0.113.45; 5s after the previous event",
+      "strength": "strong"
+    },
     "rule_findings": [],
     "severity": "medium",
     "summary": "failed_login count far above the expected band",

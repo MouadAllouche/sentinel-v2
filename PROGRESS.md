@@ -335,3 +335,31 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
   `make web-test` → build, `136 passed` in 27 files, typecheck and lint clean;
   `make web-e2e` → **`22 passed`** against the production build (fresh demo DB).
 - No Phase 19 work started.
+
+## Post-Phase 18 fix — demo/spec gaps (2026-11-21)
+
+- **Grouping reasons**: stored incidents have no `Link` rows, so `explain_incident()` received an
+  empty component. Added `core.timeline.component_with_links()` and used it in both the API's
+  `_component()` and the demo print, which now lists every distinct strong/weak reason (with an
+  occurrence count) instead of an empty heading. `ExplanationPanel` no longer double-prefixes
+  reasons that already say `Weak:`.
+- **Anomaly from the real pipeline**: the demo now seeds seven days of benign history plus a 36-event
+  spike in the last completed hour and removes the hand-written anomaly event. Spec 08 explanation
+  now states observed value, window, mean, std, sample count and `N standard deviations above
+  normal`. A latent baseline bug was found and fixed: `hourly_buckets()` only counted events at the
+  exact start of the evaluated hour; it now counts the whole `[hour_start, hour_start+1h)` window.
+- **authorized_keys drift**: the demo's fake public keys now use valid base64 blobs, so the real
+  fingerprint diff emits `1 key added (SHA256:…)`; removed keys are named too. No key material is
+  stored — only SHA-256 fingerprints.
+- **Session key**: `build_demo()` writes a random 0600 `session.key` into its workdir (reused on
+  re-run); the Makefile `demo-api` target, printed start command and Playwright webServer read it
+  with `$(cat …)` instead of using literal keys.
+- **Startup guard**: non-loopback binds still fail closed without `allow_remote` + `trusted_proxy`,
+  and now log a warning naming the trusted proxy when forwarded-header trust is enabled.
+- **E2E robustness**: the real anomaly creates its own incident, so journeys discover the main
+  brute-force incident by title instead of hard-coding id 1; an ambiguous "Events" selector was made
+  exact.
+- **Commands run**: `make test` → `594 passed`; `make lint` → ruff/format/mypy clean;
+  `make web-test` → build, `137 passed` in 28 files, typecheck and lint clean;
+  `make web-e2e` → **`22 passed`** on the production build with a fresh demo DB.
+- No Phase 19 work started.

@@ -26,7 +26,10 @@ export function ExplanationPanel({
         <h2 className="font-semibold">Weak links (time proximity only)</h2>
         {weak.length ? (
           <ul className="list-disc pl-5 text-sm">
-            {weak.map((reason, index) => <li key={index}>Weak: {reason}</li>)}
+            {/* Correlation reasons already carry "Weak:"; older payloads may not. */}
+            {weak.map((reason, index) => (
+              <li key={index}>{/^weak:/i.test(reason) ? reason : `Weak: ${reason}`}</li>
+            ))}
           </ul>
         ) : (
           <p className="text-sm text-slate-500">No weak links recorded.</p>
