@@ -1,0 +1,27 @@
+[Unit]
+Description=Sentinel API (127.0.0.1:8000)
+After=network.target
+
+[Service]
+Type=simple
+User=sentinel
+Group=adm
+WorkingDirectory=/opt/sentinel
+EnvironmentFile=/etc/sentinel/sentinel.env
+ExecStart=/opt/sentinel/venv/bin/uvicorn api.main:app --host 127.0.0.1 --port 8000
+Restart=on-failure
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+ReadWritePaths=/var/lib/sentinel /var/log/sentinel
+ReadOnlyPaths=/etc /var/log
+CapabilityBoundingSet=
+LockPersonality=yes
+RestrictNamespaces=yes
+MemoryMax=256M
+SystemCallFilter=@system-service
+
+[Install]
+WantedBy=multi-user.target

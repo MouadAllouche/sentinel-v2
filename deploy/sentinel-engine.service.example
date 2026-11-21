@@ -1,0 +1,30 @@
+[Unit]
+Description=Sentinel engine (read-only monitoring)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=sentinel
+Group=adm
+WorkingDirectory=/opt/sentinel
+EnvironmentFile=/etc/sentinel/sentinel.env
+ExecStart=/opt/sentinel/venv/bin/python cli.py engine
+Restart=on-failure
+RestartSec=10
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+ReadWritePaths=/var/lib/sentinel /var/log/sentinel
+ReadOnlyPaths=/etc /var/log
+CapabilityBoundingSet=
+LockPersonality=yes
+RestrictNamespaces=yes
+MemoryMax=512M
+SystemCallFilter=@system-service
+IPAddressDeny=any
+
+[Install]
+WantedBy=multi-user.target

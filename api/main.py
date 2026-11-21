@@ -20,7 +20,7 @@ from core.config import Settings, load_settings
 from core.rules.models import RuleValidationError
 from storage.database import init_db
 
-__all__ = ["create_app"]
+__all__ = ["app", "create_app"]
 
 RATE_LIMITED = {
     "/api/rules/preview",
@@ -32,20 +32,26 @@ RATE_LIMITED = {
 _requests: dict[str, list[float]] = defaultdict(list)
 
 
-def create_app(settings: Settings | None = None, db_path: str | None = None) -> FastAPI:
-    config = settings or load_settings()
-    if not os.environ.get("SENTINEL_SESSION_KEY"):
+def _assert_runtime_guard(config: Settings) -> None:
+    """Fail closed at startup, not at import (tests import the module without a key)."""
+    key = os.environ.get("SENTINEL_SESSION_KEY", "")
+    if not key:
         raise RuntimeError("SENTINEL_SESSION_KEY must be set before starting the API")
-    if len(os.environ["SENTINEL_SESSION_KEY"]) < 32:
+    if len(key) < 32:
         raise RuntimeError("SENTINEL_SESSION_KEY must be at least 32 characters")
     if config.api.host not in {"127.0.0.1", "localhost", "::1"} and not (
         config.api.allow_remote and config.api.trusted_proxy
     ):
         raise RuntimeError("non-loopback binds require allow_remote and a trusted_proxy/TLS note")
+
+
+def create_app(settings: Settings | None = None, db_path: str | None = None) -> FastAPI:
+    config = settings or load_settings()
     target = db_path or str(config.paths.database)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        _assert_runtime_guard(config)
         init_db(target)
         yield
 
@@ -146,3 +152,8 @@ def create_app(settings: Settings | None = None, db_path: str | None = None) -> 
     for module in (auth, events, incidents, rules, config_router, system, stream):
         app.include_router(module.router)
     return app
+
+
+# Module-level ASGI app for `uvicorn api.main:app` (make api, deploy units).
+# The session key is enforced at request/startup time by create_app's guard.
+app = create_app()

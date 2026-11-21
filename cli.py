@@ -23,6 +23,8 @@ from engine.logging_setup import setup_logging
 from engine.rules import run_rules
 from engine.runner import install_signal_handlers, run_engine_loop
 from engine.scoring import run_scoring
+from scripts.demo import DEFAULT_WORKDIR as DEFAULT_DEMO_WORKDIR
+from scripts.demo import build_demo
 from storage.auth_repository import create_user, list_users
 from storage.database import init_db
 from storage.drift_repository import (
@@ -100,7 +102,11 @@ def _parser() -> argparse.ArgumentParser:
     export.add_argument("identifier", type=int, nargs="?")
     export.add_argument("--format", default="md", choices=["md", "json", "pdf", "csv"])
     sub.add_parser("status")
-    sub.add_parser("demo")
+    demo = sub.add_parser("demo")
+    demo.add_argument("--reset", action="store_true")
+    demo.add_argument("--live", action="store_true")
+    demo.add_argument("--no-print-password", action="store_true")
+    demo.add_argument("--workdir", help="demo workdir (default: demo_workdir/)")
     return parser
 
 
@@ -311,8 +317,14 @@ def main(argv: list[str] | None = None) -> int:
         _emit(health, args.json, health["status"])
         return 0
     if command == "demo":
-        _emit({"error": "demo arrives in Phase 18"}, args.json, "demo arrives in Phase 18")
-        return 2
+        summary = build_demo(
+            args.workdir or DEFAULT_DEMO_WORKDIR,
+            reset=args.reset,
+            print_password=not args.no_print_password,
+            live=args.live,
+        )
+        _emit(summary, args.json, json.dumps(summary, sort_keys=True))
+        return 0
     _emit({"error": f"unknown command: {command}"}, args.json, f"unknown command: {command}")
     return 2
 

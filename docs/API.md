@@ -44,3 +44,87 @@ curl -b cookies.txt -H "X-CSRF-Token: $CSRF" http://127.0.0.1:8000/api/events?li
 Rule creation posts a validated JSON document (see `docs/RULES.md`); invalid documents return 422
 with a `details` array of `{path, message}` entries the UI maps to form fields. Backtest and export
 endpoints are bounded by range/row caps and return a clear 4xx when exceeded.
+
+## Complete endpoint catalogue
+Generated from `web/openapi.json`; every path below is served by the FastAPI app.
+- `/api/allowlist` — GET, POST
+- `/api/allowlist/stats` — GET
+- `/api/allowlist/{identifier}` — DELETE, PUT
+- `/api/anomalies` — GET
+- `/api/audit` — GET
+- `/api/auth/login` — POST
+- `/api/auth/logout` — POST
+- `/api/auth/me` — GET
+- `/api/auth/password` — POST
+- `/api/auth/sessions` — GET
+- `/api/auth/sessions/{identifier}` — DELETE
+- `/api/baselines` — GET
+- `/api/baselines/series` — GET
+- `/api/changes` — GET
+- `/api/collectors` — GET
+- `/api/cycles` — GET
+- `/api/drift/accept` — POST
+- `/api/drift/check` — POST
+- `/api/drift/paths` — GET, POST
+- `/api/drift/paths/{identifier}` — DELETE, PUT
+- `/api/drift/paths/{identifier}/history` — GET
+- `/api/drift/paths/{identifier}/reset` — POST
+- `/api/drift/status` — GET
+- `/api/engine/run` — POST
+- `/api/events` — GET
+- `/api/events/export` — GET
+- `/api/events/reapply-severity` — POST
+- `/api/events/stats` — GET
+- `/api/events/top` — GET
+- `/api/events/{event_id}` — GET
+- `/api/filters/saved` — GET, POST
+- `/api/filters/saved/{identifier}` — DELETE
+- `/api/health` — GET
+- `/api/incidents` — GET
+- `/api/incidents/bulk-status` — POST
+- `/api/incidents/{identifier}` — GET, PATCH
+- `/api/incidents/{identifier}/explanation` — GET
+- `/api/incidents/{identifier}/export` — GET
+- `/api/incidents/{identifier}/graph` — GET
+- `/api/incidents/{identifier}/history` — GET
+- `/api/incidents/{identifier}/notes` — GET, POST
+- `/api/incidents/{identifier}/status` — POST
+- `/api/incidents/{identifier}/timeline` — GET
+- `/api/notifications/channels` — GET, POST
+- `/api/notifications/channels/{identifier}` — DELETE, PUT
+- `/api/notifications/channels/{identifier}/test` — POST
+- `/api/notifications/log` — GET
+- `/api/retention/apply` — POST
+- `/api/retention/dry-run` — POST
+- `/api/risk/decay` — GET, PUT
+- `/api/risk/thresholds` — GET, PUT
+- `/api/rules` — GET, POST
+- `/api/rules/export` — GET
+- `/api/rules/findings` — GET
+- `/api/rules/import` — POST
+- `/api/rules/preview` — POST
+- `/api/rules/schema` — GET
+- `/api/rules/validate` — POST
+- `/api/rules/{identifier}` — DELETE, GET, PUT
+- `/api/rules/{identifier}/backtest` — POST
+- `/api/rules/{identifier}/disable` — POST
+- `/api/rules/{identifier}/enable` — POST
+- `/api/rules/{identifier}/reset` — POST
+- `/api/rules/{identifier}/versions` — GET
+- `/api/rules/{identifier}/versions/{version}/restore` — POST
+- `/api/settings/retention` — GET, PUT
+- `/api/severity/defaults` — GET
+- `/api/severity/defaults/reset` — POST
+- `/api/severity/defaults/{event_type}` — PUT
+- `/api/severity/defaults/{event_type}/reset` — POST
+- `/api/severity/overrides` — GET, POST
+- `/api/severity/overrides/reorder` — POST
+- `/api/severity/overrides/test` — POST
+- `/api/severity/overrides/{identifier}` — DELETE, PUT
+- `/api/severity/overrides/{identifier}/reset` — POST
+- `/api/stream` — GET
+- `/api/system/info` — GET
+- `/api/users` — GET, POST
+- `/api/users/{identifier}` — PATCH
+- `/api/users/{identifier}/password-reset` — POST
+- `/api/users/{identifier}/sessions/revoke` — POST

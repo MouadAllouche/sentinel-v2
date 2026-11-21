@@ -1,14 +1,6 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { credentials, login } from "./helpers";
 
-const PASSWORD = process.env.SENTINEL_DEMO_PASSWORD ?? "demo-password-123";
-
-async function login(page: Page, username = "admin") {
-  await page.goto("/login");
-  await page.getByLabel("Username").fill(username);
-  await page.getByLabel("Password").fill(PASSWORD);
-  await page.getByRole("button", { name: /sign in/i }).click();
-  await expect(page.getByRole("navigation", { name: /main/i })).toBeVisible();
-}
 
 test("creates the user's example rule through the builder", async ({ page }) => {
   await login(page);
@@ -30,7 +22,7 @@ test("creates the user's example rule through the builder", async ({ page }) => 
 });
 
 test("viewer sees a read-only rule view", async ({ page }) => {
-  await login(page, "viewer");
+  await login(page, credentials().viewer);
   await page.goto("/rules");
   await expect(page.getByText(/view only/i)).toBeVisible();
   await expect(page.getByRole("button", { name: /new rule/i })).toHaveCount(0);

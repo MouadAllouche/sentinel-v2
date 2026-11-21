@@ -23,7 +23,7 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 | 15 | `specs/15-web-incidents.md` | incident list/detail, timeline, graph, workflow, export | ✅ | see below |
 | 16 | `specs/16-web-rules-severity.md` | rule builder, backtest, severities, allowlist | ✅ | see below |
 | 17 | `specs/17-web-behavior-drift-admin.md` | behavior, drift, notifications, settings, users, audit, health | ✅ | see below |
-| 18 | `specs/18-demo-e2e-deploy.md` | demo, integration + e2e tests, deployment docs | ⬜ | |
+| 18 | `specs/18-demo-e2e-deploy.md` | demo, integration + e2e tests, deployment docs | ✅ | see below |
 | 19 | `specs/19-final-audit.md` | audit against definition of done | ⬜ | |
 
 ## Phase 0 evidence (2026-11-17)
@@ -275,3 +275,17 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 - **Commands run**: `make test` → `551 passed`; `make lint` → ruff/format/mypy clean;
   `npm test` → `125 passed`; `npm run typecheck`, `npm run lint`, `npm run build` → pass.
 - **Commit**: `phase-17: Behavior, drift and administration UI`.
+
+## Phase 18 evidence (2026-11-21)
+
+- **Code**: `scripts/demo.py` + `cli.py demo` + `make demo`, `tests/integration/test_full_scenario.py`,
+  `tests/test_demo.py`, `tests/test_security_scans.py`, `tests/test_docs_coverage.py`,
+  `web/e2e/global-setup.ts` + `playwright.config.ts` (API + web webServers against a fresh demo DB),
+  `deploy/*.service.example`, `deploy/reverse-proxy.example.conf`, the full docs set and CI e2e job.
+- **Commands run**: `make test` → `574 passed`; `make lint` → ruff/format/mypy clean;
+  `npm test` → `125 passed`; `npm run typecheck`, `npm run lint`, `npm run build` → pass;
+  `python cli.py demo --reset --no-print-password --workdir …` → 99 events, 1 incident, score 100.
+  Playwright browsers are not installed here, so e2e was verified by listing (20 tests in 5 files).
+- **Commit**: `phase-18: Sandboxed demo, integration tests and deployment docs`.
+- **Also**: `api/main.py` gained a module-level `app` for `uvicorn api.main:app`; the runtime guard
+  lives in the lifespan startup and `make demo-api` targets `demo_workdir/settings.toml`.

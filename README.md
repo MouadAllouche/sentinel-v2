@@ -7,20 +7,25 @@ transparently, and presents everything in a local dashboard. It never remediates
 never stores secrets, file contents or command lines, and never escalates
 privileges.
 
-**Status**: Phase 0 (bootstrap) complete. Detection and dashboard phases are
-implemented one at a time; see `PROGRESS.md` and `specs/` for the roadmap.
+**Status**: all 18 phases complete. See `PROGRESS.md` for evidence and `specs/` for the original
+phase requirements.
 
-## Development
+## Quick start — six commands to a working demo
 
 ```sh
-python3 -m venv venv
-make install
-make test
-make lint
+python3 -m venv venv && make install       # 1. Python environment
+cd web && npm ci && cd ..                  # 2. Frontend dependencies
+make test && make lint && make web-test    # 3. Verify both stacks
+python cli.py demo                         # 4. Build the sandboxed demo (prints a one-time password)
+make demo-api                              # 5. API on 127.0.0.1:8000 against demo.db (terminal 2)
+make web                                   # 6. Dashboard on 127.0.0.1:3000 (terminal 3)
 ```
 
-Python 3.12, Node LTS and npm are required. Tool versions and all design decisions
-are recorded in `docs/DECISIONS.md`.
+Open `http://127.0.0.1:3000/login` and sign in as `demo-admin` with the printed password. The demo
+never touches real logs or system files; see `docs/DEMO.md`.
+
+Python 3.12, Node LTS and npm are required. Tool versions and design decisions are recorded in
+`docs/DECISIONS.md`. Architecture: `docs/ARCHITECTURE.md`; security model: `docs/SECURITY.md`.
 
 ## Safety
 
@@ -35,5 +40,4 @@ are recorded in `docs/DECISIONS.md`.
 - No sudo, no machine learning, no outbound network except explicitly enabled
   notification channels.
 
-See `docs/DECISIONS.md` and, as they are written, `docs/ARCHITECTURE.md`,
-`docs/SECURITY.md` and `docs/LIMITATIONS.md`.
+See `docs/DECISIONS.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md` and `docs/LIMITATIONS.md`.

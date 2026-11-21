@@ -14,6 +14,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
       - name: Install dependencies
         run: python -m venv venv && make install
       - name: Tests
@@ -22,6 +27,12 @@ jobs:
         run: make coverage
       - name: Lint
         run: make lint
+      - name: Build web for e2e
+        run: cd web && npm ci && npm run build
+      - name: Install Playwright browsers
+        run: cd web && npx playwright install --with-deps chromium
+      - name: End-to-end tests (fresh demo DB)
+        run: make web-e2e
 
   web:
     runs-on: ubuntu-latest

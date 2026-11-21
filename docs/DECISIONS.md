@@ -791,3 +791,60 @@ Run `make api` and `make web`, then verify by hand (no screenshots):
   Viewer redirects, hidden admin links, read-only channel editors, stricter baseline-accept reasons,
   extended RBAC coverage and audited session revocation were added. Immature baselines always carry
   the explicit "no anomalies will be reported" caveat.
+
+### D-104 — Phase 18 demo and integration
+- `python cli.py demo` (and `make demo`) builds a fully sandboxed demo: synthetic `auth.log`, a fake
+  `etc/` tree with **public** sample keys, `demo.db`, a demo `settings.toml`, and a random one-time
+  admin password written mode-0600 to `credentials.json`. It refuses workdirs inside monitored
+  system paths, runs two cycles (the second is a no-op), and is idempotent via `demo.seeded`.
+  `--reset` wipes only the workdir; `--live` prints how to append more events; `--no-print-password`
+  is for the e2e harness.
+- Integration tests cover the full scenario (tiers, incident, score reasons summing to the raw
+  score, idempotence), order-independent event identity, failure/static safety scans (no
+  `shell=True`/`eval`/`exec`, no f-string SQL) and documentation coverage (every OpenAPI path and
+  seeded rule id appears in the docs). Benchmark numbers: 99 events and 1 incident in ~2 s; 10 000
+  failed logins stay within the existing rule/query caps.
+
+### D-105 — Phase 18 e2e and deployment
+- Playwright `globalSetup` calls the demo generator with `--reset --no-print-password` and reads
+  credentials from the temp file; the config starts both the API (against the fresh demo DB) and the
+  Next dev server. CI installs Chromium and runs `make web-e2e`.
+- `deploy/*.service.example` are **documentation only**: dedicated `sentinel` user in group `adm`,
+  mode-0600 `EnvironmentFile`, no capabilities, filesystem/privilege restrictions, loopback binds,
+  and a TLS reverse proxy with `proxy_buffering off` for `/api/stream`. The agent never installs
+  units or opens outbound connections. `scripts/generate_attack_vm.md` is a manual, documentation-only
+  procedure for a throwaway VM; nothing automates or runs it.
+- The docs set (README, ARCHITECTURE, RULES, RISK_RULES, API, SECURITY, LIMITATIONS, OPERATIONS,
+  DEMO, DECISIONS) is complete; a test verifies every API route and seeded rule id is documented.
+  Playwright browser binaries are not installed in this environment, so the journeys were validated
+  by configuration listing rather than execution.
+
+### D-106 — Phase 18 review fixes and deviations
+- The e2e harness now seeds the demo identities it actually uses (`demo-admin`/`demo-viewer`) and
+  reads credentials from the mode-0600 file via a shared helper; no password literals remain in
+  committed specs (they fail fast if the env var is absent). Demo re-runs reuse the stored password
+  instead of overwriting credentials with a new one, and the credential file is created mode-0600
+  atomically.
+- The demo's printed start command now sets `SENTINEL_CONFIG` to the demo settings and a valid
+  32+ character session key, so the documented recipe actually opens `demo.db`. It prints the
+  incident list with scores, a timeline excerpt, grouping reasons, rule findings by tier, anomaly
+  and drift explanations and the notification file sink. A local `file` notification transport was
+  added (project-root containment enforced, no network) so notifications are demonstrable offline.
+- `--live` now appends real synthetic auth.log lines and re-runs collection on each prompt (no
+  stub). The integration suite was expanded with full-scenario outcome assertions, rule-edit flows,
+  failure modes, a 10 000-event burst and an order-independence property. Benchmark: 10 000 events
+  plus one cycle completed well under the 60-second test budget (99 events in the standard demo).
+- Static safety scans now parse the AST per line (a `noqa` in one file no longer suppresses unrelated
+  findings) and detect built SQL strings beyond literal f-strings. E2E coverage now includes the
+  what-if panel, entity graph, status change, drift accept, retention dry-run, allowlist reason and
+  viewer redirects.
+- Deviations: e2e uses the Next **dev** server (not a production build) so `globalSetup` need not
+  rebuild; `fullyParallel` remains enabled because each journey uses isolated routes. The hand-written
+  anomaly event is retained as a fast demo fixture; the engine's own anomaly evaluation is tested
+  separately in the baseline suites. File-sink notifications are a demo convenience, not an
+  outbound channel.
+- Final review: `web/e2e/demo-seed.ts` generates the demo DB at Playwright **config load**, before
+  webServers start, so the API boots against the correct DB; `make demo-api` sets `SENTINEL_CONFIG`
+  and a valid session key and is used by README/DEMO quick starts. `api/main.py` exposes a
+  module-level `app` for `uvicorn api.main:app`, with its fail-closed guard in the lifespan startup
+  so tests can import the module without a session key.

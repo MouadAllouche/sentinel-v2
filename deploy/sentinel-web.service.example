@@ -1,0 +1,27 @@
+[Unit]
+Description=Sentinel dashboard (127.0.0.1:3000)
+After=network.target sentinel-api.service
+
+[Service]
+Type=simple
+User=sentinel
+Group=adm
+WorkingDirectory=/opt/sentinel/web
+EnvironmentFile=/etc/sentinel/sentinel.env
+ExecStart=/usr/bin/npm run start -- --hostname 127.0.0.1 --port 3000
+Restart=on-failure
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+ReadWritePaths=/var/lib/sentinel /var/log/sentinel
+ReadOnlyPaths=/etc /var/log
+CapabilityBoundingSet=
+LockPersonality=yes
+RestrictNamespaces=yes
+MemoryMax=512M
+SystemCallFilter=@system-service
+
+[Install]
+WantedBy=multi-user.target

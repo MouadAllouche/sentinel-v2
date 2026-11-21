@@ -27,7 +27,10 @@ from storage.notification_repository import (
 from storage.repositories import get_setting
 from storage.risk_repository import get_assessment
 
-__all__ = ["WebhookTransport", "deliver", "dispatch", "run_notifier"]
+__all__ = ["FileTransport", "WebhookTransport", "deliver", "dispatch", "run_notifier"]
+
+# File sinks may only write below this root (the project's own log area); no traversal.
+FILE_SINK_ROOT = Path(__file__).resolve().parents[1]
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +71,26 @@ class WebhookTransport(Transport):
             timeout=5.0,
         )
         return 200 <= response.status_code < 300
+
+
+class FileTransport(Transport):
+    """Local JSONL sink used by the demo; writes only inside the project root."""
+
+    def __init__(self, path: str) -> None:
+        self.path = path
+
+    def send(self, notification: Notification) -> bool:
+        target = Path(self.path)
+        if not target.is_absolute() or ".." in target.parts:
+            return False
+        try:
+            target.resolve().relative_to(FILE_SINK_ROOT)
+        except ValueError:
+            return False
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with target.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(render_message(notification), sort_keys=True) + "\n")
+        return True
 
 
 class EmailTransport(Transport):
@@ -143,7 +166,7 @@ def dispatch(
         return 0
     sent = 0
     for channel in channels:
-        if channel.kind not in {"webhook", "email", "telegram"}:
+        if channel.kind not in {"webhook", "email", "telegram", "file"}:
             raise ValueError(f"unknown notification channel kind: {channel.kind}")
         if not should_send(channel, notification, [], now):
             continue
@@ -153,6 +176,9 @@ def dispatch(
 
 
 def _transport(channel: Channel) -> Transport | None:
+    if channel.kind == "file":
+        path = str(channel.config.get("path", ""))
+        return FileTransport(path) if path else None
     if channel.kind == "webhook":
         secret_env = str(channel.config.get("secret_env", ""))
         url = str(channel.config.get("url", ""))
