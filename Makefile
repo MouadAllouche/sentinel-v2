@@ -36,7 +36,7 @@ web:
 	cd web && npm run dev
 
 web-test:
-	cd web && npm test && npm run typecheck && npm run lint
+	cd web && npm run build && npm test && npm run typecheck && npm run lint
 
 web-e2e:
 	cd web && npm run test:e2e

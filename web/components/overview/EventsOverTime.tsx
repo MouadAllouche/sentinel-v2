@@ -9,9 +9,8 @@ import { rangeForPreset } from "@/lib/filters";
 
 const SEVERITIES = ["low", "medium", "high", "critical"] as const;
 
-export function EventsOverTime() {
+export function EventsOverTime({ now = new Date().toISOString() }: { now?: string }) {
   const [range, setRange] = useState("24h");
-  const [now] = useState(() => new Date().toISOString());
   const { since, until } = rangeForPreset(range, now);
   const query = useEventStats({
     bucket: range === "24h" ? "hour" : "day",

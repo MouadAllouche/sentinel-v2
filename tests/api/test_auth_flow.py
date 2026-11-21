@@ -68,6 +68,36 @@ def test_origin_mismatch_rejected(api_client: Any, tmp_initialised_db: Path) -> 
     assert denied.status_code == 403
 
 
+def test_reverse_proxy_public_origin_accepted(api_client: Any, tmp_initialised_db: Path) -> None:
+    """The Next.js rewrite changes Host to the internal bind address; the
+    browser-facing origin is carried in X-Forwarded-* and must be honoured."""
+    _create_users(tmp_initialised_db)
+    _login(api_client)
+    csrf = api_client.cookies.get("sentinel_csrf")
+    allowed = api_client.post(
+        "/api/engine/run",
+        headers={
+            "X-CSRF-Token": str(csrf),
+            "Origin": "http://127.0.0.1:3000",
+            "X-Forwarded-Host": "127.0.0.1:3000",
+            "X-Forwarded-Proto": "http",
+            "X-Forwarded-Port": "3000",
+        },
+    )
+    assert allowed.status_code == 200
+
+    spoofed = api_client.post(
+        "/api/engine/run",
+        headers={
+            "X-CSRF-Token": str(csrf),
+            "Origin": "https://evil.example",
+            "X-Forwarded-Host": "127.0.0.1:3000",
+            "X-Forwarded-Proto": "http",
+        },
+    )
+    assert spoofed.status_code == 403
+
+
 def test_rbac_viewer_cannot_mutate(api_client: Any, tmp_initialised_db: Path) -> None:
     _create_users(tmp_initialised_db)
     _login(api_client, username="viewer")

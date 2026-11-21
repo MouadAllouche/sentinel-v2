@@ -11,6 +11,34 @@ class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class MitreTag(StrictModel):
+    """A static MITRE technique reference. Always indicative, never a confirmation."""
+
+    id: str
+    name: str
+    tactic: str
+    url: str
+    label: str
+
+
+class IncidentOut(BaseModel):
+    """Incident response shape; additional engine fields are preserved."""
+
+    model_config = ConfigDict(extra="allow")
+
+    id: int
+    title: str
+    status: str
+    severity: str
+    mitre: list[MitreTag] = Field(default_factory=list)
+
+
+class IncidentPage(BaseModel):
+    items: list[IncidentOut]
+    next_cursor: str | None = None
+    total: int | None = None
+
+
 class LoginRequest(StrictModel):
     username: str
     password: str

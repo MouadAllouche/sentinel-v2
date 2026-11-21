@@ -29,6 +29,8 @@ export function LoginForm({
   return (
     <form
       noValidate
+      method="post"
+      action="/login"
       className="space-y-4"
       onSubmit={handleSubmit(async (values) => {
         await onSubmit(values);

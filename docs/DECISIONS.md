@@ -848,3 +848,71 @@ Run `make api` and `make web`, then verify by hand (no screenshots):
   and a valid session key and is used by README/DEMO quick starts. `api/main.py` exposes a
   module-level `app` for `uvicorn api.main:app`, with its fail-closed guard in the lifespan startup
   so tests can import the module without a session key.
+
+### D-107 — CSP nonce production fix (post-Phase 18)
+- Root cause: `/login` and the app pages were statically prerendered, so their `<script>` tags had no
+  nonce while the strict CSP (`script-src 'self' 'nonce-…' 'strict-dynamic'`) required one; the
+  browser blocked every script and React never hydrated.
+- Fix (per the installed Next.js 16.4.6 guide in `node_modules/next/dist/docs/01-app/02-guides/
+  content-security-policy.md`): `middleware.ts` was replaced by `proxy.ts` (the supported convention
+  for this version). It generates a fresh nonce and sets the **Content-Security-Policy header on the
+  forwarded request as well as the response** — Next.js extracts the nonce from the request header
+  when rendering. `app/layout.tsx` is now async, calls `await connection()` and exports
+  `dynamic = "force-dynamic"`, so every route is rendered per request. `script-src` stays strict;
+  only `style-src` keeps `'unsafe-inline'`.
+- The login form now uses `method="post" action="/login"`, so entered credentials can never be
+  placed in the URL when JavaScript is unavailable.
+- Verification: `npm run build && npm run start`; every `<script>` tag in `/login` and `/events`
+  carries `nonce="…"` matching the same response's CSP header, and `x-nextjs-prerender` /
+  `x-nextjs-cache` are absent. Regression test `web/tests/csp-production.test.ts` spawns the
+  production server and asserts both properties; `web/e2e/login-production.spec.ts` is a Playwright
+  login/logout journey against `npm run start`.
+- Playwright now builds the production app once via `npm run test:e2e` and serves it with
+  `npm run start` (no dev server), with `workers: 1` because all journeys share one seeded demo DB.
+- API path fix: the only stale `GET /health` reference was in `docs/API.md`; the route is
+  `/api/health` (`/health` is the dashboard page). All HTTP callers already used `/api/health`. A
+  regression test (`tests/test_api_paths.py`) guards both the source calls and the docs.
+- Remaining e2e failures (seen only after browsers were installed) were traced and fixed in D-108;
+  the two new production-login journeys and the CSP regression test pass.
+
+### D-108 — Production React errors, real-API fixtures and e2e journeys (post-Phase 18)
+- **MITRE React #31**: the API returned MITRE tags as `{id,label,name,tactic,url}` objects while the
+  frontend typed them as `string[]` and used them as React keys/children. Tightened the OpenAPI
+  contract with `MitreTag`, `IncidentOut` and `IncidentPage`, regenerated `web/openapi.json` and
+  `web/lib/api/schema.d.ts`, and added `web/lib/mitre.ts` so `MitreBadge` renders only primitive
+  text (id) and links to the API-provided URL, labelled indicative. Legacy string ids still work.
+- **Hydration React #418**: clocks and localStorage were read in SSR markup. The server now passes
+  a single stable `now` into `Overview`, and `RelativeTime` renders absolute UTC until mount, then
+  switches using `useSyncExternalStore` (the React-recommended mount signal, avoiding a lint error
+  for setState-in-effect). No blanket `suppressHydrationWarning` was used.
+- **Mock drift**: fixtures are no longer hand-written. `tests/test_api_fixtures.py` seeds a tmp DB,
+  calls the real endpoints through `TestClient`, normalises only clock-generated timestamps to a
+  fixed `NOW`, and commits the JSON under `web/tests/fixtures/`; a second test regenerates and fails
+  on any difference. Vitest/MSW tests consume those files, including a render test for all three
+  major surfaces.
+- **Request loop**: a per-mount fetch-count test proved `/api/rules/findings` was fetched twice —
+  `Overview` and `RuleActivity` used different query keys. Both now use `useFindings()`.
+- **CSRF behind the proxy (security-relevant)**: the Next.js `/api` rewrite sets the backend `Host`
+  to `127.0.0.1:8000`, so `valid_origin` rejected the browser's `http://127.0.0.1:3000` Origin on
+  every mutation (403). It now compares against `X-Forwarded-Proto`/`X-Forwarded-Host`/
+  `X-Forwarded-Port` when present, while still rejecting a spoofed Origin; covered by a TestClient
+  proxy-simulation test. The alternative — disabling the Origin check — was rejected.
+- **Other e2e app fixes**: the default retention policy has equal high/critical ages, which the UI
+  incorrectly rejected as "strictly increasing", disabling Dry run; the validator now requires only
+  non-decreasing ages. `EventsExplorer` now uses `useSearchParams()` because `window.location.search`
+  is stale during App Router client navigation, which dropped a Top-IP link's `source_ip` filter.
+  `RuleBuilder` now supplies `group_by` to the tier sentence, and `ruleSchema.metric/subject` accept
+  the builder's `null` defaults (matching the backend's `str | None`), so the example rule can be
+  saved. Stale Playwright assertions were updated to the real seeded title, expanded-timeline text,
+  exact KPI label, weak-links heading and viewer identity.
+- **Trusted-proxy invariant (review follow-up)**: `X-Forwarded-*` is only meaningful because the API
+  binds to loopback (`api/main.py` fails closed for non-loopback binds unless `allow_remote` and
+  `trusted_proxy` are set together; `Makefile` and `deploy/*.service.example` all use
+  `--host 127.0.0.1`). The double-submit HMAC token remains an independent CSRF layer. If an operator
+  deliberately exposes the API remotely through `allow_remote`/`trusted_proxy`, the proxy must strip
+  client-supplied forwarded headers and a trusted-proxy source-IP check must be added; that is a
+  deployment hardening item, not a change to this fix.
+- **Verification**: `make test` 580 passed; `make lint` clean; `make web-test` build + 136 tests in
+  27 files + typecheck + lint clean; `make web-e2e` 22/22 passing against `npm run start` with a
+  freshly seeded demo DB. All journeys share one DB, so `workers: 1` remains and a fresh demo DB is
+  required for a clean run.

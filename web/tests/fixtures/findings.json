@@ -1,0 +1,44 @@
+[
+  {
+    "created_at": "2026-11-19T12:00:00+00:00",
+    "evidence_event_ids_json": "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]",
+    "group_key": "source_ip=203.0.113.45",
+    "id": 3,
+    "observed": 31,
+    "points": 20,
+    "rule_id": "success-after-failures",
+    "rule_version": 1,
+    "severity": "high",
+    "tier_index": 0,
+    "window_end": "2026-11-19T12:00:40+00:00",
+    "window_start": "2026-11-19T12:00:00+00:00"
+  },
+  {
+    "created_at": "2026-11-19T12:00:00+00:00",
+    "evidence_event_ids_json": "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]",
+    "group_key": "source_ip=203.0.113.45",
+    "id": 2,
+    "observed": 20,
+    "points": 30,
+    "rule_id": "ssh-bruteforce-by-ip",
+    "rule_version": 1,
+    "severity": "high",
+    "tier_index": 1,
+    "window_end": "2026-11-19T12:00:19+00:00",
+    "window_start": "2026-11-19T12:00:00+00:00"
+  },
+  {
+    "created_at": "2026-11-19T12:00:00+00:00",
+    "evidence_event_ids_json": "[1, 2, 3, 4, 5]",
+    "group_key": "source_ip=203.0.113.45",
+    "id": 1,
+    "observed": 5,
+    "points": 15,
+    "rule_id": "ssh-bruteforce-by-ip",
+    "rule_version": 1,
+    "severity": "medium",
+    "tier_index": 0,
+    "window_end": "2026-11-19T12:00:04+00:00",
+    "window_start": "2026-11-19T12:00:00+00:00"
+  }
+]

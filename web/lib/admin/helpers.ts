@@ -123,8 +123,10 @@ export function retentionIssues(policy: Record<string, number>): string[] {
   const keys = ["low_days", "medium_days", "high_days", "critical_days"];
   const values = keys.map((key) => policy[key]).filter((value): value is number => value !== undefined);
   if (values.some((value) => value < 1)) return ["Ages must be positive"];
-  if (!values.every((value, index) => index === 0 || value > values[index - 1]!)) {
-    return ["Ages must be strictly increasing"];
+  // Higher severities may be kept for the same duration as the one below them
+  // (the built-in default keeps high and critical evidence for 365 days).
+  if (!values.every((value, index) => index === 0 || value >= values[index - 1]!)) {
+    return ["Ages must be increasing or equal with severity"];
   }
   return [];
 }

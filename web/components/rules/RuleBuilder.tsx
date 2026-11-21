@@ -412,7 +412,7 @@ export function RuleBuilder({ id }: { id?: string }) {
                 <TierEditor
                   tiers={definition.tiers}
                   onChange={(tiers) => update({ tiers })}
-                  match={definition.match}
+                  match={{ ...definition.match, group_by: definition.group_by }}
                   max={catalogue.limits.max_tiers}
                   warnings={validation.warnings}
                   errors={serverErrors}

@@ -1,0 +1,20 @@
+{
+  "db": {
+    "event_count": 117,
+    "oldest_event": "2026-11-15T23:42:07.893226+00:00",
+    "size_bytes": 552960
+  },
+  "engine": {
+    "collect_interval_seconds": 60,
+    "interval_seconds": 60,
+    "retention_interval_hours": 24
+  },
+  "env_vars": {
+    "SENTINEL_SMTP_PASSWORD": false,
+    "SENTINEL_TELEGRAM_TOKEN": false,
+    "SENTINEL_WEBHOOK_SECRET": false
+  },
+  "notifications_enabled": false,
+  "schema_version": 10,
+  "version": "sentinel-2"
+}

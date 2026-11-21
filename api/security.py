@@ -22,12 +22,29 @@ def hash_session_token(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
+def _first(value: str | None) -> str:
+    """Proxy headers may hold a comma-separated chain; the first hop wins."""
+    return (value or "").split(",")[0].strip()
+
+
 def valid_origin(request: Request) -> bool:
     origin = request.headers.get("origin")
     if not origin:
         return True
-    host = request.headers.get("host", "")
-    return origin in {f"http://{host}", f"https://{host}"}
+    # A reverse proxy (the Next.js /api rewrite in production) changes the
+    # backend's Host header to its internal bind address. The browser-facing
+    # origin is carried in X-Forwarded-*; compare against that when present so
+    # legitimate same-origin mutations are not rejected as cross-site.
+    proto = _first(request.headers.get("x-forwarded-proto")) or request.url.scheme
+    forwarded_host = _first(request.headers.get("x-forwarded-host"))
+    if forwarded_host:
+        host = forwarded_host
+        port = _first(request.headers.get("x-forwarded-port"))
+        if port and ":" not in host and (proto, port) not in {("http", "80"), ("https", "443")}:
+            host = f"{host}:{port}"
+    else:
+        host = request.headers.get("host", "")
+    return origin in {f"{proto}://{host}"}
 
 
 def csrf_matches(request: Request) -> bool:

@@ -1,3 +1,4 @@
+import { mitreTagFrom, type MitreTag } from "@/lib/mitre";
 import { cn } from "@/lib/utils";
 
 /** Observed facts and inferred claims are always visually and textually distinct. */
@@ -18,15 +19,16 @@ export function FactInferenceBadge({ kind }: { kind: "fact" | "inference" }) {
 }
 
 /** MITRE references are indicative, never a confirmation of an attack. */
-export function MitreBadge({ technique }: { technique: string }) {
+export function MitreBadge({ technique }: { technique: string | MitreTag }) {
+  const tag = mitreTagFrom(technique);
   return (
     <a
       className="inline-flex items-center gap-1 rounded border border-violet-300 px-2 py-0.5 text-xs text-violet-800 underline decoration-dotted hover:bg-violet-50 dark:border-violet-700 dark:text-violet-200"
-      href={`https://attack.mitre.org/techniques/${encodeURIComponent(technique)}/`}
+      href={tag.url}
       target="_blank"
       rel="noopener noreferrer"
     >
-      {technique} <span className="sr-only">indicative mapping, opens MITRE ATT&amp;CK in a new tab</span>
+      {tag.id} <span className="sr-only">indicative mapping, opens MITRE ATT&amp;CK in a new tab</span>
       <span aria-hidden="true">(indicative)</span>
     </a>
   );

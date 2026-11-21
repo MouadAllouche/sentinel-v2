@@ -1,0 +1,583 @@
+[
+  {
+    "event_id": 1,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:00+00:00"
+  },
+  {
+    "event_id": 115,
+    "event_type": "config_drift",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "high",
+    "summary": "/etc/ssh/sshd_config removed",
+    "timestamp": "2026-11-19T12:00:00+00:00"
+  },
+  {
+    "event_id": 2,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:01+00:00"
+  },
+  {
+    "event_id": 3,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:02+00:00"
+  },
+  {
+    "event_id": 4,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:03+00:00"
+  },
+  {
+    "event_id": 5,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:04+00:00"
+  },
+  {
+    "event_id": 116,
+    "event_type": "rule_triggered",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "medium",
+    "summary": "5 failed_login/invalid_user events from source_ip=203.0.113.45 within 10 minutes (threshold: \u22655 in 10min \u2192 medium). First at 12:00:00, last at 12:00:04.",
+    "timestamp": "2026-11-19T12:00:04+00:00"
+  },
+  {
+    "event_id": null,
+    "event_type": "inferred",
+    "evidence_event_ids": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "kind": "inferred",
+    "mitre": [
+      {
+        "id": "T1110.001",
+        "label": "T1110.001 Password Guessing (indicative mapping; verify at attack.mitre.org)",
+        "name": "Password Guessing",
+        "tactic": "Credential Access",
+        "url": "https://attack.mitre.org/techniques/T1110/001/"
+      }
+    ],
+    "relation_to_previous": null,
+    "rule_findings": [
+      {
+        "rule_id": "ssh-bruteforce-by-ip",
+        "tier_label": "Tier 0"
+      }
+    ],
+    "severity": "medium",
+    "summary": "Possible rule match: 5 matching events from source_ip=203.0.113.45 within 2026-11-19T12:00:00+00:00..2026-11-19T12:00:04+00:00 reached medium severity",
+    "timestamp": "2026-11-19T12:00:04+00:00"
+  },
+  {
+    "event_id": 6,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:05+00:00"
+  },
+  {
+    "event_id": 7,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:06+00:00"
+  },
+  {
+    "event_id": 8,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:07+00:00"
+  },
+  {
+    "event_id": 9,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:08+00:00"
+  },
+  {
+    "event_id": 10,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:09+00:00"
+  },
+  {
+    "event_id": 11,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:10+00:00"
+  },
+  {
+    "event_id": 12,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:11+00:00"
+  },
+  {
+    "event_id": 13,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:12+00:00"
+  },
+  {
+    "event_id": 14,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:13+00:00"
+  },
+  {
+    "event_id": 15,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:14+00:00"
+  },
+  {
+    "event_id": 16,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:15+00:00"
+  },
+  {
+    "event_id": 17,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:16+00:00"
+  },
+  {
+    "event_id": 18,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:17+00:00"
+  },
+  {
+    "event_id": 19,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:18+00:00"
+  },
+  {
+    "event_id": 20,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:19+00:00"
+  },
+  {
+    "event_id": 117,
+    "event_type": "rule_triggered",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "high",
+    "summary": "20 failed_login/invalid_user events from source_ip=203.0.113.45 within 10 minutes (threshold: \u226520 in 10min \u2192 high). First at 12:00:00, last at 12:00:19.",
+    "timestamp": "2026-11-19T12:00:19+00:00"
+  },
+  {
+    "event_id": null,
+    "event_type": "inferred",
+    "evidence_event_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "kind": "inferred",
+    "mitre": [
+      {
+        "id": "T1110.001",
+        "label": "T1110.001 Password Guessing (indicative mapping; verify at attack.mitre.org)",
+        "name": "Password Guessing",
+        "tactic": "Credential Access",
+        "url": "https://attack.mitre.org/techniques/T1110/001/"
+      }
+    ],
+    "relation_to_previous": null,
+    "rule_findings": [
+      {
+        "rule_id": "ssh-bruteforce-by-ip",
+        "tier_label": "Tier 1"
+      }
+    ],
+    "severity": "high",
+    "summary": "Possible rule match: 20 matching events from source_ip=203.0.113.45 within 2026-11-19T12:00:00+00:00..2026-11-19T12:00:19+00:00 reached high severity",
+    "timestamp": "2026-11-19T12:00:19+00:00"
+  },
+  {
+    "event_id": 21,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:20+00:00"
+  },
+  {
+    "event_id": 22,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:21+00:00"
+  },
+  {
+    "event_id": 23,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:22+00:00"
+  },
+  {
+    "event_id": 24,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:23+00:00"
+  },
+  {
+    "event_id": 25,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:24+00:00"
+  },
+  {
+    "event_id": 26,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:25+00:00"
+  },
+  {
+    "event_id": 27,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:26+00:00"
+  },
+  {
+    "event_id": 28,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:27+00:00"
+  },
+  {
+    "event_id": 29,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:28+00:00"
+  },
+  {
+    "event_id": 30,
+    "event_type": "failed_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "failed_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:29+00:00"
+  },
+  {
+    "event_id": 31,
+    "event_type": "successful_login",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "successful_login from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:40+00:00"
+  },
+  {
+    "event_id": 118,
+    "event_type": "rule_triggered",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "high",
+    "summary": "Possible sequence for source_ip=203.0.113.45: 2 steps completed from 12:00:00 to 12:00:40; shared attributes and order only, not proof of a single actor.",
+    "timestamp": "2026-11-19T12:00:40+00:00"
+  },
+  {
+    "event_id": null,
+    "event_type": "inferred",
+    "evidence_event_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31
+    ],
+    "kind": "inferred",
+    "mitre": [
+      {
+        "id": "T1110",
+        "label": "T1110 Brute Force (indicative mapping; verify at attack.mitre.org)",
+        "name": "Brute Force",
+        "tactic": "Credential Access",
+        "url": "https://attack.mitre.org/techniques/T1110/"
+      },
+      {
+        "id": "T1078",
+        "label": "T1078 Valid Accounts (indicative mapping; verify at attack.mitre.org)",
+        "name": "Valid Accounts",
+        "tactic": "Defense Evasion",
+        "url": "https://attack.mitre.org/techniques/T1078/"
+      }
+    ],
+    "relation_to_previous": null,
+    "rule_findings": [
+      {
+        "rule_id": "success-after-failures",
+        "tier_label": "Tier 0"
+      }
+    ],
+    "severity": "high",
+    "summary": "Possible rule match: 31 matching events from source_ip=203.0.113.45 within 2026-11-19T12:00:00+00:00..2026-11-19T12:00:40+00:00 reached high severity",
+    "timestamp": "2026-11-19T12:00:40+00:00"
+  },
+  {
+    "event_id": 32,
+    "event_type": "sudo_command",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "sudo_command from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:45+00:00"
+  },
+  {
+    "event_id": 33,
+    "event_type": "config_drift",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "high",
+    "summary": "config_drift from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:50+00:00"
+  },
+  {
+    "event_id": 34,
+    "event_type": "network_connection",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "network_connection from 203.0.113.45",
+    "timestamp": "2026-11-19T12:00:55+00:00"
+  },
+  {
+    "event_id": 35,
+    "event_type": "package_installed",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "low",
+    "summary": "package_installed from 203.0.113.45",
+    "timestamp": "2026-11-19T12:01:00+00:00"
+  },
+  {
+    "event_id": 36,
+    "event_type": "anomaly",
+    "kind": "observed",
+    "mitre": [],
+    "relation_to_previous": null,
+    "rule_findings": [],
+    "severity": "medium",
+    "summary": "failed_login count far above the expected band",
+    "timestamp": "2026-11-19T12:01:05+00:00"
+  }
+]

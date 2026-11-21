@@ -1,0 +1,92 @@
+{
+  "items": [
+    {
+      "assignee": null,
+      "correlation_key": "event-1",
+      "created_at": "2026-11-19T12:00:00+00:00",
+      "event_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        115,
+        116,
+        117,
+        118
+      ],
+      "first_seen": "2026-11-19T12:00:00+00:00",
+      "id": 1,
+      "last_seen": "2026-11-19T12:01:05+00:00",
+      "merged_into": null,
+      "mitre": [
+        {
+          "id": "T1110",
+          "label": "T1110 Brute Force (indicative mapping; verify at attack.mitre.org)",
+          "name": "Brute Force",
+          "tactic": "Credential Access",
+          "url": "https://attack.mitre.org/techniques/T1110/"
+        },
+        {
+          "id": "T1110.001",
+          "label": "T1110.001 Password Guessing (indicative mapping; verify at attack.mitre.org)",
+          "name": "Password Guessing",
+          "tactic": "Credential Access",
+          "url": "https://attack.mitre.org/techniques/T1110/001/"
+        },
+        {
+          "id": "T1078",
+          "label": "T1078 Valid Accounts (indicative mapping; verify at attack.mitre.org)",
+          "name": "Valid Accounts",
+          "tactic": "Defense Evasion",
+          "url": "https://attack.mitre.org/techniques/T1078/"
+        }
+      ],
+      "primary_ip": "203.0.113.45",
+      "primary_username": "admin",
+      "risk_score": 100.0,
+      "rules_fired": [
+        "ssh-bruteforce-by-ip",
+        "success-after-failures"
+      ],
+      "severity": "critical",
+      "status": "open",
+      "summary": "40 related events from 2026-11-19T12:00:00+00:00 to 2026-11-19T12:01:05+00:00. Observed event types: anomaly, config_drift, failed_login, network_connection, package_installed, rule_triggered, successful_login, sudo_command. Possible rule matches: ssh-bruteforce-by-ip, success-after-failures. Grouping is inferred from shared attributes and time proximity, not proof.",
+      "title": "Possible brute force from 203.0.113.45 targeting admin (followed by successful login)",
+      "updated_at": "2026-11-19T12:00:00+00:00"
+    }
+  ],
+  "next_cursor": null,
+  "total": null
+}

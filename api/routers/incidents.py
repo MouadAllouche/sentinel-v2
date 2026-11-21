@@ -8,7 +8,14 @@ from typing import Any
 from fastapi import APIRouter, Depends, Query, Request, Response
 
 from api.deps import ApiError, admin_user, current_user, db_path
-from api.schemas import AssigneeUpdate, BulkStatusChange, NoteCreate, StatusChange
+from api.schemas import (
+    AssigneeUpdate,
+    BulkStatusChange,
+    IncidentOut,
+    IncidentPage,
+    NoteCreate,
+    StatusChange,
+)
 from core.correlation import Component
 from core.export import incident_report, render_incident
 from core.incidents import apply_status_transition
@@ -62,7 +69,7 @@ def _findings_for(incident: dict[str, Any], request: Request) -> list[dict[str, 
     return findings
 
 
-@router.get("", response_model=dict[str, Any])
+@router.get("", response_model=IncidentPage)
 def incidents(
     request: Request,
     status: list[str] | None = Query(default=None),
@@ -123,7 +130,7 @@ def bulk_status(
     return {"updated": len(ids)}
 
 
-@router.get("/{identifier}", response_model=dict[str, Any])
+@router.get("/{identifier}", response_model=IncidentOut)
 def show(
     identifier: int, request: Request, _user: dict[str, Any] = Depends(current_user)
 ) -> dict[str, Any]:

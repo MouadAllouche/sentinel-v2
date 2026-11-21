@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import type { MitreTag } from "../mitre";
 import { queryKeys } from "../query-keys";
 import { client } from "./client";
 import type { paths } from "./schema";
@@ -35,7 +36,7 @@ export interface IncidentRecord {
   created_at?: string;
   assignee?: string | null;
   updated_at?: string;
-  mitre?: string[];
+  mitre?: Array<string | MitreTag>;
   event_ids?: number[];
   assessment?: { reasons?: Array<Record<string, unknown>> } | null;
   merged_into?: number | null;

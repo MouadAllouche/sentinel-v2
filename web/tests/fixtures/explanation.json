@@ -1,0 +1,205 @@
+{
+  "anchors": [
+    {
+      "event_id": 1,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:00+00:00"
+    },
+    {
+      "event_id": 115,
+      "event_type": "config_drift",
+      "timestamp": "2026-11-19T12:00:00+00:00"
+    },
+    {
+      "event_id": 2,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:01+00:00"
+    },
+    {
+      "event_id": 3,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:02+00:00"
+    },
+    {
+      "event_id": 4,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:03+00:00"
+    },
+    {
+      "event_id": 5,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:04+00:00"
+    },
+    {
+      "event_id": 116,
+      "event_type": "rule_triggered",
+      "timestamp": "2026-11-19T12:00:04+00:00"
+    },
+    {
+      "event_id": 6,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:05+00:00"
+    },
+    {
+      "event_id": 7,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:06+00:00"
+    },
+    {
+      "event_id": 8,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:07+00:00"
+    },
+    {
+      "event_id": 9,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:08+00:00"
+    },
+    {
+      "event_id": 10,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:09+00:00"
+    },
+    {
+      "event_id": 11,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:10+00:00"
+    },
+    {
+      "event_id": 12,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:11+00:00"
+    },
+    {
+      "event_id": 13,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:12+00:00"
+    },
+    {
+      "event_id": 14,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:13+00:00"
+    },
+    {
+      "event_id": 15,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:14+00:00"
+    },
+    {
+      "event_id": 16,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:15+00:00"
+    },
+    {
+      "event_id": 17,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:16+00:00"
+    },
+    {
+      "event_id": 18,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:17+00:00"
+    },
+    {
+      "event_id": 19,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:18+00:00"
+    },
+    {
+      "event_id": 20,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:19+00:00"
+    },
+    {
+      "event_id": 117,
+      "event_type": "rule_triggered",
+      "timestamp": "2026-11-19T12:00:19+00:00"
+    },
+    {
+      "event_id": 21,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:20+00:00"
+    },
+    {
+      "event_id": 22,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:21+00:00"
+    },
+    {
+      "event_id": 23,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:22+00:00"
+    },
+    {
+      "event_id": 24,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:23+00:00"
+    },
+    {
+      "event_id": 25,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:24+00:00"
+    },
+    {
+      "event_id": 26,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:25+00:00"
+    },
+    {
+      "event_id": 27,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:26+00:00"
+    },
+    {
+      "event_id": 28,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:27+00:00"
+    },
+    {
+      "event_id": 29,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:28+00:00"
+    },
+    {
+      "event_id": 30,
+      "event_type": "failed_login",
+      "timestamp": "2026-11-19T12:00:29+00:00"
+    },
+    {
+      "event_id": 118,
+      "event_type": "rule_triggered",
+      "timestamp": "2026-11-19T12:00:40+00:00"
+    },
+    {
+      "event_id": 33,
+      "event_type": "config_drift",
+      "timestamp": "2026-11-19T12:00:50+00:00"
+    },
+    {
+      "event_id": 36,
+      "event_type": "anomaly",
+      "timestamp": "2026-11-19T12:01:05+00:00"
+    }
+  ],
+  "caveats": [
+    "Grouping is based on shared attributes and time proximity and is not proof of a single actor."
+  ],
+  "grouping": {
+    "strong": [],
+    "weak": []
+  },
+  "rules": [
+    {
+      "rule_id": "success-after-failures",
+      "tier_label": "Tier 0"
+    },
+    {
+      "rule_id": "ssh-bruteforce-by-ip",
+      "tier_label": "Tier 1"
+    },
+    {
+      "rule_id": "ssh-bruteforce-by-ip",
+      "tier_label": "Tier 0"
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+[
+  {
+    "baseline_status": "drifted",
+    "enabled": true,
+    "id": 1,
+    "metadata_only": false,
+    "path": "/etc/ssh/sshd_config",
+    "warnings": []
+  },
+  {
+    "baseline_status": "clean",
+    "enabled": true,
+    "id": 2,
+    "metadata_only": false,
+    "path": "/etc/passwd",
+    "warnings": []
+  },
+  {
+    "baseline_status": "clean",
+    "enabled": true,
+    "id": 3,
+    "metadata_only": false,
+    "path": "/etc/group",
+    "warnings": []
+  },
+  {
+    "baseline_status": "clean",
+    "enabled": true,
+    "id": 4,
+    "metadata_only": true,
+    "path": "/etc/shadow",
+    "warnings": []
+  },
+  {
+    "baseline_status": "clean",
+    "enabled": true,
+    "id": 5,
+    "metadata_only": true,
+    "path": "/etc/gshadow",
+    "warnings": []
+  },
+  {
+    "baseline_status": "clean",
+    "enabled": true,
+    "id": 6,
+    "metadata_only": false,
+    "path": "/etc/sudoers",
+    "warnings": []
+  },
+  {
+    "baseline_status": "clean",
+    "enabled": true,
+    "id": 7,
+    "metadata_only": false,
+    "path": "/etc/sudoers.d",
+    "warnings": []
+  },
+  {
+    "baseline_status": "clean",
+    "enabled": true,
+    "id": 9,
+    "metadata_only": false,
+    "path": "/etc/ssh/sshd_config.d",
+    "warnings": []
+  },
+  {
+    "baseline_status": "clean",
+    "enabled": true,
+    "id": 10,
+    "metadata_only": false,
+    "path": "/etc/crontab",
+    "warnings": []
+  },
+  {
+    "baseline_status": "clean",
+    "enabled": true,
+    "id": 11,
+    "metadata_only": false,
+    "path": "/etc/cron.d",
+    "warnings": []
+  },
+  {
+    "baseline_status": "clean",
+    "enabled": true,
+    "id": 12,
+    "metadata_only": false,
+    "path": "/etc/cron.daily",
+    "warnings": []
+  },
+  {
+    "baseline_status": "clean",
+    "enabled": true,
+    "id": 13,
+    "metadata_only": false,
+    "path": "/etc/cron.hourly",
+    "warnings": []
+  },
+  {
+    "baseline_status": "clean",
+    "enabled": true,
+    "id": 14,
+    "metadata_only": false,
+    "path": "/var/spool/cron/crontabs",
+    "warnings": []
+  },
+  {
+    "baseline_status": "clean",
+    "enabled": true,
+    "id": 15,
+    "metadata_only": false,
+    "path": "/etc/systemd/system",
+    "warnings": []
+  },
+  {
+    "baseline_status": "clean",
+    "enabled": true,
+    "id": 16,
+    "metadata_only": false,
+    "path": "/etc/ld.so.preload",
+    "warnings": []
+  },
+  {
+    "baseline_status": "clean",
+    "enabled": true,
+    "id": 17,
+    "metadata_only": false,
+    "path": "/etc/profile.d",
+    "warnings": []
+  },
+  {
+    "baseline_status": "clean",
+    "enabled": true,
+    "id": 18,
+    "metadata_only": false,
+    "path": "/root/.ssh/authorized_keys",
+    "warnings": []
+  }
+]

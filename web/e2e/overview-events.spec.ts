@@ -4,7 +4,7 @@ import { credentials, login } from "./helpers";
 
 test("Overview shows seeded KPIs and a top IP link filters events", async ({ page }) => {
   await login(page);
-  await expect(page.getByText(/events \(24 h\)/i)).toBeVisible();
+  await expect(page.getByText("Events (24 h)", { exact: true })).toBeVisible();
   const ip = page.getByRole("link", { name: /203\.0\.113\.45/ }).first();
   await ip.click();
   await expect(page).toHaveURL(/source_ip=203\.0\.113\.45/);

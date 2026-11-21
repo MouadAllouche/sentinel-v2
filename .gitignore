@@ -14,6 +14,8 @@ exports/
 web/node_modules/
 web/.next/
 web/tsconfig.tsbuildinfo
+web/test-results/
+web/playwright-report/
 # Regenerated on every `next dev` run; not project source.
 web/AGENTS.md
 .coverage

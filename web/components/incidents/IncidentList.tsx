@@ -8,6 +8,7 @@ import { SeverityBadge } from "@/components/badges/SeverityBadge";
 import { Button, Input, Label } from "@/components/ui/primitives";
 import type { IncidentRecord } from "@/lib/api/hooks";
 import type { Role } from "@/lib/auth";
+import { mitreKey } from "@/lib/mitre";
 import {
   type IncidentFilters,
   emptyIncidentFilters,
@@ -275,7 +276,7 @@ export function IncidentList({
                 <td>{incident.rules_fired?.slice(0, 3).join(", ") ?? "—"}</td>
                 <td>
                   {incident.mitre?.slice(0, 2).map((technique) => (
-                    <MitreBadge key={technique} technique={technique} />
+                    <MitreBadge key={mitreKey(technique)} technique={technique} />
                   ))}
                 </td>
                 <td>{incident.assignee ?? "unassigned"}</td>

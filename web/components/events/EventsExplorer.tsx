@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { EventDrawer } from "@/components/events/EventDrawer";
@@ -45,11 +46,15 @@ function apiFilters(filters: EventFilters, cursor: string | null): Record<string
 }
 
 export function EventsExplorer() {
+  // `window.location.search` is stale during App Router client-side navigation
+  // (e.g. following a "Top source IP" link from Overview), which made the
+  // filter state initialise to defaults and then overwrite the destination URL.
+  const searchParams = useSearchParams();
+  const search = searchParams.toString();
   const [filters, setFilters] = useState<EventFilters>(() =>
-    typeof window === "undefined"
-      ? emptyFilters
-      : parseEventFilters(window.location.search, new Date().toISOString()),
+    parseEventFilters(search, new Date().toISOString()),
   );
+  const appliedSearch = useRef(search);
   const [cursors, setCursors] = useState<string[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [live, setLive] = useState(false);
@@ -83,9 +88,15 @@ export function EventsExplorer() {
   }, [filters]);
 
   useEffect(() => {
+    if (search === appliedSearch.current) return;
+    appliedSearch.current = search;
+    setFilters(parseEventFilters(search, new Date().toISOString()));
+  }, [search]);
+
+  useEffect(() => {
     if (typeof window === "undefined") return;
-    const search = filtersToSearch(filters);
-    window.history.replaceState(null, "", `${window.location.pathname}${search ? `?${search}` : ""}`);
+    const next = filtersToSearch(filters);
+    window.history.replaceState(null, "", `${window.location.pathname}${next ? `?${next}` : ""}`);
   }, [filters]);
 
   useEffect(() => {

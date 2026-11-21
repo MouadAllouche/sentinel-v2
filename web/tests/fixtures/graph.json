@@ -1,0 +1,41 @@
+{
+  "edges": [],
+  "nodes": [
+    {
+      "count": 2,
+      "id": "file_path:/etc/ssh/sshd_config",
+      "kind": "file_path",
+      "value": "/etc/ssh/sshd_config"
+    },
+    {
+      "count": 1,
+      "id": "process_name:apt",
+      "kind": "process_name",
+      "value": "apt"
+    },
+    {
+      "count": 1,
+      "id": "process_name:ssh",
+      "kind": "process_name",
+      "value": "ssh"
+    },
+    {
+      "count": 1,
+      "id": "process_name:sudo",
+      "kind": "process_name",
+      "value": "sudo"
+    },
+    {
+      "count": 36,
+      "id": "source_ip:203.0.113.45",
+      "kind": "source_ip",
+      "value": "203.0.113.45"
+    },
+    {
+      "count": 36,
+      "id": "username:admin",
+      "kind": "username",
+      "value": "admin"
+    }
+  ]
+}

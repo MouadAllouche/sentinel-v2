@@ -6,6 +6,7 @@ import { MitreBadge, RiskScoreMeter } from "@/components/badges/ExplanationBadge
 import { SeverityBadge } from "@/components/badges/SeverityBadge";
 import { Card, Skeleton } from "@/components/ui/primitives";
 import { useIncidents, useRiskThresholds } from "@/lib/api/hooks";
+import { mitreKey } from "@/lib/mitre";
 
 export function CriticalIncidents() {
   const incidents = useIncidents();
@@ -42,7 +43,7 @@ export function CriticalIncidents() {
               {incident.mitre?.length ? (
                 <div className="mt-1 flex flex-wrap gap-1">
                   {incident.mitre.map((technique) => (
-                    <MitreBadge key={technique} technique={technique} />
+                    <MitreBadge key={mitreKey(technique)} technique={technique} />
                   ))}
                 </div>
               ) : null}

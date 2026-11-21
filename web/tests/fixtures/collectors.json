@@ -1,0 +1,12 @@
+[
+  {
+    "collector": "auth_log",
+    "events_found": 76,
+    "events_new": 76,
+    "finished_at": "2026-11-19T12:00:00+00:00",
+    "id": 1,
+    "message": null,
+    "started_at": "2026-11-19T12:00:00+00:00",
+    "status": "ok"
+  }
+]

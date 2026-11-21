@@ -43,8 +43,8 @@ export const ruleSchema = z
       .max(10, "At most 10 tiers are allowed")
       .optional(),
     z_tiers: z.array(z.record(z.string(), z.unknown())).max(10).optional(),
-    metric: z.string().optional(),
-    subject: z.string().optional(),
+    metric: z.string().nullish(),
+    subject: z.string().nullish(),
     min_std: z.number().min(0.1).optional(),
     meta_conditions: z.array(z.record(z.string(), z.unknown())).max(5).optional(),
     steps: z.array(z.record(z.string(), z.unknown())).max(5).optional(),

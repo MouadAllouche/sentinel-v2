@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
-
 import { ErrorState } from "@/components/ui/primitives";
 
 export default function Error({
@@ -11,9 +9,11 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    console.error(error);
-  }, [error]);
+  // Log during render (not in an effect): error boundaries may never commit a
+  // subtree, and silent errors are impossible to diagnose in production.
+  console.error(
+    `[sentinel-error] message=${error.message} digest=${error.digest ?? "none"}\n${error.stack ?? ""}`,
+  );
 
   return (
     <div className="p-6">

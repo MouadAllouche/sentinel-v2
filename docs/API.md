@@ -28,7 +28,7 @@ same-origin proxied by the web app. The generated OpenAPI document is committed 
 | Allowlist | `GET/POST /allowlist`, `PUT/DELETE /allowlist/{id}` |
 | Behavior/Drift | `GET /baselines`, `/baselines/series`, `/anomalies`, `/drift/paths`, `/drift/status`; admin add/reset/accept/check |
 | Notifications | `GET/POST /notifications/channels`, `PUT/DELETE /notifications/channels/{id}`, `GET /notifications/log` |
-| System | `GET /health` (minimal unauthenticated), `/collectors`, `/cycles`, `/system/info`; `POST /engine/run` (admin), retention read/dry-run/apply |
+| System | `GET /api/health` (minimal unauthenticated), `/api/collectors`, `/api/cycles`, `/api/system/info`; `POST /api/engine/run` (admin), retention read/dry-run/apply |
 | Users/Audit/Filters | `GET/POST /users`, `PATCH /users/{id}`, `GET /audit`, `GET/POST/DELETE /filters/saved` |
 | Stream | `GET /stream` — SSE, ids only, `Last-Event-ID` resume, heartbeats |
 

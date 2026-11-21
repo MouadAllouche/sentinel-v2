@@ -24,6 +24,10 @@ test("theme toggle persists", async ({ page }) => {
 });
 
 test("viewer uses the seeded viewer identity", async ({ page }) => {
-  await login(page, credentials().viewer);
+  const viewer = credentials().viewer;
+  await login(page, viewer);
+  await expect(page.getByText(new RegExp(`signed in as ${viewer}`, "i")).first()).toBeVisible();
+  // Role-aware UI is explicit on the rules page, not on the Overview landing page.
+  await page.goto("/rules");
   await expect(page.getByText(/view only/i).first()).toBeVisible();
 });

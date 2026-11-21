@@ -1435,12 +1435,55 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /**
+         * IncidentOut
+         * @description Incident response shape; additional engine fields are preserved.
+         */
+        IncidentOut: {
+            /** Id */
+            id: number;
+            /** Mitre */
+            mitre?: components["schemas"]["MitreTag"][];
+            /** Severity */
+            severity: string;
+            /** Status */
+            status: string;
+            /** Title */
+            title: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** IncidentPage */
+        IncidentPage: {
+            /** Items */
+            items: components["schemas"]["IncidentOut"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+            /** Total */
+            total?: number | null;
+        };
         /** LoginRequest */
         LoginRequest: {
             /** Password */
             password: string;
             /** Username */
             username: string;
+        };
+        /**
+         * MitreTag
+         * @description A static MITRE technique reference. Always indicative, never a confirmation.
+         */
+        MitreTag: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Name */
+            name: string;
+            /** Tactic */
+            tactic: string;
+            /** Url */
+            url: string;
         };
         /** NoteCreate */
         NoteCreate: {
@@ -2690,9 +2733,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["IncidentPage"];
                 };
             };
             /** @description Validation Error */
@@ -2758,9 +2799,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["IncidentOut"];
                 };
             };
             /** @description Validation Error */

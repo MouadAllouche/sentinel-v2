@@ -58,6 +58,8 @@ describe("admin pure helpers", () => {
 
   it("validates retention policy ages", () => {
     expect(retentionIssues({ low_days: 30, medium_days: 60, high_days: 90, critical_days: 180 })).toEqual([]);
+    // The built-in default keeps high and critical evidence for the same period.
+    expect(retentionIssues({ low_days: 14, medium_days: 60, high_days: 365, critical_days: 365 })).toEqual([]);
     expect(retentionIssues({ low_days: 90, medium_days: 30 })[0]).toContain("increasing");
   });
 

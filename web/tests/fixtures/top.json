@@ -1,0 +1,34 @@
+[
+  {
+    "count": 77,
+    "value": "sudo_command"
+  },
+  {
+    "count": 31,
+    "value": "failed_login"
+  },
+  {
+    "count": 3,
+    "value": "rule_triggered"
+  },
+  {
+    "count": 2,
+    "value": "config_drift"
+  },
+  {
+    "count": 1,
+    "value": "anomaly"
+  },
+  {
+    "count": 1,
+    "value": "network_connection"
+  },
+  {
+    "count": 1,
+    "value": "package_installed"
+  },
+  {
+    "count": 1,
+    "value": "successful_login"
+  }
+]

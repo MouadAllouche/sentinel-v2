@@ -15,6 +15,7 @@ import {
   useEventStats,
   useEvents,
   useHealth,
+  useFindings,
   useIncidents,
   useTopValues,
 } from "@/lib/api/hooks";
@@ -26,8 +27,7 @@ function sumBuckets(buckets: Array<{ total: number }>): number {
   return buckets.reduce((total, bucket) => total + bucket.total, 0);
 }
 
-export function Overview() {
-  const [now] = useState(() => new Date().toISOString());
+export function Overview({ now }: { now: string }) {
   const [paused, setPaused] = useState(false);
   const current = rangeForPreset("24h", now);
   const previousRange = rangeForPreset("48h", now);
@@ -56,7 +56,7 @@ export function Overview() {
     limit: 500,
   });
   const incidents = useIncidents();
-  const findings = useApiList<Record<string, unknown>>("/api/rules/findings");
+  const findings = useFindings();
   const health = useHealth();
   const collectors = useApiList<Record<string, unknown>>("/api/collectors");
   const baselines = useApiList<Record<string, unknown>>("/api/baselines");
@@ -99,7 +99,7 @@ export function Overview() {
     },
     {
       label: "Active rule findings (24 h)",
-      value: (findings.data?.items ?? []).filter((item) => {
+      value: (findings.data ?? []).filter((item) => {
         const stamp = String(item.created_at ?? item.timestamp ?? "");
         return !stamp || stamp >= current.since;
       }).length,
@@ -145,7 +145,7 @@ export function Overview() {
           </div>
           <div className="grid gap-3 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <EventsOverTime />
+              <EventsOverTime now={now} />
             </div>
             <TopListField field="event_type" title="Event types" range={current} />
           </div>

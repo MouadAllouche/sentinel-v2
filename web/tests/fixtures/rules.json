@@ -1,0 +1,1647 @@
+[
+  {
+    "actions": {
+      "create_incident": false,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 0,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": false, \"notify\": true, \"tags\": []}, \"conditions\": [{\"metric\": \"has_event_type:anomaly\", \"op\": \"eq\", \"value\": true}], \"description\": \"Baseline anomaly joined to this incident\", \"enabled\": true, \"id\": \"anomaly-in-incident\", \"kind\": \"incident_meta\", \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"failed_login\"]}, \"mitre\": [], \"name\": \"Anomaly in incident\", \"points\": 10, \"scope\": {\"exclude_allowlisted\": true}, \"severity\": \"medium\"}",
+    "description": "Baseline anomaly joined to this incident",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [],
+    "id": "anomaly-in-incident",
+    "kind": "incident_meta",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "failed_login"
+      ]
+    },
+    "meta_conditions": [
+      {
+        "metric": "has_event_type:anomaly",
+        "op": "eq",
+        "value": true
+      }
+    ],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [],
+    "name": "Anomaly in incident",
+    "per": null,
+    "points": 10,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "medium",
+    "steps": [],
+    "subject": null,
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": false,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 3600,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": false, \"notify\": true, \"tags\": []}, \"cooldown_seconds\": 3600, \"description\": \"Unusual count of distinct outbound destinations\", \"enabled\": true, \"id\": \"baseline-distinct-destinations-by-process\", \"kind\": \"baseline_metric\", \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"failed_login\"]}, \"metric\": \"distinct_destinations_per_hour\", \"min_history_hours\": 24, \"min_samples\": 24, \"min_std\": 1.0, \"mitre\": [], \"name\": \"Distinct destinations above normal\", \"scope\": {\"exclude_allowlisted\": true}, \"subject\": \"*\", \"tiers\": [{\"label\": \"Elevated\", \"min_absolute\": 10, \"points\": 5, \"severity\": \"low\", \"z\": 3.0}, {\"label\": \"Extreme\", \"min_absolute\": 20, \"points\": 10, \"severity\": \"medium\", \"z\": 6.0}], \"window_days\": 7}",
+    "description": "Unusual count of distinct outbound destinations",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [],
+    "id": "baseline-distinct-destinations-by-process",
+    "kind": "baseline_metric",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "failed_login"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": "distinct_destinations_per_hour",
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [],
+    "name": "Distinct destinations above normal",
+    "per": null,
+    "points": 0,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "low",
+    "steps": [],
+    "subject": "*",
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": [
+      {
+        "label": "Elevated",
+        "min_absolute": 10,
+        "points": 5,
+        "severity": "low",
+        "z": 3.0
+      },
+      {
+        "label": "Extreme",
+        "min_absolute": 20,
+        "points": 10,
+        "severity": "medium",
+        "z": 6.0
+      }
+    ]
+  },
+  {
+    "actions": {
+      "create_incident": false,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 3600,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": false, \"notify\": true, \"tags\": []}, \"cooldown_seconds\": 3600, \"description\": \"Unusual number of failed logins per hour\", \"enabled\": true, \"id\": \"baseline-failed-logins\", \"kind\": \"baseline_metric\", \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"failed_login\"]}, \"metric\": \"failed_logins_per_hour\", \"min_history_hours\": 24, \"min_samples\": 24, \"min_std\": 1.0, \"mitre\": [\"T1110\"], \"name\": \"Failed logins above normal\", \"scope\": {\"exclude_allowlisted\": true}, \"subject\": \"global\", \"tiers\": [{\"label\": \"Elevated\", \"min_absolute\": 5, \"points\": 10, \"severity\": \"medium\", \"z\": 3.0}, {\"label\": \"Extreme\", \"min_absolute\": 20, \"points\": 20, \"severity\": \"high\", \"z\": 6.0}], \"window_days\": 7}",
+    "description": "Unusual number of failed logins per hour",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [],
+    "id": "baseline-failed-logins",
+    "kind": "baseline_metric",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "failed_login"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": "failed_logins_per_hour",
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1110"
+    ],
+    "name": "Failed logins above normal",
+    "per": null,
+    "points": 0,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "low",
+    "steps": [],
+    "subject": "global",
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": [
+      {
+        "label": "Elevated",
+        "min_absolute": 5,
+        "points": 10,
+        "severity": "medium",
+        "z": 3.0
+      },
+      {
+        "label": "Extreme",
+        "min_absolute": 20,
+        "points": 20,
+        "severity": "high",
+        "z": 6.0
+      }
+    ]
+  },
+  {
+    "actions": {
+      "create_incident": false,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 3600,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": false, \"notify\": true, \"tags\": []}, \"cooldown_seconds\": 3600, \"description\": \"Unusual new outbound connections\", \"enabled\": true, \"id\": \"baseline-new-connections-by-process\", \"kind\": \"baseline_metric\", \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"failed_login\"]}, \"metric\": \"new_connections_per_hour\", \"min_history_hours\": 24, \"min_samples\": 24, \"min_std\": 1.0, \"mitre\": [], \"name\": \"New connections above normal\", \"scope\": {\"exclude_allowlisted\": true}, \"subject\": \"*\", \"tiers\": [{\"label\": \"Elevated\", \"min_absolute\": 20, \"points\": 10, \"severity\": \"medium\", \"z\": 3.0}, {\"label\": \"Extreme\", \"min_absolute\": 40, \"points\": 20, \"severity\": \"high\", \"z\": 6.0}], \"window_days\": 7}",
+    "description": "Unusual new outbound connections",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [],
+    "id": "baseline-new-connections-by-process",
+    "kind": "baseline_metric",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "failed_login"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": "new_connections_per_hour",
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [],
+    "name": "New connections above normal",
+    "per": null,
+    "points": 0,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "low",
+    "steps": [],
+    "subject": "*",
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": [
+      {
+        "label": "Elevated",
+        "min_absolute": 20,
+        "points": 10,
+        "severity": "medium",
+        "z": 3.0
+      },
+      {
+        "label": "Extreme",
+        "min_absolute": 40,
+        "points": 20,
+        "severity": "high",
+        "z": 6.0
+      }
+    ]
+  },
+  {
+    "actions": {
+      "create_incident": false,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 3600,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": false, \"notify\": true, \"tags\": []}, \"cooldown_seconds\": 3600, \"description\": \"Unusual number of successful logins\", \"enabled\": true, \"id\": \"baseline-successful-logins-by-user\", \"kind\": \"baseline_metric\", \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"failed_login\"]}, \"metric\": \"successful_logins_per_hour\", \"min_history_hours\": 24, \"min_samples\": 24, \"min_std\": 1.0, \"mitre\": [\"T1078\"], \"name\": \"Successful logins above normal\", \"scope\": {\"exclude_allowlisted\": true}, \"subject\": \"*\", \"tiers\": [{\"label\": \"Elevated\", \"min_absolute\": 5, \"points\": 10, \"severity\": \"medium\", \"z\": 3.0}], \"window_days\": 7}",
+    "description": "Unusual number of successful logins",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [],
+    "id": "baseline-successful-logins-by-user",
+    "kind": "baseline_metric",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "failed_login"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": "successful_logins_per_hour",
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1078"
+    ],
+    "name": "Successful logins above normal",
+    "per": null,
+    "points": 0,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "low",
+    "steps": [],
+    "subject": "*",
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": [
+      {
+        "label": "Elevated",
+        "min_absolute": 5,
+        "points": 10,
+        "severity": "medium",
+        "z": 3.0
+      }
+    ]
+  },
+  {
+    "actions": {
+      "create_incident": false,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 3600,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": false, \"notify\": true, \"tags\": []}, \"cooldown_seconds\": 3600, \"description\": \"Unusual number of sudo commands\", \"enabled\": true, \"id\": \"baseline-sudo-by-user\", \"kind\": \"baseline_metric\", \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"failed_login\"]}, \"metric\": \"sudo_commands_per_hour\", \"min_history_hours\": 24, \"min_samples\": 24, \"min_std\": 1.0, \"mitre\": [\"T1548.003\"], \"name\": \"Sudo commands above normal\", \"scope\": {\"exclude_allowlisted\": true}, \"subject\": \"*\", \"tiers\": [{\"label\": \"Elevated\", \"min_absolute\": 5, \"points\": 10, \"severity\": \"medium\", \"z\": 3.0}], \"window_days\": 7}",
+    "description": "Unusual number of sudo commands",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [],
+    "id": "baseline-sudo-by-user",
+    "kind": "baseline_metric",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "failed_login"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": "sudo_commands_per_hour",
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1548.003"
+    ],
+    "name": "Sudo commands above normal",
+    "per": null,
+    "points": 0,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "low",
+    "steps": [],
+    "subject": "*",
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": [
+      {
+        "label": "Elevated",
+        "min_absolute": 5,
+        "points": 10,
+        "severity": "medium",
+        "z": 3.0
+      }
+    ]
+  },
+  {
+    "actions": {
+      "create_incident": false,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 0,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": false, \"notify\": true, \"tags\": []}, \"conditions\": [{\"metric\": \"has_event_type:successful_login\", \"op\": \"eq\", \"value\": true}, {\"metric\": \"contains_privileged_activity\", \"op\": \"eq\", \"value\": true}], \"description\": \"Successful login plus privileged action\", \"enabled\": true, \"id\": \"credential-to-privilege-chain\", \"kind\": \"incident_meta\", \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"failed_login\"]}, \"mitre\": [], \"name\": \"Credential access followed by privileged activity\", \"points\": 15, \"scope\": {\"exclude_allowlisted\": true}, \"severity\": \"high\"}",
+    "description": "Successful login plus privileged action",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [],
+    "id": "credential-to-privilege-chain",
+    "kind": "incident_meta",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "failed_login"
+      ]
+    },
+    "meta_conditions": [
+      {
+        "metric": "has_event_type:successful_login",
+        "op": "eq",
+        "value": true
+      },
+      {
+        "metric": "contains_privileged_activity",
+        "op": "eq",
+        "value": true
+      }
+    ],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [],
+    "name": "Credential access followed by privileged activity",
+    "per": null,
+    "points": 15,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "high",
+    "steps": [],
+    "subject": null,
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": false,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 0,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": false, \"notify\": true, \"tags\": []}, \"conditions\": [{\"metric\": \"has_event_type:successful_login\", \"op\": \"eq\", \"value\": true}, {\"metric\": \"contains_persistence_change\", \"op\": \"eq\", \"value\": true}], \"description\": \"Successful login plus persistence change\", \"enabled\": true, \"id\": \"drift-after-access\", \"kind\": \"incident_meta\", \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"failed_login\"]}, \"mitre\": [], \"name\": \"Configuration drift after access\", \"points\": 20, \"scope\": {\"exclude_allowlisted\": true}, \"severity\": \"high\"}",
+    "description": "Successful login plus persistence change",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [],
+    "id": "drift-after-access",
+    "kind": "incident_meta",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "failed_login"
+      ]
+    },
+    "meta_conditions": [
+      {
+        "metric": "has_event_type:successful_login",
+        "op": "eq",
+        "value": true
+      },
+      {
+        "metric": "contains_persistence_change",
+        "op": "eq",
+        "value": true
+      }
+    ],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [],
+    "name": "Configuration drift after access",
+    "per": null,
+    "points": 20,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "high",
+    "steps": [],
+    "subject": null,
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": false,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 0,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": false, \"notify\": true, \"tags\": []}, \"conditions\": [{\"metric\": \"distinct_event_types\", \"op\": \"gte\", \"value\": 3}], \"description\": \"Multiple event types joined to one incident\", \"enabled\": true, \"id\": \"multiple-related-events\", \"kind\": \"incident_meta\", \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"failed_login\"]}, \"mitre\": [], \"name\": \"Several distinct kinds of suspicious evidence\", \"points\": 10, \"scope\": {\"exclude_allowlisted\": true}, \"severity\": \"medium\"}",
+    "description": "Multiple event types joined to one incident",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [],
+    "id": "multiple-related-events",
+    "kind": "incident_meta",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "failed_login"
+      ]
+    },
+    "meta_conditions": [
+      {
+        "metric": "distinct_event_types",
+        "op": "gte",
+        "value": 3
+      }
+    ],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [],
+    "name": "Several distinct kinds of suspicious evidence",
+    "per": null,
+    "points": 10,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "medium",
+    "steps": [],
+    "subject": null,
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 0,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": true, \"notify\": true, \"tags\": []}, \"description\": \"First successful login from an IP for a user\", \"enabled\": true, \"field\": \"source_ip\", \"id\": \"new-ip-login\", \"kind\": \"new_value\", \"learning_days\": 30, \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"successful_login\"]}, \"min_history_events\": 5, \"mitre\": [\"T1078\"], \"name\": \"Login from a never-seen IP\", \"per\": \"username\", \"points\": 10, \"scope\": {\"exclude_allowlisted\": true}, \"severity\": \"medium\"}",
+    "description": "First successful login from an IP for a user",
+    "enabled": true,
+    "field": "source_ip",
+    "fixed_alignment": null,
+    "group_by": [],
+    "id": "new-ip-login",
+    "kind": "new_value",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "successful_login"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": null,
+    "min_history_events": 5,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1078"
+    ],
+    "name": "Login from a never-seen IP",
+    "per": "username",
+    "points": 10,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "medium",
+    "steps": [],
+    "subject": null,
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 0,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": true, \"notify\": true, \"tags\": []}, \"cooldown_seconds\": 0, \"description\": \"A new listening socket bound to all interfaces\", \"enabled\": true, \"group_by\": [], \"id\": \"new-listening-port-all-interfaces\", \"kind\": \"field_match\", \"match\": {\"conditions\": {\"all\": [{\"field\": \"details.bind_scope\", \"op\": \"eq\", \"value\": \"all_interfaces\"}]}, \"event_types\": [\"new_listening_port\"]}, \"mitre\": [\"T1571\"], \"name\": \"Listening on all interfaces\", \"points\": 10, \"scope\": {\"exclude_allowlisted\": true}, \"severity\": \"medium\"}",
+    "description": "A new listening socket bound to all interfaces",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [],
+    "id": "new-listening-port-all-interfaces",
+    "kind": "field_match",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": [
+          {
+            "field": "details.bind_scope",
+            "op": "eq",
+            "value": "all_interfaces"
+          }
+        ]
+      },
+      "event_types": [
+        "new_listening_port"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1571"
+    ],
+    "name": "Listening on all interfaces",
+    "per": null,
+    "points": 10,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "medium",
+    "steps": [],
+    "subject": null,
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 0,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": true, \"notify\": true, \"tags\": []}, \"description\": \"First outbound destination for a process\", \"enabled\": false, \"field\": \"destination_ip\", \"id\": \"new-outbound-destination\", \"kind\": \"new_value\", \"learning_days\": 14, \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"network_connection\"]}, \"min_history_events\": 5, \"mitre\": [], \"name\": \"New outbound destination\", \"per\": \"process_name\", \"points\": 5, \"scope\": {\"exclude_allowlisted\": true}, \"severity\": \"low\"}",
+    "description": "First outbound destination for a process",
+    "enabled": false,
+    "field": "destination_ip",
+    "fixed_alignment": null,
+    "group_by": [],
+    "id": "new-outbound-destination",
+    "kind": "new_value",
+    "learning_days": 14,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "network_connection"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": null,
+    "min_history_events": 5,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [],
+    "name": "New outbound destination",
+    "per": "process_name",
+    "points": 5,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "low",
+    "steps": [],
+    "subject": null,
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 0,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": true, \"notify\": true, \"tags\": []}, \"cooldown_seconds\": 0, \"description\": \"A local account was created\", \"enabled\": true, \"group_by\": [], \"id\": \"new-user-created\", \"kind\": \"field_match\", \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"user_created\"]}, \"mitre\": [\"T1136.001\"], \"name\": \"New user account created\", \"points\": 15, \"scope\": {\"exclude_allowlisted\": true}, \"severity\": \"medium\"}",
+    "description": "A local account was created",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [],
+    "id": "new-user-created",
+    "kind": "field_match",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "user_created"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1136.001"
+    ],
+    "name": "New user account created",
+    "per": null,
+    "points": 15,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "medium",
+    "steps": [],
+    "subject": null,
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 0,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": true, \"notify\": true, \"tags\": []}, \"cooldown_seconds\": 0, \"description\": \"A cron, systemd or other persistence location changed\", \"enabled\": true, \"group_by\": [\"file_path\"], \"id\": \"persistence-change\", \"kind\": \"field_match\", \"match\": {\"conditions\": {\"all\": [{\"field\": \"details.category\", \"op\": \"in\", \"value\": [\"cron\", \"systemd\", \"authorized_keys\", \"ld_preload\", \"shell_profile\"]}]}, \"event_types\": [\"config_drift\"]}, \"mitre\": [\"T1053.003\", \"T1543.002\", \"T1098.004\"], \"name\": \"Persistence location changed\", \"points\": 25, \"scope\": {\"exclude_allowlisted\": true}, \"severity\": \"high\"}",
+    "description": "A cron, systemd or other persistence location changed",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [
+      "file_path"
+    ],
+    "id": "persistence-change",
+    "kind": "field_match",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": [
+          {
+            "field": "details.category",
+            "op": "in",
+            "value": [
+              "cron",
+              "systemd",
+              "authorized_keys",
+              "ld_preload",
+              "shell_profile"
+            ]
+          }
+        ]
+      },
+      "event_types": [
+        "config_drift"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1053.003",
+      "T1543.002",
+      "T1098.004"
+    ],
+    "name": "Persistence location changed",
+    "per": null,
+    "points": 25,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "high",
+    "steps": [],
+    "subject": null,
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 0,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": true, \"notify\": true, \"tags\": []}, \"cooldown_seconds\": 0, \"description\": \"A package commonly used for reconnaissance was installed\", \"enabled\": true, \"group_by\": [], \"id\": \"recon-or-attack-tool-installed\", \"kind\": \"field_match\", \"match\": {\"conditions\": {\"all\": [{\"field\": \"details.package\", \"op\": \"in\", \"value\": [\"nmap\", \"ncat\", \"netcat\", \"hydra\", \"john\", \"sqlmap\", \"masscan\"]}]}, \"event_types\": [\"package_installed\"]}, \"mitre\": [\"T1595\"], \"name\": \"Reconnaissance tool installed\", \"points\": 10, \"scope\": {\"exclude_allowlisted\": true}, \"severity\": \"medium\"}",
+    "description": "A package commonly used for reconnaissance was installed",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [],
+    "id": "recon-or-attack-tool-installed",
+    "kind": "field_match",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": [
+          {
+            "field": "details.package",
+            "op": "in",
+            "value": [
+              "nmap",
+              "ncat",
+              "netcat",
+              "hydra",
+              "john",
+              "sqlmap",
+              "masscan"
+            ]
+          }
+        ]
+      },
+      "event_types": [
+        "package_installed"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1595"
+    ],
+    "name": "Reconnaissance tool installed",
+    "per": null,
+    "points": 10,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "medium",
+    "steps": [],
+    "subject": null,
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 0,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": true, \"notify\": true, \"tags\": []}, \"cooldown_seconds\": 0, \"description\": \"Sensitive file changed in a security-relevant way\", \"enabled\": true, \"group_by\": [\"file_path\"], \"id\": \"sensitive-file-change\", \"kind\": \"field_match\", \"match\": {\"conditions\": {\"all\": [{\"field\": \"details.sensitivity\", \"op\": \"in\", \"value\": [\"high\", \"critical\"]}, {\"any\": [{\"field\": \"details.changed_fields\", \"op\": \"contains\", \"value\": \"sha256\"}, {\"field\": \"details.changed_fields\", \"op\": \"contains\", \"value\": \"owner\"}, {\"field\": \"details.changed_fields\", \"op\": \"contains\", \"value\": \"group\"}, {\"field\": \"details.changed_fields\", \"op\": \"contains\", \"value\": \"mode\"}]}]}, \"event_types\": [\"config_drift\"]}, \"mitre\": [\"T1222.002\"], \"name\": \"Sensitive file changed\", \"points\": 30, \"scope\": {\"exclude_allowlisted\": true}, \"severity\": \"high\"}",
+    "description": "Sensitive file changed in a security-relevant way",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [
+      "file_path"
+    ],
+    "id": "sensitive-file-change",
+    "kind": "field_match",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": [
+          {
+            "field": "details.sensitivity",
+            "op": "in",
+            "value": [
+              "high",
+              "critical"
+            ]
+          },
+          {
+            "any": [
+              {
+                "field": "details.changed_fields",
+                "op": "contains",
+                "value": "sha256"
+              },
+              {
+                "field": "details.changed_fields",
+                "op": "contains",
+                "value": "owner"
+              },
+              {
+                "field": "details.changed_fields",
+                "op": "contains",
+                "value": "group"
+              },
+              {
+                "field": "details.changed_fields",
+                "op": "contains",
+                "value": "mode"
+              }
+            ]
+          }
+        ]
+      },
+      "event_types": [
+        "config_drift"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1222.002"
+    ],
+    "name": "Sensitive file changed",
+    "per": null,
+    "points": 30,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "high",
+    "steps": [],
+    "subject": null,
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 0,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": true, \"notify\": true, \"tags\": []}, \"cooldown_seconds\": 0, \"description\": \"Sudo execution of an administrative command\", \"enabled\": true, \"group_by\": [\"username\"], \"id\": \"sensitive-sudo\", \"kind\": \"field_match\", \"match\": {\"conditions\": {\"all\": [{\"field\": \"process_name\", \"op\": \"in\", \"value\": [\"visudo\", \"passwd\", \"useradd\", \"usermod\", \"userdel\", \"chown\", \"chmod\", \"crontab\"]}]}, \"event_types\": [\"sudo_command\"]}, \"mitre\": [\"T1548.003\"], \"name\": \"Sudo of a sensitive command\", \"points\": 20, \"scope\": {\"exclude_allowlisted\": true}, \"severity\": \"high\"}",
+    "description": "Sudo execution of an administrative command",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [
+      "username"
+    ],
+    "id": "sensitive-sudo",
+    "kind": "field_match",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": [
+          {
+            "field": "process_name",
+            "op": "in",
+            "value": [
+              "visudo",
+              "passwd",
+              "useradd",
+              "usermod",
+              "userdel",
+              "chown",
+              "chmod",
+              "crontab"
+            ]
+          }
+        ]
+      },
+      "event_types": [
+        "sudo_command"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1548.003"
+    ],
+    "name": "Sudo of a sensitive command",
+    "per": null,
+    "points": 20,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "high",
+    "steps": [],
+    "subject": null,
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 900,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": true, \"notify\": true, \"tags\": []}, \"aggregate\": {\"type\": \"count\"}, \"cooldown_seconds\": 900, \"description\": \"Repeated failed logins from the same source IP\", \"enabled\": true, \"fixed_alignment\": null, \"group_by\": [\"source_ip\"], \"id\": \"ssh-bruteforce-by-ip\", \"kind\": \"threshold\", \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"failed_login\", \"invalid_user\"]}, \"mitre\": [\"T1110.001\"], \"name\": \"SSH brute force from one IP\", \"scope\": {\"exclude_allowlisted\": true}, \"tiers\": [{\"count\": 5, \"label\": \"Repeated failures\", \"points\": 15, \"severity\": \"medium\", \"window_seconds\": 600}, {\"count\": 20, \"label\": \"Sustained attack\", \"points\": 30, \"severity\": \"high\", \"window_seconds\": 600}, {\"count\": 50, \"label\": \"Burst\", \"points\": 45, \"severity\": \"critical\", \"window_seconds\": 60}], \"window_mode\": \"sliding\"}",
+    "description": "Repeated failed logins from the same source IP",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [
+      "source_ip"
+    ],
+    "id": "ssh-bruteforce-by-ip",
+    "kind": "threshold",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "failed_login",
+        "invalid_user"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1110.001"
+    ],
+    "name": "SSH brute force from one IP",
+    "per": null,
+    "points": 0,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "low",
+    "steps": [],
+    "subject": null,
+    "tiers": [
+      {
+        "count": 5,
+        "label": "Repeated failures",
+        "points": 15,
+        "severity": "medium",
+        "window_seconds": 600
+      },
+      {
+        "count": 20,
+        "label": "Sustained attack",
+        "points": 30,
+        "severity": "high",
+        "window_seconds": 600
+      },
+      {
+        "count": 50,
+        "label": "Burst",
+        "points": 45,
+        "severity": "critical",
+        "window_seconds": 60
+      }
+    ],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": "source_ip",
+      "type": "distinct_count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 900,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": true, \"notify\": true, \"tags\": []}, \"aggregate\": {\"field\": \"source_ip\", \"type\": \"distinct_count\"}, \"cooldown_seconds\": 900, \"description\": \"Many distinct source IPs failing for one username\", \"enabled\": true, \"fixed_alignment\": null, \"group_by\": [\"username\"], \"id\": \"ssh-distributed-single-user\", \"kind\": \"threshold\", \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"failed_login\"]}, \"mitre\": [\"T1110\"], \"name\": \"Distributed guessing of one account\", \"scope\": {\"exclude_allowlisted\": true}, \"tiers\": [{\"count\": 5, \"label\": \"Distributed\", \"points\": 25, \"severity\": \"high\", \"window_seconds\": 600}], \"window_mode\": \"sliding\"}",
+    "description": "Many distinct source IPs failing for one username",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [
+      "username"
+    ],
+    "id": "ssh-distributed-single-user",
+    "kind": "threshold",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "failed_login"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1110"
+    ],
+    "name": "Distributed guessing of one account",
+    "per": null,
+    "points": 0,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "low",
+    "steps": [],
+    "subject": null,
+    "tiers": [
+      {
+        "count": 5,
+        "label": "Distributed",
+        "points": 25,
+        "severity": "high",
+        "window_seconds": 600
+      }
+    ],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": "username",
+      "type": "distinct_count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 900,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": true, \"notify\": true, \"tags\": []}, \"aggregate\": {\"field\": \"username\", \"type\": \"distinct_count\"}, \"cooldown_seconds\": 900, \"description\": \"Many distinct usernames failing from one source IP\", \"enabled\": true, \"fixed_alignment\": null, \"group_by\": [\"source_ip\"], \"id\": \"ssh-password-spraying\", \"kind\": \"threshold\", \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"failed_login\"]}, \"mitre\": [\"T1110.003\"], \"name\": \"Password spraying from one IP\", \"scope\": {\"exclude_allowlisted\": true}, \"tiers\": [{\"count\": 5, \"label\": \"Spray\", \"points\": 25, \"severity\": \"high\", \"window_seconds\": 600}], \"window_mode\": \"sliding\"}",
+    "description": "Many distinct usernames failing from one source IP",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [
+      "source_ip"
+    ],
+    "id": "ssh-password-spraying",
+    "kind": "threshold",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "failed_login"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1110.003"
+    ],
+    "name": "Password spraying from one IP",
+    "per": null,
+    "points": 0,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "low",
+    "steps": [],
+    "subject": null,
+    "tiers": [
+      {
+        "count": 5,
+        "label": "Spray",
+        "points": 25,
+        "severity": "high",
+        "window_seconds": 600
+      }
+    ],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 900,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": true, \"notify\": true, \"tags\": []}, \"aggregate\": {\"type\": \"count\"}, \"cooldown_seconds\": 900, \"description\": \"Many pre-authentication disconnects from one IP\", \"enabled\": true, \"fixed_alignment\": null, \"group_by\": [\"source_ip\"], \"id\": \"ssh-preauth-scanning\", \"kind\": \"threshold\", \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"preauth_disconnect\"]}, \"mitre\": [\"T1046\"], \"name\": \"SSH pre-authentication scanning\", \"scope\": {\"exclude_allowlisted\": true}, \"tiers\": [{\"count\": 20, \"label\": \"Scanning\", \"points\": 5, \"severity\": \"medium\", \"window_seconds\": 300}], \"window_mode\": \"sliding\"}",
+    "description": "Many pre-authentication disconnects from one IP",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [
+      "source_ip"
+    ],
+    "id": "ssh-preauth-scanning",
+    "kind": "threshold",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "preauth_disconnect"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1046"
+    ],
+    "name": "SSH pre-authentication scanning",
+    "per": null,
+    "points": 0,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "low",
+    "steps": [],
+    "subject": null,
+    "tiers": [
+      {
+        "count": 20,
+        "label": "Scanning",
+        "points": 5,
+        "severity": "medium",
+        "window_seconds": 300
+      }
+    ],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 900,
+    "correlate_on": [
+      "source_ip"
+    ],
+    "default_definition_json": "{\"actions\": {\"create_incident\": true, \"notify\": true, \"tags\": []}, \"cooldown_seconds\": 900, \"correlate_on\": [\"source_ip\"], \"description\": \"A successful login shortly after repeated failures\", \"enabled\": true, \"id\": \"success-after-failures\", \"kind\": \"sequence\", \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"failed_login\"]}, \"mitre\": [\"T1110\", \"T1078\"], \"name\": \"Successful login after repeated failures\", \"points\": 20, \"scope\": {\"exclude_allowlisted\": true}, \"severity\": \"high\", \"steps\": [{\"match\": {\"event_types\": [\"failed_login\"]}, \"min_count\": 5, \"name\": \"failures\", \"window_seconds\": 600}, {\"match\": {\"event_types\": [\"successful_login\"]}, \"min_count\": 1, \"name\": \"success\"}], \"within_seconds\": 900}",
+    "description": "A successful login shortly after repeated failures",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [],
+    "id": "success-after-failures",
+    "kind": "sequence",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "failed_login"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1110",
+      "T1078"
+    ],
+    "name": "Successful login after repeated failures",
+    "per": null,
+    "points": 20,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "high",
+    "steps": [
+      {
+        "match": {
+          "event_types": [
+            "failed_login"
+          ]
+        },
+        "min_count": 5,
+        "name": "failures",
+        "window_seconds": 600
+      },
+      {
+        "match": {
+          "event_types": [
+            "successful_login"
+          ]
+        },
+        "min_count": 1,
+        "name": "success"
+      }
+    ],
+    "subject": null,
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 900,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 0,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": true, \"notify\": true, \"tags\": []}, \"cooldown_seconds\": 0, \"description\": \"Process executable was launched from a temporary location\", \"enabled\": true, \"group_by\": [\"username\"], \"id\": \"suspicious-process\", \"kind\": \"field_match\", \"match\": {\"conditions\": {\"all\": []}, \"event_types\": [\"suspicious_process\"]}, \"mitre\": [\"T1059\"], \"name\": \"Executable from a temporary location\", \"points\": 20, \"scope\": {\"exclude_allowlisted\": true}, \"severity\": \"high\"}",
+    "description": "Process executable was launched from a temporary location",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [
+      "username"
+    ],
+    "id": "suspicious-process",
+    "kind": "field_match",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": []
+      },
+      "event_types": [
+        "suspicious_process"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1059"
+    ],
+    "name": "Executable from a temporary location",
+    "per": null,
+    "points": 20,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "high",
+    "steps": [],
+    "subject": null,
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 0,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": true, \"notify\": true, \"tags\": []}, \"cooldown_seconds\": 0, \"description\": \"Account added to an administrative group\", \"enabled\": true, \"group_by\": [\"username\"], \"id\": \"user-added-to-privileged-group\", \"kind\": \"field_match\", \"match\": {\"conditions\": {\"all\": [{\"field\": \"details.group\", \"op\": \"in\", \"value\": [\"sudo\", \"adm\", \"wheel\", \"root\"]}]}, \"event_types\": [\"group_member_added\"]}, \"mitre\": [\"T1098\"], \"name\": \"User added to a privileged group\", \"points\": 25, \"scope\": {\"exclude_allowlisted\": true}, \"severity\": \"high\"}",
+    "description": "Account added to an administrative group",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [
+      "username"
+    ],
+    "id": "user-added-to-privileged-group",
+    "kind": "field_match",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": [
+          {
+            "field": "details.group",
+            "op": "in",
+            "value": [
+              "sudo",
+              "adm",
+              "wheel",
+              "root"
+            ]
+          }
+        ]
+      },
+      "event_types": [
+        "group_member_added"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1098"
+    ],
+    "name": "User added to a privileged group",
+    "per": null,
+    "points": 25,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "high",
+    "steps": [],
+    "subject": null,
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  },
+  {
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": []
+    },
+    "aggregate": {
+      "field": null,
+      "type": "count"
+    },
+    "builtin": true,
+    "cooldown_seconds": 0,
+    "correlate_on": [],
+    "default_definition_json": "{\"actions\": {\"create_incident\": true, \"notify\": true, \"tags\": []}, \"cooldown_seconds\": 0, \"description\": \"A sensitive file became world-writable\", \"enabled\": true, \"group_by\": [\"file_path\"], \"id\": \"world-writable-sensitive-file\", \"kind\": \"field_match\", \"match\": {\"conditions\": {\"all\": [{\"field\": \"details.flags\", \"op\": \"contains\", \"value\": \"world_writable\"}]}, \"event_types\": [\"config_drift\"]}, \"mitre\": [\"T1222.002\"], \"name\": \"World-writable sensitive file\", \"points\": 40, \"scope\": {\"exclude_allowlisted\": true}, \"severity\": \"critical\"}",
+    "description": "A sensitive file became world-writable",
+    "enabled": true,
+    "field": null,
+    "fixed_alignment": null,
+    "group_by": [
+      "file_path"
+    ],
+    "id": "world-writable-sensitive-file",
+    "kind": "field_match",
+    "learning_days": 30,
+    "match": {
+      "conditions": {
+        "all": [
+          {
+            "field": "details.flags",
+            "op": "contains",
+            "value": "world_writable"
+          }
+        ]
+      },
+      "event_types": [
+        "config_drift"
+      ]
+    },
+    "meta_conditions": [],
+    "metric": null,
+    "min_history_events": 0,
+    "min_history_hours": 24,
+    "min_samples": 24,
+    "min_std": 1.0,
+    "mitre": [
+      "T1222.002"
+    ],
+    "name": "World-writable sensitive file",
+    "per": null,
+    "points": 40,
+    "scope": {
+      "exclude_allowlisted": true
+    },
+    "severity": "critical",
+    "steps": [],
+    "subject": null,
+    "tiers": [],
+    "version": 1,
+    "window_days": 7,
+    "window_mode": "sliding",
+    "within_seconds": 0,
+    "z_tiers": []
+  }
+]

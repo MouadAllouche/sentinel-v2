@@ -5,6 +5,7 @@ import { StatusMenu } from "@/components/incidents/StatusMenu";
 import { Input } from "@/components/ui/primitives";
 import type { Role } from "@/lib/auth";
 import { formatGap } from "@/lib/incident/helpers";
+import { mitreKey, type MitreTag } from "@/lib/mitre";
 
 /** The caveat is part of the header so it is present on every tab and deep link. */
 export function IncidentHeader({
@@ -23,7 +24,7 @@ export function IncidentHeader({
     first_seen?: string;
     last_seen?: string;
     assignee?: string | null;
-    mitre?: string[];
+    mitre?: Array<string | MitreTag>;
   };
   currentRole: Role;
   onStatusChange: (status: string, reason?: string) => void;
@@ -72,7 +73,7 @@ export function IncidentHeader({
       {incident.mitre?.length ? (
         <div className="flex flex-wrap gap-1">
           {incident.mitre.map((technique) => (
-            <MitreBadge key={technique} technique={technique} />
+            <MitreBadge key={mitreKey(technique)} technique={technique} />
           ))}
         </div>
       ) : null}

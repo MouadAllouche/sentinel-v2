@@ -81,6 +81,81 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "IncidentOut": {
+        "additionalProperties": true,
+        "description": "Incident response shape; additional engine fields are preserved.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "mitre": {
+            "items": {
+              "$ref": "#/components/schemas/MitreTag"
+            },
+            "title": "Mitre",
+            "type": "array"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "status",
+          "severity"
+        ],
+        "title": "IncidentOut",
+        "type": "object"
+      },
+      "IncidentPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/IncidentOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "IncidentPage",
+        "type": "object"
+      },
       "LoginRequest": {
         "additionalProperties": false,
         "properties": {
@@ -98,6 +173,41 @@
           "password"
         ],
         "title": "LoginRequest",
+        "type": "object"
+      },
+      "MitreTag": {
+        "additionalProperties": false,
+        "description": "A static MITRE technique reference. Always indicative, never a confirmation.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "tactic": {
+            "title": "Tactic",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "tactic",
+          "url",
+          "label"
+        ],
+        "title": "MitreTag",
         "type": "object"
       },
       "NoteCreate": {
@@ -2484,9 +2594,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Incidents Api Incidents Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/IncidentPage"
                 }
               }
             },
@@ -2571,9 +2679,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Show Api Incidents  Identifier  Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/IncidentOut"
                 }
               }
             },

@@ -289,3 +289,49 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
 - **Commit**: `phase-18: Sandboxed demo, integration tests and deployment docs`.
 - **Also**: `api/main.py` gained a module-level `app` for `uvicorn api.main:app`; the runtime guard
   lives in the lifespan startup and `make demo-api` targets `demo_workdir/settings.toml`.
+
+## Post-Phase 18 fix — CSP nonce in production (2026-11-21)
+
+- Replaced `web/middleware.ts` with `web/proxy.ts` (supported in Next.js 16.4.6): fresh nonce per
+  request, CSP published on the forwarded request **and** response. `app/layout.tsx` is async with
+  `await connection()` and `dynamic = "force-dynamic"`, so no page is prerendered and every script
+  tag gets the nonce. Login form uses `method="post"`.
+- Added `web/tests/csp-production.test.ts` (spawns `npm run start`, checks script nonces against the
+  CSP header and absence of `x-nextjs-prerender`) and `web/e2e/login-production.spec.ts` (production
+  login/logout). Playwright now builds and serves the production app with one worker.
+- Verified: `make test` → `576 passed`; `make lint` → clean; `make web-test` → `127 passed` in 21
+  files, typecheck and lint clean; `npm run build` clean; `npm run test:e2e` → 13 passed, 9 failed
+  (pre-existing e2e selector/data drift); the two new production-login journeys and the CSP test
+  pass. Fixed the stale `GET /health` doc reference and added `tests/test_api_paths.py`.
+
+## Post-Phase 18 fix — production React errors, real-API fixtures and e2e (2026-11-21)
+
+- **React #31 (MITRE objects as children)**: `api/schemas.py` now defines `MitreTag`, `IncidentOut`
+  and `IncidentPage`; `/api/incidents` and `/api/incidents/{id}` use them, `web/openapi.json` and
+  `web/lib/api/schema.d.ts` were regenerated. Added `web/lib/mitre.ts`; `MitreBadge` accepts a
+  string or an API object and renders its `id`, links to `url` and is labelled indicative. All
+  incident/overview render sites use `mitreKey()` for keys.
+- **React #418 (hydration mismatch)**: `app/(app)/page.tsx` computes one stable server-side `now`
+  and passes it to `Overview` (and `EventsOverTime`). `RelativeTime` renders absolute UTC during
+  SSR/hydration and switches to relative/local after mount using `useSyncExternalStore` (no
+  setState-in-effect), so the clock and localStorage are never read in hydration-sensitive markup.
+- **Fixtures**: `tests/test_api_fixtures.py` builds a deterministic seeded tmp DB via `TestClient`
+  and writes 20 real API responses (including incident detail) to `web/tests/fixtures/*.json`; a staleness test fails when
+  they drift. Vitest/MSW tests render Overview, the incident list and incident detail from those
+  fixtures (`api-fixtures-render.test.tsx`); `error-boundary.test.tsx` verifies message/stack/digest
+  logging during render, and `relative-time.test.tsx` verifies stable SSR output.
+- **Duplicate requests**: `web/tests/lib/request-count.test.tsx` counts every endpoint on mount;
+  Overview and `RuleActivity` now share `useFindings()` instead of two query keys for
+  `/api/rules/findings`.
+- **App bugs found through e2e**: CSRF origin validation (`api/security.py`) now honours
+  `X-Forwarded-*` from the Next.js rewrite — every mutating request previously failed 403;
+  `retentionIssues` accepts non-decreasing ages so the default policy no longer disables Dry run;
+  `EventsExplorer` uses `useSearchParams()` so a Top-IP link keeps `source_ip` in the URL during
+  client-side navigation; `RuleBuilder` passes `group_by` into the tier sentence and `ruleSchema`
+  accepts the null defaults for `metric`/`subject`, so the example rule can be saved.
+- **Stale e2e selectors corrected**: seeded incident title, expanded timeline text, exact KPI label,
+  weak-links heading, and viewer identity assertions.
+- **Commands run**: `make test` → `580 passed`; `make lint` → ruff/format/mypy clean;
+  `make web-test` → build, `136 passed` in 27 files, typecheck and lint clean;
+  `make web-e2e` → **`22 passed`** against the production build (fresh demo DB).
+- No Phase 19 work started.
