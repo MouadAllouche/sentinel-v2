@@ -1118,6 +1118,65 @@ password-sync endpoints (≥10 distinct IPs in 24 hours). The 24-hour windows an
 reduce but do not remove these risks. Adoption would require allowlisting known NAT ranges and
 service accounts and measuring on real traffic first; not done here.
 
+### D-115 — Investigation: incident structure with the two candidate rules (no changes)
+This is an investigation only. No code, seeded rule, threshold or scenario was changed. The
+what-if databases were regenerated at seed 7 in `sim_workdir/investigate/whatif-custom/` and the
+stored `incidents`, `incident_events`, `rule_findings` and `risk_assessments` rows were read
+directly.
+
+**`valid-user-spray-hourly` — two incidents, not one coherent story.**
+
+- Finding A: `slow-password-spraying`, tier 0 ("Many usernames"), medium, 15 points, window
+  12:00–17:00, observed 6 distinct usernames, evidence events 1–6. Its `rule_triggered` event is
+  id 7 at 17:00.
+- Finding B: same rule, tier 1 ("Very many usernames"), high, 25 points, window 12:00–23:00,
+  observed 12 distinct usernames, evidence events 1–6 and 8–13. Its `rule_triggered` event is
+  id 14 at 23:00.
+- Incident 1 (`correlation_key=event-6`, 17:00 only, severity high, score 25): 2 events — the
+  failed login for `frank` (id 6) and trigger id 7. Both link reasons are strong "Rule evidence:
+  'slow-password-spraying' matched this failed_login; 0s apart". Both findings match it by shared
+  evidence event 6, so its assessment shows the high tier and score 25.
+- Incident 2 (`correlation_key=event-13`, 23:00 only, severity high, score 25): 2 events — the
+  failed login for `leo` (id 13) and trigger id 14, again linked by rule evidence "0s apart".
+  Finding B matches it by shared evidence event 13.
+- Why not merged: the failed logins are one hour apart, so no shared-IP link (same source IP but
+  outside the 15-minute correlation window) and no shared-username link (different usernames). The
+  two `rule_triggered` events are six hours apart, so the same-group-key link cannot fire either.
+  Each component is therefore just the last evidence event plus its trigger. This is not simply
+  "one incident per tier by design": the tiers fired at different `window_end` times (17:00 and
+  23:00) because the 24-hour sliding window reached 6 and 12 usernames at different times. Had both
+  tiers fired in the same cycle, their identical group key and timestamp would have linked them.
+- Analyst view: **not one coherent story.** Two separate high-severity incidents titled for
+  different users (`frank`, `leo`), each with only two events; ten of the twelve failed logins are
+  not in either incident. The raw failed logins are still stored and visible in the Events
+  explorer, but the incident list makes the attack look like two small, unrelated events.
+
+**`slow-rotating-bruteforce` — one coherent story.**
+
+- Finding A: `slow-distributed-bruteforce`, tier 0, medium, 15 points, window 12:00–12:30,
+  observed 10 distinct source IPs, evidence events 1–10; trigger id 11 at 12:30.
+- Finding B: same rule, tier 1, high, 30 points, window 12:00–13:20, observed 25 distinct source
+  IPs, evidence events 1–10 and 12–26; trigger id 27 at 13:20.
+- One incident (`correlation_key=event-1`, severity high, score 30) containing all 38 events: 36
+  failed logins and both triggers, spanning 12:00–13:50:40. Link reasons between successive
+  failures are strong "Same username admin on authentication events" (20 s / 40 s / 10 min gaps,
+  all inside the 15-minute window); both triggers link by "Rule evidence: 'slow-distributed-
+  bruteforce' matched this failed_login; 0s apart". Both findings match the incident (10 and 25
+  evidence events respectively); the assessment uses the high tier, score 30.
+- Why merged: every event is at most 10 minutes from the next, and every failure shares the same
+  username, so the correlation window has no gap to break the component. Both tiers fired inside
+  that continuous component.
+- Analyst view: **one coherent story** — one incident, full timeline, both tier explanations and
+  a single risk score. Minor caveat: the stored incident summary text still says "11 related
+  events ... to 12:30:00", while the incident actually holds 38 events through 13:50:40; the
+  timeline shown in the dashboard is built from the event list and includes all 38.
+
+**Conclusion:** the candidate rules detect both attacks, but correlation presents them very
+differently. The hourly spraying case is split into two thin incidents because its events are an
+hour apart and its two tiers fired six hours apart; the rotating-source case stays one incident
+because its events are continuous. This is a correlation-window interaction, not a rule-threshold
+problem, and is recorded here rather than fixed.
+
 ### D-113 — Eight red-team scenarios written from attacker behaviour
 Eight scenarios were authored **before** consulting any seeded rule, tier, threshold or severity
 default, using only the public technique descriptions supplied by the user. Files touched:
