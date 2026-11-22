@@ -1075,6 +1075,49 @@ realism corrections and honest evaluation, not by relaxing rules, thresholds, ti
 severity defaults or correlation settings. The `low-and-slow` blind spot remains deliberately
 undetected.
 
+### D-114 — What-if evaluation of two candidate slow-attack rules (not adopted)
+Two candidate rules supplied as `sample_data/slow_attack_rules.json` (a JSON list, the format
+`simulate whatif` expects) were validated with the real rule validator — both are `threshold`
+rules with `distinct_count` aggregation and 24-hour sliding windows:
+`slow-distributed-bruteforce` (group by username, count distinct source IPs, tiers 10/25 medium/
+high, cooldown 3600 s) and `slow-password-spraying` (group by source IP, count distinct usernames,
+tiers 6/12 medium/high, cooldown 3600 s). Both validate with zero warnings. No seeded default rule
+and no scenario was changed. The rules were applied through the existing `whatif()` mechanism at
+seed 7 to all 27 scenarios (19 original + 8 red-team), adding the two rules to the default set.
+
+**Important caveat:** these rules were **designed after seeing the two false negatives**, so their
+improvement on `slow-rotating-bruteforce` and `valid-user-spray-hourly` is **not independent
+evidence** of detection quality. They are not adopted as defaults; this is a what-if exercise only.
+
+**Changes vs defaults (all other scenarios identical):**
+
+| Scenario | Findings gained / lost | Severity | Score | TTD (s) | Incidents | Outcome |
+|---|---|---|---|---|---|---|
+| `slow-rotating-bruteforce` | +`slow-distributed-bruteforce` tiers 0,1 / none | low → high | 0 → 30 | none → 1800 | 0 → 1 | FALSE_NEGATIVE → TRUE_POSITIVE |
+| `valid-user-spray-hourly` | +`slow-password-spraying` tiers 0,1 / none | low → high | 0 → 25 | none → 18000 | 0 → 2 | FALSE_NEGATIVE → TRUE_POSITIVE |
+| `password-spraying` | +`slow-password-spraying` tiers 0,1 / none | high → high | 40 → 65 | 480 → 480 | 1 → 1 | unchanged |
+| `distributed-bruteforce` | +`slow-distributed-bruteforce` tier 0 / none | high → high | 25 → 40 | 80 → 80 | 1 → 1 | unchanged |
+| `scanner-preauth-flood` | +`slow-password-spraying` tier 0 / none | high → critical | 55 → 70 | 95 → 95 | 1 → 1 | unchanged |
+
+No findings were lost in any scenario. Outcome totals across all 27 scenarios: defaults —
+20 TRUE_POSITIVE, 3 TRUE_NEGATIVE, 2 KNOWN_BLIND_SPOT, 2 FALSE_NEGATIVE; with candidates —
+22 TRUE_POSITIVE, 3 TRUE_NEGATIVE, 2 KNOWN_BLIND_SPOT, 0 FALSE_NEGATIVE. The two evasion blind
+spots stayed blind spots.
+
+**Benign scenarios:** no new finding, incident or false positive appeared in any of
+`benign-admin-day`, `benign-noisy-user` or `benign-allowlisted-monitor`; each stayed
+TRUE_NEGATIVE with 0 findings and 0 incidents. This is evidence only about these synthetic benign
+scenarios, not about production traffic.
+
+**Realistic false-positive risks if these rules were adopted:** `slow-password-spraying` would fire
+when many legitimate users behind one office NAT or shared proxy fail authentication against
+different accounts in 24 hours (≥6 distinct usernames), or when a monitoring/health-check account
+cycles service credentials; `slow-distributed-bruteforce` would fire when one shared or service
+account is legitimately accessed from many branch offices, cloud NAT egress IPs, CI runners or
+password-sync endpoints (≥10 distinct IPs in 24 hours). The 24-hour windows and allowlist scope
+reduce but do not remove these risks. Adoption would require allowlisting known NAT ranges and
+service accounts and measuring on real traffic first; not done here.
+
 ### D-113 — Eight red-team scenarios written from attacker behaviour
 Eight scenarios were authored **before** consulting any seeded rule, tier, threshold or severity
 default, using only the public technique descriptions supplied by the user. Files touched:

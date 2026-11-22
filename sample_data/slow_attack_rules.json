@@ -1,0 +1,78 @@
+[
+  {
+    "id": "slow-distributed-bruteforce",
+    "name": "Slow distributed brute force against one account",
+    "description": "Failed logins for one username from many different IP addresses over 24 hours",
+    "kind": "threshold",
+    "enabled": true,
+    "match": {
+      "event_types": ["failed_login", "invalid_user"],
+      "conditions": {"all": []}
+    },
+    "scope": {"exclude_allowlisted": true},
+    "group_by": ["username"],
+    "aggregate": {"type": "distinct_count", "field": "source_ip"},
+    "window_mode": "sliding",
+    "cooldown_seconds": 3600,
+    "tiers": [
+      {
+        "label": "Many sources",
+        "count": 10,
+        "window_seconds": 86400,
+        "severity": "medium",
+        "points": 15
+      },
+      {
+        "label": "Very many sources",
+        "count": 25,
+        "window_seconds": 86400,
+        "severity": "high",
+        "points": 30
+      }
+    ],
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": ["brute-force", "distributed"]
+    },
+    "mitre": ["T1110"]
+  },
+  {
+    "id": "slow-password-spraying",
+    "name": "Slow password spraying from one IP",
+    "description": "Failed logins from one source IP across many different usernames over 24 hours",
+    "kind": "threshold",
+    "enabled": true,
+    "match": {
+      "event_types": ["failed_login", "invalid_user"],
+      "conditions": {"all": []}
+    },
+    "scope": {"exclude_allowlisted": true},
+    "group_by": ["source_ip"],
+    "aggregate": {"type": "distinct_count", "field": "username"},
+    "window_mode": "sliding",
+    "cooldown_seconds": 3600,
+    "tiers": [
+      {
+        "label": "Many usernames",
+        "count": 6,
+        "window_seconds": 86400,
+        "severity": "medium",
+        "points": 15
+      },
+      {
+        "label": "Very many usernames",
+        "count": 12,
+        "window_seconds": 86400,
+        "severity": "high",
+        "points": 25
+      }
+    ],
+    "actions": {
+      "create_incident": true,
+      "notify": true,
+      "tags": ["password-spraying"]
+    },
+    "mitre": ["T1110.003"]
+  }
+]
