@@ -1175,7 +1175,60 @@ directly.
 differently. The hourly spraying case is split into two thin incidents because its events are an
 hour apart and its two tiers fired six hours apart; the rotating-source case stays one incident
 because its events are continuous. This is a correlation-window interaction, not a rule-threshold
-problem, and is recorded here rather than fixed.
+problem, and is recorded here rather than fixed. **Superseded by D-116** (the window interaction was
+a spec deviation and has been fixed).
+
+### D-116 — Fix evidence linking and stale incident summaries (no detection tuning)
+Facts confirmed before changing code:
+1. `correlate()` in `core/correlation.py` built **all** candidate pairs only while
+   `delta <= window_minutes` (15 min) and passed them to `_link_pair()`. Therefore the spec 07.1
+   `rule_evidence` and `same_group_key` links were also bounded by 15 minutes, even though the
+   spec lists no window for those two kinds. That was the defect.
+2. Finding `evidence_event_ids` come from `core/rules/threshold.py` and are capped by
+   `EVIDENCE_CAP = 500`; `observed` remains the true count. In the scenarios here (≤36 events)
+   every satisfying-window event is present, but a larger window could store only the first 500
+   evidence ids. No finding evaluator was changed.
+
+**Fixes.** `core/correlation.py` now generates `rule_evidence` and `same_group_key` links once over
+all stored events via `_relation_links()`, independent of `window_minutes`; the time-windowed links
+remain unchanged. The links still respect `max_incident_span_hours` (via `_split_component()`) and
+only connect an event actually named in `details.evidence_event_ids`, or two `rule_triggered` events
+with the same non-empty `group_key`, so unrelated events are not merged. `storage/incident_repository.py`
+now regenerates title, first/last seen, primary IP/user, severity, summary and MITRE on `extend`
+(merge already updated those fields). No rule, threshold, tier, severity, scenario or candidate
+rule was changed; the slow-attack rules remain a what-if file only.
+
+**Tests added** (`tests/test_correlation_evidence_links.py`): evidence/group-key links across a
+5-hour gap; `valid-user-spray-hourly` with candidates now produces **one** incident with all 12
+failed logins and both triggers; `slow-rotating-bruteforce` still produces one 38-event incident;
+unrelated events are not linked; benign scenarios still produce zero incidents; and the extended
+incident's stored summary contains the real event count and `last_seen`. Order-independence and
+idempotence property tests continue to pass in the full suite.
+
+**Seed-7 what-if comparison (clean pre-fix code in a worktree vs fixed code, all 27 scenarios).**
+The only before/after difference is `valid-user-spray-hourly` with the candidate rules:
+incidents **2 → 1**, risk reasons **2 → 1**, and the evaluation's above-allowable-severity counter
+**4 → 3** (this counter is not a benign false positive); outcome (TRUE_POSITIVE), severity (high),
+score (25) and time-to-detect (18000 s) are unchanged.
+All other scenarios — including `slow-rotating-bruteforce` — keep identical incident counts,
+severities, scores and detection times. No benign scenario gained an incident. No score changed
+because of incidents containing more evidence.
+
+**Correction to D-114's finding counts.** D-114 was produced by reusing a workdir that already
+contained findings from an earlier, pre-fix what-if run. A clean pre-fix rerun shows lower finding
+counts for `persistence-cron` (2 → 1), `persistence-ssh-key` (4 → 2), `stolen-credential-systemd-persistence`
+(2 → 1), `shell-profile-preload-persistence` (5 → 3), `ssh-key-plus-cron-delay` (6 → 3) and
+`mixed-realistic-week` (5 → 4). Their outcomes, severities, scores, incident counts and detection
+times are the same as D-114; only the stale finding counts differ. The fixed run matches the clean
+pre-fix counts for all of them.
+
+**Metrics.** `python cli.py simulate metrics` was rerun with 20 seeds. Detection aggregates,
+per-scenario timing, prioritisation and baseline totals are unchanged from D-114/D-115:
+20 TP / 2 FN / 3 TN with defaults, 22 TP / 0 FN with candidates, precision 1.000, recall 0.909,
+F1 0.952. `docs/METRICS.md` and `metrics.json` were regenerated; only the machine-dependent
+performance numbers changed (ingestion 20642.7 → 15176.3 events/s, rule evaluation over 200k
+1.123 → 1.92 s, `/api/events` median 11.13 → 20.25 ms, `/api/incidents` median 8.44 → 17.61 ms),
+all from fresh measurements on the same host, not from a code change.
 
 ### D-113 — Eight red-team scenarios written from attacker behaviour
 Eight scenarios were authored **before** consulting any seeded rule, tier, threshold or severity

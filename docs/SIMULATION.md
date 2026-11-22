@@ -89,6 +89,12 @@ tests are strict expected failures (`xfail(strict=True)`, reason "known detectio
 so a future fix turns them into deliberate failures. Diagnosis: threshold/window and rule gap, not
 simulator realism — the events were generated and stored correctly. See `docs/DECISIONS.md` D-113.
 
+Correction after D-115: with the candidate rules, `valid-user-spray-hourly` now forms **one**
+incident containing all 12 failed logins and both rule triggers (previously two thin incidents),
+because rule-evidence and shared-group-key links are no longer bounded by the 15-minute window.
+All other scenarios keep their incident counts, severities, scores and detection times; see
+`docs/DECISIONS.md` D-116.
+
 ### `blended-low-slow` — exact actions and why it is expected to be missed
 
 The scenario runs three identical rounds, 30 simulated minutes apart:

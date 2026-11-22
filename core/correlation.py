@@ -149,38 +149,9 @@ def _link_pair(
                 f"Same username {username} on authentication events; {gap} apart",
             )
         )
-    for rule_event, evidence_event in ((first, second), (second, first)):
-        if rule_event.get("event_type") != "rule_triggered":
-            continue
-        details = rule_event.get("details") or {}
-        evidence_ids = details.get("evidence_event_ids") or []
-        if int(evidence_event.get("id", 0)) in evidence_ids:
-            links.append(
-                Link(
-                    first_id,
-                    second_id,
-                    "rule_evidence",
-                    "strong",
-                    f"Rule evidence: '{details.get('rule_id', 'rule')}' "
-                    f"matched this {evidence_event.get('event_type')}; {gap} apart",
-                )
-            )
-            break
-    if (
-        first.get("event_type") == "rule_triggered"
-        and second.get("event_type") == "rule_triggered"
-        and (first.get("details") or {}).get("group_key")
-        == (second.get("details") or {}).get("group_key")
-    ):
-        links.append(
-            Link(
-                first_id,
-                second_id,
-                "same_group_key",
-                "strong",
-                "Two rule findings share the same group key",
-            )
-        )
+    # rule_evidence and same_group_key links are generated once over all
+    # events in correlate(), not here: spec 07.1 does not bound them by the
+    # 15-minute window. Keeping them here would silently drop slow evidence.
     if not weak:
         return links
     if (
@@ -276,6 +247,57 @@ def _split_component(component: Component, max_span: float) -> list[Component]:
     return result
 
 
+def _relation_links(events: list[dict[str, Any]]) -> list[Link]:
+    """Links defined by rule evidence and shared group keys, not by time proximity."""
+    links: list[Link] = []
+    by_id = {int(event.get("id", 0)): event for event in events}
+    for event in events:
+        if event.get("event_type") != "rule_triggered":
+            continue
+        details = event.get("details") or {}
+        rule_id = details.get("rule_id", "rule")
+        for raw_identifier in details.get("evidence_event_ids") or []:
+            evidence = by_id.get(int(raw_identifier))
+            if evidence is None:
+                continue
+            left_id, right_id = sorted((int(event.get("id", 0)), int(evidence.get("id", 0))))
+            gap = _gap(
+                abs(
+                    (
+                        _parse(str(evidence["timestamp"])) - _parse(str(event["timestamp"]))
+                    ).total_seconds()
+                )
+            )
+            links.append(
+                Link(
+                    left_id,
+                    right_id,
+                    "rule_evidence",
+                    "strong",
+                    f"Rule evidence: '{rule_id}' matched this {evidence.get('event_type')}; "
+                    f"{gap} apart",
+                )
+            )
+    triggers = [event for event in events if event.get("event_type") == "rule_triggered"]
+    for index, first in enumerate(triggers):
+        key = (first.get("details") or {}).get("group_key")
+        if not key:
+            continue
+        for second in triggers[index + 1 :]:
+            if (second.get("details") or {}).get("group_key") != key:
+                continue
+            links.append(
+                Link(
+                    min(int(first.get("id", 0)), int(second.get("id", 0))),
+                    max(int(first.get("id", 0)), int(second.get("id", 0))),
+                    "same_group_key",
+                    "strong",
+                    "Two rule findings share the same group key",
+                )
+            )
+    return links
+
+
 def correlate(
     events: list[dict[str, Any]], settings: CorrelationSettings, now: datetime
 ) -> list[Component]:
@@ -306,6 +328,7 @@ def correlate(
             if delta > window.total_seconds():
                 break
             pairs.append((first, second, delta))
+    links.extend(_relation_links(usable))
     for first, second, delta in pairs:
         links.extend(_link_pair(first, second, delta, settings, weak=False))
     strong_ids = {identifier for link in links for identifier in (link.a, link.b)}

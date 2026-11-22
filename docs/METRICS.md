@@ -135,14 +135,14 @@ Memory: 16479649792 bytes total (psutil.virtual_memory())
 
 | Measurement | Value |
 |---|---|
-| ingestion_events_per_second | 20642.7 |
-| ingestion_seconds_for_100k | 4.844 |
-| rule_evaluation_200k_seconds | 1.123 |
+| ingestion_events_per_second | 15176.3 |
+| ingestion_seconds_for_100k | 6.589 |
+| rule_evaluation_200k_seconds | 1.92 |
 | api_calls_per_endpoint | 100 |
-| api_events_median_ms | 11.13 |
-| api_events_p95_ms | 13.02 |
-| api_incidents_median_ms | 8.44 |
-| api_incidents_p95_ms | 9.23 |
+| api_events_median_ms | 20.25 |
+| api_events_p95_ms | 22.55 |
+| api_incidents_median_ms | 17.61 |
+| api_incidents_p95_ms | 19.28 |
 | database_bytes_per_100k_events | 73129984 |
 | events_stored_for_api_benchmark | 200000 |
 
@@ -164,8 +164,8 @@ Memory: 16479649792 bytes total (psutil.virtual_memory())
 - **0.000** — mean false positives on benign scenarios per seed
 - **20** — scenarios detected by Sentinel defaults at the baseline seed
 - **5** — scenarios detected by the one-rule naive reference at the baseline seed
-- **20642.7** — measured ingestion rate on this machine
-- **1.123** — measured rule evaluation time over 200,000 events
-- **11.13** — median /api/events latency over 100 calls
-- **8.44** — median /api/incidents latency over 100 calls
+- **15176.3** — measured ingestion rate on this machine
+- **1.92** — measured rule evaluation time over 200,000 events
+- **20.25** — median /api/events latency over 100 calls
+- **17.61** — median /api/incidents latency over 100 calls
 - **73129984** — SQLite database size per 100,000 events

@@ -152,6 +152,15 @@ def apply_incidents(
             if identifier is None:
                 continue
             identifier = int(identifier)
+            if change.action == "extend":
+                # An extended incident has a new span, event count and possibly
+                # new findings; its derived fields must be regenerated too.
+                connection.execute(
+                    "UPDATE incidents SET title = ?, first_seen = ?, last_seen = ?, "
+                    "primary_ip = ?, primary_username = ?, severity = ?, summary = ?, "
+                    "mitre_json = ?, updated_at = ? WHERE id = ?",
+                    (*values, utc_now().isoformat(), identifier),
+                )
             if change.action == "create" and cursor.rowcount > 0:
                 _record_change(connection, "incident.created", identifier)
             for absorbed in change.absorbed:

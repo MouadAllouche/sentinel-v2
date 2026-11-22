@@ -1,8 +1,8 @@
 [
   {
     "collector": "auth_log",
-    "events_found": 96,
-    "events_new": 96,
+    "events_found": 98,
+    "events_new": 98,
     "finished_at": "2026-11-19T12:00:00+00:00",
     "id": 1,
     "message": null,
