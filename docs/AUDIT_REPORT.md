@@ -166,9 +166,21 @@ remain intentionally hand-written.
   `tests/test_baseline.py::test_performance_30_days_50_subjects` asserts `< 10 s` (passing).
 - 10 000-event ingestion burst: `tests/integration/test_pipeline_failure_modes.py`
   asserts `< 60 s` (passing).
-- Ingestion rate, API list latency and DB size per 100 000 events were **not
-  measured in this audit**; SQLite scale on this single host is bounded by the
-  one-host design and retention policy. No throughput claim is made.
+- `scripts/benchmark.py` was run 5 times on the current commit (`43ce0d7`) and 5 times in a worktree
+  on the last pre-correlation-fix commit (`a21b707`), interleaved in alternating order on
+  2026-11-22. No project tests, servers, builds or browsers were running; persistent desktop
+  services n8n (PIDs 3087, 3303) and chrome_crashpad handlers were present. Load average before
+  each run: current 1.81, 2.23, 2.17, 3.18, 3.08; pre-fix 2.13, 2.17, 2.28, 2.53, 2.92.
+  Machine: Linux-7.0.0-42-generic-x86_64-with-glibc2.39, x86_64 with 8 logical CPUs,
+  16,479,649,792 bytes RAM, Python 3.12.3 CPython.
+- Medians (current | pre-fix): ingestion **13474.7 | 13575.4 events/s** (ranges 9415.7–29138.3 and
+  10555.6–20842.5); rule evaluation over 200k events **2.067 | 2.186 s** (1.032–2.742 and
+  1.464–2.777); `/api/events` median **26.45 | 32.42 ms** (10.54–38.95 and 10.49–45.84), p95
+  **30.92 | 50.88 ms**; `/api/incidents` median **18.7 | 22.91 ms** (7.99–20.36 and 8.46–39.52),
+  p95 **22.48 | 27.73 ms**; DB size per 100k events **73,129,984 bytes in all 10 runs**.
+- Every between-commit median difference is smaller than the run-to-run spread within each
+  variant, so **no regression or improvement can be claimed** from these measurements. Full
+  per-run data is in `metrics.json` → `performance.benchmark_detail` and `docs/METRICS.md`.
 
 ## 9. Known limitations / open risks
 

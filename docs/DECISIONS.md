@@ -1255,3 +1255,20 @@ The two `FALSE_NEGATIVE` outcomes are reported, not tuned away. Their pre-regist
 `should_detect=True` expectations remain, so their two parametrized tests fail by design — the
 failure is the honest signal of a detection gap. Suggested future work (not done here): a long-window
 distinct-source rule and a long-window distinct-username rule, each with evidence and caveats.
+
+### D-117 — Fresh simulator sandboxes and clean benchmark conditions
+- **Isolation:** every scenario run now deletes and recreates its per-scenario case directory, so
+  `simulate run`, `simulate whatif` and `simulate metrics` always start from a fresh DB and fake
+  tree. A pre-polluted workdir (`<scenario>/<scenario>.db` containing garbage) can no longer change
+  findings, incidents or `report.json`. Tests: `tests/test_simulator_isolation.py` (repeated run with
+  the same `--out` is byte-identical; polluted workdir has no effect). No detection, rule, scenario
+  or correlation code changed.
+- **Confirmation:** the full 27-scenario what-if matrix was rerun at seed 7 with fresh sandboxes.
+  All incident counts, severities, scores, detection times and finding counts match D-116 exactly
+  (zero differences), including the single corrected `valid-user-spray-hourly` candidate case.
+- **Benchmarks:** `scripts/benchmark.py` was run five times on the current commit and five times in
+  a worktree on the last pre-correlation-fix commit (`a21b707`), interleaved, with load averages
+  recorded before each run. Between-commit median differences are all smaller than the run-to-run
+  spread; DB size per 100k events is identical in all ten runs. **No performance regression or
+  improvement is claimed.** Conditions, every run, medians/min/max and conclusions are in
+  `metrics.json` → `performance.benchmark_detail`, `docs/METRICS.md` and `docs/AUDIT_REPORT.md` §8.

@@ -135,6 +135,10 @@ def _prepare_case(
     workdir: Path, scenario_id: str, activity: SimulatedActivity, seed: int
 ) -> tuple[Path, Path, Path, Any]:
     case = workdir / scenario_id
+    # Every scenario run starts from a fresh sandbox. Reusing a workdir (as in
+    # the D-114 what-if run) can leave stale findings/events that inflate counts.
+    if case.exists():
+        shutil.rmtree(case)
     case.mkdir(parents=True, exist_ok=True)
     etc = case / "etc"
     (etc / "cron.d").mkdir(parents=True, exist_ok=True)

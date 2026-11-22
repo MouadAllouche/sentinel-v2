@@ -1051,6 +1051,267 @@
     "total_scenarios": 27
   },
   "performance": {
+    "benchmark_detail": {
+      "commits": {
+        "current": "43ce0d7 (including correlation fix)",
+        "prefix": "a21b707 (last commit before correlation fix)"
+      },
+      "conclusion": "All between-variant median differences are smaller than the run-to-run spread within each variant; no regression or improvement can be claimed. DB size per 100k events is identical in every run.",
+      "conditions": "No project tests, servers, builds or browsers running; persistent desktop services n8n (PIDs 3087, 3303) and chrome_crashpad handlers were present.",
+      "date": "2026-11-22T17:19:14.660289+00:00",
+      "hardware": {
+        "cpu": "x86_64, 8 logical CPUs, x86_64",
+        "machine": "Linux-7.0.0-42-generic-x86_64-with-glibc2.39",
+        "memory": "16479649792 bytes total (psutil.virtual_memory())",
+        "python": "Python 3.12.3 (CPython)"
+      },
+      "load_average_before_each_run": {
+        "current": [
+          [
+            1.80810546875,
+            2.5830078125,
+            2.71044921875
+          ],
+          [
+            2.23388671875,
+            2.52490234375,
+            2.67822265625
+          ],
+          [
+            2.16650390625,
+            2.490234375,
+            2.66259765625
+          ],
+          [
+            3.17578125,
+            2.68359375,
+            2.7109375
+          ],
+          [
+            3.08154296875,
+            2.72998046875,
+            2.728515625
+          ]
+        ],
+        "prefix": [
+          [
+            2.1259765625,
+            2.580078125,
+            2.70556640625
+          ],
+          [
+            2.16552734375,
+            2.537109375,
+            2.68603515625
+          ],
+          [
+            2.27880859375,
+            2.4912109375,
+            2.658203125
+          ],
+          [
+            2.53369140625,
+            2.52587890625,
+            2.66357421875
+          ],
+          [
+            2.916015625,
+            2.73681640625,
+            2.72998046875
+          ]
+        ]
+      },
+      "started_at": {
+        "current": [
+          "2026-11-22T17:12:46.840755+00:00",
+          "2026-11-22T17:14:27.455981+00:00",
+          "2026-11-22T17:14:44.808425+00:00",
+          "2026-11-22T17:16:14.257840+00:00",
+          "2026-11-22T17:17:00.915147+00:00"
+        ],
+        "prefix": [
+          "2026-11-22T17:13:21.272344+00:00",
+          "2026-11-22T17:14:00.272920+00:00",
+          "2026-11-22T17:15:03.611644+00:00",
+          "2026-11-22T17:15:34.698914+00:00",
+          "2026-11-22T17:17:46.475113+00:00"
+        ]
+      },
+      "stats": {
+        "current": {
+          "api_events_median_ms": {
+            "max": 38.95,
+            "median": 26.45,
+            "min": 10.54,
+            "runs": [
+              26.45,
+              10.54,
+              12.85,
+              38.95,
+              31.48
+            ]
+          },
+          "api_events_p95_ms": {
+            "max": 55.68,
+            "median": 30.92,
+            "min": 13.03,
+            "runs": [
+              30.92,
+              13.03,
+              15.19,
+              55.68,
+              48.97
+            ]
+          },
+          "api_incidents_median_ms": {
+            "max": 20.36,
+            "median": 18.7,
+            "min": 7.99,
+            "runs": [
+              18.7,
+              7.99,
+              11.58,
+              20.36,
+              19.0
+            ]
+          },
+          "api_incidents_p95_ms": {
+            "max": 25.03,
+            "median": 22.48,
+            "min": 10.08,
+            "runs": [
+              22.48,
+              10.08,
+              13.48,
+              25.03,
+              23.36
+            ]
+          },
+          "database_bytes_per_100k_events": {
+            "max": 73129984,
+            "median": 73129984,
+            "min": 73129984,
+            "runs": [
+              73129984,
+              73129984,
+              73129984,
+              73129984,
+              73129984
+            ]
+          },
+          "ingestion_events_per_second": {
+            "max": 29138.3,
+            "median": 13474.7,
+            "min": 9415.7,
+            "runs": [
+              13474.7,
+              26614.9,
+              29138.3,
+              9415.7,
+              10411.4
+            ]
+          },
+          "rule_evaluation_200k_seconds": {
+            "max": 2.742,
+            "median": 2.067,
+            "min": 1.032,
+            "runs": [
+              2.067,
+              1.032,
+              1.055,
+              2.742,
+              2.721
+            ]
+          }
+        },
+        "prefix": {
+          "api_events_median_ms": {
+            "max": 45.84,
+            "median": 32.42,
+            "min": 10.49,
+            "runs": [
+              32.42,
+              10.49,
+              24.15,
+              45.84,
+              45.35
+            ]
+          },
+          "api_events_p95_ms": {
+            "max": 58.11,
+            "median": 50.88,
+            "min": 12.78,
+            "runs": [
+              50.88,
+              12.78,
+              30.36,
+              56.17,
+              58.11
+            ]
+          },
+          "api_incidents_median_ms": {
+            "max": 39.52,
+            "median": 22.91,
+            "min": 8.46,
+            "runs": [
+              37.76,
+              8.46,
+              21.03,
+              39.52,
+              22.91
+            ]
+          },
+          "api_incidents_p95_ms": {
+            "max": 46.66,
+            "median": 27.73,
+            "min": 11.79,
+            "runs": [
+              45.6,
+              11.79,
+              23.6,
+              46.66,
+              27.73
+            ]
+          },
+          "database_bytes_per_100k_events": {
+            "max": 73129984,
+            "median": 73129984,
+            "min": 73129984,
+            "runs": [
+              73129984,
+              73129984,
+              73129984,
+              73129984,
+              73129984
+            ]
+          },
+          "ingestion_events_per_second": {
+            "max": 20842.5,
+            "median": 13575.4,
+            "min": 10555.6,
+            "runs": [
+              13575.4,
+              10555.6,
+              20842.5,
+              14387.3,
+              10634.7
+            ]
+          },
+          "rule_evaluation_200k_seconds": {
+            "max": 2.777,
+            "median": 2.186,
+            "min": 1.464,
+            "runs": [
+              2.186,
+              1.874,
+              1.464,
+              2.288,
+              2.777
+            ]
+          }
+        }
+      }
+    },
     "environment": {
       "cpu": "x86_64, 8 logical CPUs, x86_64",
       "machine": "Linux-7.0.0-42-generic-x86_64-with-glibc2.39",
@@ -1059,15 +1320,15 @@
     },
     "measurements": {
       "api_calls_per_endpoint": 100,
-      "api_events_median_ms": 20.25,
-      "api_events_p95_ms": 22.55,
-      "api_incidents_median_ms": 17.61,
-      "api_incidents_p95_ms": 19.28,
+      "api_events_median_ms": 26.45,
+      "api_events_p95_ms": 30.92,
+      "api_incidents_median_ms": 18.7,
+      "api_incidents_p95_ms": 22.48,
       "database_bytes_per_100k_events": 73129984,
       "events_stored_for_api_benchmark": 200000,
-      "ingestion_events_per_second": 15176.3,
+      "ingestion_events_per_second": 13474.7,
       "ingestion_seconds_for_100k": 6.589,
-      "rule_evaluation_200k_seconds": 1.92
+      "rule_evaluation_200k_seconds": 2.067
     }
   },
   "prioritisation": {
@@ -1215,23 +1476,23 @@
       "number": "5"
     },
     {
-      "meaning": "measured ingestion rate on this machine",
-      "number": "15176.3"
+      "meaning": "measured ingestion rate on this machine (median of 5 interleaved runs)",
+      "number": "13474.7"
     },
     {
-      "meaning": "measured rule evaluation time over 200,000 events",
-      "number": "1.92"
+      "meaning": "measured rule evaluation time over 200,000 events (median of 5 runs)",
+      "number": "2.067"
     },
     {
-      "meaning": "median /api/events latency over 100 calls",
-      "number": "20.25"
+      "meaning": "median /api/events latency over 100 calls (median of 5 benchmark runs)",
+      "number": "26.45"
     },
     {
-      "meaning": "median /api/incidents latency over 100 calls",
-      "number": "17.61"
+      "meaning": "median /api/incidents latency over 100 calls (median of 5 benchmark runs)",
+      "number": "18.7"
     },
     {
-      "meaning": "SQLite database size per 100,000 events",
+      "meaning": "SQLite database size per 100,000 events (identical in all 10 runs)",
       "number": "73129984"
     }
   ],
