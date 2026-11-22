@@ -54,7 +54,17 @@ def _attack(
         "attack",
         build,
         Expectation(
-            True, rules, min_severity, incident, "low", note or f"Expected {rules[0]} to fire."
+            True,
+            rules,
+            min_severity,
+            incident,
+            "low",
+            note
+            or (
+                f"Expected {rules[0]} to fire."
+                if rules
+                else "A reasonable monitor should catch this behaviour."
+            ),
         ),
     )
 
@@ -250,6 +260,99 @@ SCENARIOS: tuple[Scenario, ...] = (
         gen.mixed_realistic_week,
         Expectation(
             True, ("ssh-bruteforce-by-ip",), "medium", "yes", "low", "Combined dashboard database."
+        ),
+    ),
+    _attack(
+        "slow-rotating-bruteforce",
+        "Slow rotating brute force",
+        "Three guesses every ten minutes, each from a different source in a pool of 40 IPs.",
+        ("T1110",),
+        gen.slow_rotating_bruteforce,
+        (),
+        min_severity="medium",
+        incident="either",
+        note="Rotating sources against one account; reasonable monitors correlate distinct IPs.",
+    ),
+    _attack(
+        "valid-user-spray-hourly",
+        "Hourly valid-user spray",
+        "One guess per real account per hour; no invalid usernames at all.",
+        ("T1110.003",),
+        gen.valid_user_spray_hourly,
+        (),
+        min_severity="medium",
+        incident="either",
+        note="Password spraying against valid usernames is a standard detection target.",
+    ),
+    _attack(
+        "stolen-credential-systemd-persistence",
+        "Stolen credential and systemd unit",
+        "A valid credential succeeds, then a systemd service is enabled and started quietly.",
+        ("T1078", "T1543.002"),
+        gen.stolen_credential_systemd_persistence,
+        (),
+        min_severity="high",
+        incident="yes",
+        note="Credential use plus a new systemd unit should be a high-confidence incident.",
+    ),
+    _attack(
+        "shell-profile-preload-persistence",
+        "Shell profile and preload persistence",
+        "A shell profile and an ld.so.preload file are planted minutes apart.",
+        ("T1546.004", "T1574.006"),
+        gen.shell_profile_preload_persistence,
+        (),
+        min_severity="high",
+        incident="yes",
+        note="Both are high-fidelity persistence locations; a monitor should alert.",
+    ),
+    _attack(
+        "ssh-key-plus-cron-delay",
+        "SSH key then cron, minutes apart",
+        "An authorized key is appended, then a cron file appears six minutes later.",
+        ("T1098.004", "T1053.003"),
+        gen.ssh_key_plus_cron_delay,
+        (),
+        min_severity="high",
+        incident="yes",
+        note="Two persistence mechanisms in one short window should be caught.",
+    ),
+    _attack(
+        "dev-shm-staging",
+        "Data staging from /dev/shm",
+        "A staging binary is started from /dev/shm.",
+        ("T1059", "T1074.001"),
+        gen.dev_shm_staging,
+        (),
+        min_severity="high",
+        incident="either",
+        note="Execution from /dev/shm is a well-known suspicious location.",
+    ),
+    _attack(
+        "legit-admin-3am",
+        "Plausible admin account at 03:00",
+        "A legitimate-looking account is created and added to a privileged group at 03:00.",
+        ("T1136.001",),
+        gen.legit_admin_3am,
+        (),
+        min_severity="medium",
+        incident="either",
+        note="New privileged accounts, especially off-hours, are a standard detection target.",
+    ),
+    Scenario(
+        "blended-low-slow",
+        "Blended low and slow",
+        "Each malicious guess is surrounded by twenty ordinary-looking logins and sudo commands.",
+        ("T1110",),
+        "evasion",
+        gen.blended_low_slow,
+        Expectation(
+            False,
+            (),
+            "low",
+            "no",
+            "low",
+            "Deliberate blending; a reasonable monitor may miss this. Not a failure.",
         ),
     ),
 )

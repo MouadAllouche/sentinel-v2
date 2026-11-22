@@ -1,0 +1,1387 @@
+{
+  "baseline_comparison": {
+    "rows": {
+      "backdoor-account": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "detected"
+      },
+      "benign-admin-day": {
+        "category": "benign",
+        "naive_baseline": "not detected (expected)",
+        "sentinel_default": "not detected (expected)"
+      },
+      "benign-allowlisted-monitor": {
+        "category": "benign",
+        "naive_baseline": "not detected (expected)",
+        "sentinel_default": "not detected (expected)"
+      },
+      "benign-noisy-user": {
+        "category": "benign",
+        "naive_baseline": "not detected (expected)",
+        "sentinel_default": "not detected (expected)"
+      },
+      "blended-low-slow": {
+        "category": "evasion",
+        "naive_baseline": "missed (known blind spot)",
+        "sentinel_default": "missed (known blind spot)"
+      },
+      "config-tampering": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "detected"
+      },
+      "credential-compromise-chain": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "detected"
+      },
+      "dev-shm-staging": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "detected"
+      },
+      "distributed-bruteforce": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "detected"
+      },
+      "failed-login-spike": {
+        "category": "attack",
+        "naive_baseline": "detected",
+        "sentinel_default": "detected"
+      },
+      "legit-admin-3am": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "detected"
+      },
+      "login-from-new-ip": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "detected"
+      },
+      "low-and-slow": {
+        "category": "evasion",
+        "naive_baseline": "missed (known blind spot)",
+        "sentinel_default": "missed (known blind spot)"
+      },
+      "mixed-realistic-week": {
+        "category": "combined",
+        "naive_baseline": "detected",
+        "sentinel_default": "detected"
+      },
+      "password-spraying": {
+        "category": "attack",
+        "naive_baseline": "detected",
+        "sentinel_default": "detected"
+      },
+      "persistence-cron": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "detected"
+      },
+      "persistence-ssh-key": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "detected"
+      },
+      "recon-tool-install": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "detected"
+      },
+      "scanner-preauth-flood": {
+        "category": "attack",
+        "naive_baseline": "detected",
+        "sentinel_default": "detected"
+      },
+      "shell-profile-preload-persistence": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "detected"
+      },
+      "slow-rotating-bruteforce": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "missed"
+      },
+      "ssh-bruteforce-single-ip": {
+        "category": "attack",
+        "naive_baseline": "detected",
+        "sentinel_default": "detected"
+      },
+      "ssh-key-plus-cron-delay": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "detected"
+      },
+      "stolen-credential-systemd-persistence": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "detected"
+      },
+      "suspicious-process": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "detected"
+      },
+      "unexpected-listener": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "detected"
+      },
+      "valid-user-spray-hourly": {
+        "category": "attack",
+        "naive_baseline": "missed",
+        "sentinel_default": "missed"
+      }
+    },
+    "seed": 1,
+    "totals": {
+      "baseline_detected": 5,
+      "baseline_false_positive": 0,
+      "baseline_missed": 17,
+      "sentinel_detected": 20,
+      "sentinel_false_positive": 0,
+      "sentinel_missed": 2
+    }
+  },
+  "detection": {
+    "aggregate": {
+      "benign_fp_count": {
+        "max": 0,
+        "mean": 0.0,
+        "min": 0
+      },
+      "f1": {
+        "max": 0.9523809523809523,
+        "mean": 0.9523809523809523,
+        "min": 0.9523809523809523
+      },
+      "fn": {
+        "max": 2,
+        "mean": 2.0,
+        "min": 2
+      },
+      "fp": {
+        "max": 0,
+        "mean": 0.0,
+        "min": 0
+      },
+      "identical_outcomes": true,
+      "precision": {
+        "max": 1.0,
+        "mean": 1.0,
+        "min": 1.0
+      },
+      "recall": {
+        "max": 0.9090909090909091,
+        "mean": 0.909090909090909,
+        "min": 0.9090909090909091
+      },
+      "seeds": 20,
+      "tn": {
+        "max": 3,
+        "mean": 3.0,
+        "min": 3
+      },
+      "tp": {
+        "max": 20,
+        "mean": 20.0,
+        "min": 20
+      }
+    },
+    "per_seed": [
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      },
+      {
+        "benign_fp_count": 0,
+        "f1": 0.9523809523809523,
+        "fn": 2,
+        "fp": 0,
+        "outcomes": {
+          "backdoor-account": "TRUE_POSITIVE",
+          "benign-admin-day": "TRUE_NEGATIVE",
+          "benign-allowlisted-monitor": "TRUE_NEGATIVE",
+          "benign-noisy-user": "TRUE_NEGATIVE",
+          "blended-low-slow": "KNOWN_BLIND_SPOT",
+          "config-tampering": "TRUE_POSITIVE",
+          "credential-compromise-chain": "TRUE_POSITIVE",
+          "dev-shm-staging": "TRUE_POSITIVE",
+          "distributed-bruteforce": "TRUE_POSITIVE",
+          "failed-login-spike": "TRUE_POSITIVE",
+          "legit-admin-3am": "TRUE_POSITIVE",
+          "login-from-new-ip": "TRUE_POSITIVE",
+          "low-and-slow": "KNOWN_BLIND_SPOT",
+          "mixed-realistic-week": "TRUE_POSITIVE",
+          "password-spraying": "TRUE_POSITIVE",
+          "persistence-cron": "TRUE_POSITIVE",
+          "persistence-ssh-key": "TRUE_POSITIVE",
+          "recon-tool-install": "TRUE_POSITIVE",
+          "scanner-preauth-flood": "TRUE_POSITIVE",
+          "shell-profile-preload-persistence": "TRUE_POSITIVE",
+          "slow-rotating-bruteforce": "FALSE_NEGATIVE",
+          "ssh-bruteforce-single-ip": "TRUE_POSITIVE",
+          "ssh-key-plus-cron-delay": "TRUE_POSITIVE",
+          "stolen-credential-systemd-persistence": "TRUE_POSITIVE",
+          "suspicious-process": "TRUE_POSITIVE",
+          "unexpected-listener": "TRUE_POSITIVE",
+          "valid-user-spray-hourly": "FALSE_NEGATIVE"
+        },
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "tn": 3,
+        "tp": 20
+      }
+    ]
+  },
+  "issues": [
+    {
+      "diagnosis": "rule gap or threshold: no finding fired on stored events",
+      "outcome": "FALSE_NEGATIVE",
+      "scenario": "slow-rotating-bruteforce"
+    },
+    {
+      "diagnosis": "rule gap or threshold: no finding fired on stored events",
+      "outcome": "FALSE_NEGATIVE",
+      "scenario": "valid-user-spray-hourly"
+    }
+  ],
+  "methodology": {
+    "builtin_rules_exercised": 15,
+    "builtin_rules_total": 25,
+    "categories": {
+      "attack": 21,
+      "benign": 3,
+      "combined": 1,
+      "evasion": 2
+    },
+    "distinct_mitre_techniques": 18,
+    "mitre_techniques": [
+      "T1046",
+      "T1049",
+      "T1053.003",
+      "T1059",
+      "T1074.001",
+      "T1078",
+      "T1098",
+      "T1098.004",
+      "T1110",
+      "T1110.001",
+      "T1110.003",
+      "T1136.001",
+      "T1222.002",
+      "T1543.002",
+      "T1546.004",
+      "T1548.003",
+      "T1574.006",
+      "T1592"
+    ],
+    "rule_kinds_exercised": [
+      "baseline_metric",
+      "field_match",
+      "new_value",
+      "sequence",
+      "threshold"
+    ],
+    "rule_kinds_exercised_count": 5,
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "seeds_run": 20,
+    "total_scenarios": 27
+  },
+  "performance": {
+    "environment": {
+      "cpu": "x86_64, 8 logical CPUs, x86_64",
+      "machine": "Linux-7.0.0-42-generic-x86_64-with-glibc2.39",
+      "memory": "16479649792 bytes total (psutil.virtual_memory())",
+      "python": "Python 3.12.3 (CPython)"
+    },
+    "measurements": {
+      "api_calls_per_endpoint": 100,
+      "api_events_median_ms": 11.13,
+      "api_events_p95_ms": 13.02,
+      "api_incidents_median_ms": 8.44,
+      "api_incidents_p95_ms": 9.23,
+      "database_bytes_per_100k_events": 73129984,
+      "events_stored_for_api_benchmark": 200000,
+      "ingestion_events_per_second": 20642.7,
+      "ingestion_seconds_for_100k": 4.844,
+      "rule_evaluation_200k_seconds": 1.123
+    }
+  },
+  "prioritisation": {
+    "backdoor-account": {
+      "rule_reasons": 2,
+      "score": 25,
+      "severity": "medium"
+    },
+    "config-tampering": {
+      "rule_reasons": 2,
+      "score": 70,
+      "severity": "critical"
+    },
+    "credential-compromise-chain": {
+      "rule_reasons": 5,
+      "score": 80,
+      "severity": "critical"
+    },
+    "dev-shm-staging": {
+      "rule_reasons": 1,
+      "score": 20,
+      "severity": "high"
+    },
+    "distributed-bruteforce": {
+      "rule_reasons": 1,
+      "score": 25,
+      "severity": "high"
+    },
+    "failed-login-spike": {
+      "rule_reasons": 2,
+      "score": 30,
+      "severity": "high"
+    },
+    "legit-admin-3am": {
+      "rule_reasons": 2,
+      "score": 25,
+      "severity": "medium"
+    },
+    "login-from-new-ip": {
+      "rule_reasons": 1,
+      "score": 10,
+      "severity": "medium"
+    },
+    "password-spraying": {
+      "rule_reasons": 2,
+      "score": 40,
+      "severity": "high"
+    },
+    "persistence-cron": {
+      "rule_reasons": 1,
+      "score": 25,
+      "severity": "high"
+    },
+    "persistence-ssh-key": {
+      "rule_reasons": 2,
+      "score": 55,
+      "severity": "high"
+    },
+    "recon-tool-install": {
+      "rule_reasons": 1,
+      "score": 10,
+      "severity": "medium"
+    },
+    "scanner-preauth-flood": {
+      "rule_reasons": 4,
+      "score": 55,
+      "severity": "high"
+    },
+    "shell-profile-preload-persistence": {
+      "rule_reasons": 2,
+      "score": 55,
+      "severity": "high"
+    },
+    "slow-rotating-bruteforce": {
+      "rule_reasons": 0,
+      "score": 0,
+      "severity": "low"
+    },
+    "ssh-bruteforce-single-ip": {
+      "rule_reasons": 3,
+      "score": 60,
+      "severity": "high"
+    },
+    "ssh-key-plus-cron-delay": {
+      "rule_reasons": 2,
+      "score": 55,
+      "severity": "high"
+    },
+    "stolen-credential-systemd-persistence": {
+      "rule_reasons": 4,
+      "score": 70,
+      "severity": "critical"
+    },
+    "suspicious-process": {
+      "rule_reasons": 1,
+      "score": 20,
+      "severity": "high"
+    },
+    "unexpected-listener": {
+      "rule_reasons": 1,
+      "score": 10,
+      "severity": "medium"
+    },
+    "valid-user-spray-hourly": {
+      "rule_reasons": 0,
+      "score": 0,
+      "severity": "low"
+    }
+  },
+  "slide_ready": [
+    {
+      "meaning": "synthetic scenarios measured",
+      "number": "27"
+    },
+    {
+      "meaning": "independent seeds run across every scenario",
+      "number": "20"
+    },
+    {
+      "meaning": "distinct MITRE techniques covered",
+      "number": "18"
+    },
+    {
+      "meaning": "mean precision across seeds",
+      "number": "1.000"
+    },
+    {
+      "meaning": "mean recall across seeds",
+      "number": "0.909"
+    },
+    {
+      "meaning": "mean F1 across seeds",
+      "number": "0.952"
+    },
+    {
+      "meaning": "mean false positives on benign scenarios per seed",
+      "number": "0.000"
+    },
+    {
+      "meaning": "scenarios detected by Sentinel defaults at the baseline seed",
+      "number": "20"
+    },
+    {
+      "meaning": "scenarios detected by the one-rule naive reference at the baseline seed",
+      "number": "5"
+    },
+    {
+      "meaning": "measured ingestion rate on this machine",
+      "number": "20642.7"
+    },
+    {
+      "meaning": "measured rule evaluation time over 200,000 events",
+      "number": "1.123"
+    },
+    {
+      "meaning": "median /api/events latency over 100 calls",
+      "number": "11.13"
+    },
+    {
+      "meaning": "median /api/incidents latency over 100 calls",
+      "number": "8.44"
+    },
+    {
+      "meaning": "SQLite database size per 100,000 events",
+      "number": "73129984"
+    }
+  ],
+  "timing": {
+    "backdoor-account": {
+      "detections": 20,
+      "max": 0.0,
+      "median": 0.0,
+      "min": 0.0,
+      "runs": 20
+    },
+    "config-tampering": {
+      "detections": 20,
+      "max": 0.0,
+      "median": 0.0,
+      "min": 0.0,
+      "runs": 20
+    },
+    "credential-compromise-chain": {
+      "detections": 20,
+      "max": 480.0,
+      "median": 480.0,
+      "min": 480.0,
+      "runs": 20
+    },
+    "dev-shm-staging": {
+      "detections": 20,
+      "max": 0.0,
+      "median": 0.0,
+      "min": 0.0,
+      "runs": 20
+    },
+    "distributed-bruteforce": {
+      "detections": 20,
+      "max": 80.0,
+      "median": 80.0,
+      "min": 80.0,
+      "runs": 20
+    },
+    "failed-login-spike": {
+      "detections": 20,
+      "max": 0.0,
+      "median": 0.0,
+      "min": 0.0,
+      "runs": 20
+    },
+    "legit-admin-3am": {
+      "detections": 20,
+      "max": 0.0,
+      "median": 0.0,
+      "min": 0.0,
+      "runs": 20
+    },
+    "login-from-new-ip": {
+      "detections": 20,
+      "max": 0.0,
+      "median": 0.0,
+      "min": 0.0,
+      "runs": 20
+    },
+    "password-spraying": {
+      "detections": 20,
+      "max": 480.0,
+      "median": 480.0,
+      "min": 480.0,
+      "runs": 20
+    },
+    "persistence-cron": {
+      "detections": 20,
+      "max": 0.0,
+      "median": 0.0,
+      "min": 0.0,
+      "runs": 20
+    },
+    "persistence-ssh-key": {
+      "detections": 20,
+      "max": 0.0,
+      "median": 0.0,
+      "min": 0.0,
+      "runs": 20
+    },
+    "recon-tool-install": {
+      "detections": 20,
+      "max": 0.0,
+      "median": 0.0,
+      "min": 0.0,
+      "runs": 20
+    },
+    "scanner-preauth-flood": {
+      "detections": 20,
+      "max": 95.0,
+      "median": 95.0,
+      "min": 95.0,
+      "runs": 20
+    },
+    "shell-profile-preload-persistence": {
+      "detections": 20,
+      "max": 0.0,
+      "median": 0.0,
+      "min": 0.0,
+      "runs": 20
+    },
+    "slow-rotating-bruteforce": {
+      "detections": 0,
+      "max": null,
+      "median": null,
+      "min": null,
+      "runs": 20
+    },
+    "ssh-bruteforce-single-ip": {
+      "detections": 20,
+      "max": 40.0,
+      "median": 40.0,
+      "min": 40.0,
+      "runs": 20
+    },
+    "ssh-key-plus-cron-delay": {
+      "detections": 20,
+      "max": 0.0,
+      "median": 0.0,
+      "min": 0.0,
+      "runs": 20
+    },
+    "stolen-credential-systemd-persistence": {
+      "detections": 20,
+      "max": 420.0,
+      "median": 420.0,
+      "min": 420.0,
+      "runs": 20
+    },
+    "suspicious-process": {
+      "detections": 20,
+      "max": 0.0,
+      "median": 0.0,
+      "min": 0.0,
+      "runs": 20
+    },
+    "unexpected-listener": {
+      "detections": 20,
+      "max": 120.0,
+      "median": 120.0,
+      "min": 120.0,
+      "runs": 20
+    },
+    "valid-user-spray-hourly": {
+      "detections": 0,
+      "max": null,
+      "median": null,
+      "min": null,
+      "runs": 20
+    }
+  }
+}

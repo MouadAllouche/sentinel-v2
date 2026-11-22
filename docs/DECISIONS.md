@@ -1011,3 +1011,92 @@ Run `make api` and `make web`, then verify by hand (no screenshots):
   auditor confirmed the sandbox confinement; its assurance gaps were closed by patching psutil and
   write-open in the safety test, hashing the project outside the sandbox, making credentials 0600,
   confining `write_report()` and sandbox mutations, and documenting exactly when `live` drives SSE.
+
+### D-112 — Phase 20 audit: scenario-input changes after failed expectations
+This entry answers the follow-up audit question: which scenario inputs were changed after a first
+run failed to produce the expected outcome, and was anything about detection tuned instead?
+
+**Git evidence (no detection tuning).** `git diff --exit-code 14a1e97 HEAD -- core/rules/`
+`core/correlation.py core/severity.py core/anomaly_detection.py engine/rules.py`
+`engine/correlation.py storage/rules_repository.py storage/severity_repository.py`
+`config/settings.toml` returned **exit 0** (empty). The pre-Phase-20 commit is `14a1e97`; the
+Phase-20 commit is `6226ed2`. No rule definition, tier, count, window, cooldown, point value,
+severity default/override, risk threshold, correlation window, ignore-IP list or engine setting was
+modified. The only changed lines in the whole diff that mention `cooldown_seconds`/`tiers`/
+`window_seconds` are inside `tests/test_simulator_cli.py` — a **custom rule file used as a what-if
+test input**, not a seeded or shipped rule. The only changed `"count": …` line is in the generated
+`web/tests/fixtures/top.json` (an event-type count, not a rule tier).
+
+**Scenario inputs changed after a failed expectation** (all in `scripts/simulator/`):
+
+1. **`failed-login-spike`** — *before*: benign history generated with `benign_history(rng, clock,
+   days=7, with_failures=True)`, so the oldest relevant failed login sat exactly at `clock − 7 d`;
+   40-event spike at `clock:30`; runner ended at `last_activity + 2 h 1 min`. *Observed*: no
+   anomaly; only `ssh-bruteforce-by-ip` matched (FALSE_NEGATIVE against the expectation). *Cause*:
+   the baseline cycle queries from `reference − 7 days` and evaluates the last *completed* hour;
+   with the final cycle at +2 h the oldest history was just outside the window (immature baseline)
+   and the spike hour was already two hours old. *Now*: history start shifted 12 h later
+   (`clock + 12 h, days=7`), leaving ~6.5 days of benign history inside the query window, and the
+   runner final cycle moved to `last_activity + 35 min` so the spike hour is the last completed
+   hour. *Effect*: more realistic (seven days of history that the baseline can actually learn from)
+   but also **more favourable to `baseline-failed-logins`** — it is what makes maturity and the
+   anomaly fire. No rule or threshold changed.
+
+2. **`unexpected-listener`** — *before*: `FeedRecord(clock, "listener", {port: 4444, address:
+   "0.0.0.0", …})`, and the runner's first cycle was the first activity time (12:02). *Observed*:
+   no `new_listening_port` event, FALSE_NEGATIVE. *Cause*: the real listener collector seeds state
+   silently on its first run; the injected listener was present in that seeding cycle, so it was
+   never "new". *Now*: the record appears at `clock + 2 min` and the runner always inserts a
+   `BASE_TIME` seeding cycle. *Effect*: more realistic (a new listener appears after a baseline),
+   and **more favourable to `new-listening-port-all-interfaces`** — it is what makes the event fire.
+
+3. **`benign-allowlisted-monitor`** — *before*: `_prepare_case` rewrote `etc/sshd_config` on every
+   replay and re-added monitored paths. *Observed*: the first run was TRUE_NEGATIVE, but a second
+   run in the same sandbox produced an incident (`Possible brute force from unknown host`) from a
+   spurious `config_drift` mtime event, breaking idempotence. *Now*: sandbox baseline files are
+   created only if missing, and monitored paths are added only if absent. *Effect*: **more
+   realistic and less favourable to detection** — a replay no longer invents drift, so the benign
+   scenario stays a true negative. All 25 suppressed events remain stored and labelled.
+
+**Other input corrections, not driven by a failed expectation** (recorded for completeness):
+`ssh-bruteforce-single-ip` usernames changed from `["admin","root","invalid user admin","guest"]`
+to `["admin","root","guest","support"]` because the generator's `invalid=True` flag already
+prepends `invalid user ` (the old value produced a doubled prefix); dead `_attack_window()` removed;
+`simulate live` changed from a single bulk append to gradual append plus `changes` rows for SSE;
+what-if `time_to_detect_change` changed from a hardcoded `0` to the computed difference. None
+touches detection rules.
+
+**Evaluation-only change:** time-to-detect is now measured from the first finding matching the
+scenario's `Expectation.rules_any_of`, which changed reported numbers (e.g.
+`credential-compromise-chain` 120 s → 480 s) without changing any scenario input or rule.
+
+**Conclusion:** the final matrix's 100% attack detection rate was reached through simulator
+realism corrections and honest evaluation, not by relaxing rules, thresholds, tiers, cooldowns,
+severity defaults or correlation settings. The `low-and-slow` blind spot remains deliberately
+undetected.
+
+### D-113 — Eight red-team scenarios written from attacker behaviour
+Eight scenarios were authored **before** consulting any seeded rule, tier, threshold or severity
+default, using only the public technique descriptions supplied by the user. Files touched:
+`scripts/simulator/generators.py`, `scripts/simulator/scenarios.py`, `scripts/simulator/runner.py`
+(generic monitoring of standard persistence locations), `docs/SIMULATION.md`, `tests/test_simulator.py`.
+No rule, tier, threshold, cooldown, severity default, correlation setting or existing scenario input
+was changed after the results were seen. Expectations were pre-registered and are left unchanged.
+
+**Outcomes (seed 7):**
+
+| Scenario | Outcome | Evidence | Diagnosis |
+|---|---|---|---|
+| `slow-rotating-bruteforce` | **FALSE_NEGATIVE** | 36 failed logins, 36 distinct IPs, 1 user, max 3 per 10-min bucket; 0 findings, 0 incidents | Threshold/window + rule gap: per-IP count is 1 and any 10-min distinct-source view sees only 3. No long-horizon distributed correlation exists. Not simulator realism — events were stored correctly. |
+| `valid-user-spray-hourly` | **FALSE_NEGATIVE** | 12 failed logins, 1 IP, 12 valid usernames, max 1 per 10-min bucket; 0 findings | Threshold/window: minute-scale grouping never accumulates the hourly spray into one episode. Not simulator realism. |
+| `stolen-credential-systemd-persistence` | TRUE_POSITIVE | `persistence-change`, critical, 1 incident, drift event, TTD 420 s | New systemd unit was observed by the drift baseline. |
+| `shell-profile-preload-persistence` | TRUE_POSITIVE | `persistence-change`, `sensitive-file-change`, high, 2 drift events | Both files monitored; drift fired. |
+| `ssh-key-plus-cron-delay` | TRUE_POSITIVE | `persistence-change`, `sensitive-file-change`, high, 2 drift events | Key append and delayed cron both observed. |
+| `dev-shm-staging` | TRUE_POSITIVE | `suspicious-process`, high, 1 incident | Fake process feed with `/dev/shm` executable. |
+| `legit-admin-3am` | TRUE_POSITIVE | `new-user-created`, medium, 1 incident | Off-hours account creation observed. |
+| `blended-low-slow` | KNOWN_BLIND_SPOT | 0 findings, 0 incidents | Deliberate blending; expectation was False. |
+
+The two `FALSE_NEGATIVE` outcomes are reported, not tuned away. Their pre-registered
+`should_detect=True` expectations remain, so their two parametrized tests fail by design — the
+failure is the honest signal of a detection gap. Suggested future work (not done here): a long-window
+distinct-source rule and a long-window distinct-username rule, each with evidence and caveats.

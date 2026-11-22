@@ -340,6 +340,139 @@ def benign_allowlisted_monitor(rng: random.Random, clock: datetime) -> Simulated
     return SimulatedActivity(auth_lines=lines, allowlist_ips=[TRUSTED])
 
 
+def slow_rotating_bruteforce(rng: random.Random, clock: datetime) -> SimulatedActivity:
+    """Three guesses every ten minutes, each from a different source in a pool of 40."""
+    pool = [f"203.0.113.{100 + index}" for index in range(40)]
+    lines: list[tuple[datetime, str]] = []
+    for round_index in range(12):
+        base = clock + timedelta(minutes=10 * round_index)
+        for attempt in range(3):
+            stamp = base + timedelta(seconds=attempt * 20)
+            ip = pool[(round_index * 3 + attempt) % len(pool)]
+            lines.append((stamp, failed(stamp, "admin", ip, invalid=attempt == 2)))
+    return SimulatedActivity(auth_lines=sorted(lines), malicious_from=clock)
+
+
+def valid_user_spray_hourly(rng: random.Random, clock: datetime) -> SimulatedActivity:
+    """One guess per real account per hour; no invalid usernames at all."""
+    users = [
+        "alice",
+        "bob",
+        "carol",
+        "dave",
+        "eve",
+        "frank",
+        "grace",
+        "heidi",
+        "ivan",
+        "judy",
+        "ken",
+        "leo",
+    ]
+    lines = [
+        (clock + timedelta(hours=index), failed(clock + timedelta(hours=index), user, ATTACKER))
+        for index, user in enumerate(users)
+    ]
+    return SimulatedActivity(auth_lines=sorted(lines), malicious_from=clock)
+
+
+def stolen_credential_systemd_persistence(rng: random.Random, clock: datetime) -> SimulatedActivity:
+    """A valid credential is used, then a systemd unit appears quietly."""
+    lines = [(clock, success(clock, "admin", ATTACKER))]
+    escalation = clock + timedelta(minutes=5)
+    lines.append((escalation, sudo(escalation, "admin", "/bin/systemctl enable backdoor.service")))
+    started = escalation + timedelta(minutes=1)
+    lines.append((started, sudo(started, "admin", "/bin/systemctl start backdoor.service")))
+    mutations = [
+        FileMutation(
+            clock + timedelta(minutes=7),
+            "etc/systemd/system/backdoor.service",
+            "create",
+            "[Unit]\nDescription=system utility\nExecStart=/usr/bin/id\n",
+        )
+    ]
+    return SimulatedActivity(auth_lines=sorted(lines), mutations=mutations, malicious_from=clock)
+
+
+def shell_profile_preload_persistence(rng: random.Random, clock: datetime) -> SimulatedActivity:
+    """Two quiet persistence files are planted minutes apart."""
+    mutations = [
+        FileMutation(clock, "etc/profile.d/backdoor.sh", "create", "export PATH=/dev/shm:$PATH\n"),
+        FileMutation(
+            clock + timedelta(minutes=4),
+            "etc/ld.so.preload",
+            "create",
+            "/dev/shm/backdoor.so\n",  # noqa: S108 - simulated path
+        ),
+    ]
+    return SimulatedActivity(mutations=mutations, malicious_from=clock)
+
+
+def ssh_key_plus_cron_delay(rng: random.Random, clock: datetime) -> SimulatedActivity:
+    """An SSH key is added, then a cron job is planted several minutes later."""
+    mutations = [
+        FileMutation(
+            clock,
+            "etc/authorized_keys",
+            "append_key",
+            "ssh-ed25519 c3NoLXN0b3JhZ2Utc3RlYWxpbmc= attacker-key\n",
+        ),
+        FileMutation(
+            clock + timedelta(minutes=6),
+            "etc/cron.d/collector",
+            "create",
+            "*/5 * * * * root /usr/bin/id\n",
+        ),
+    ]
+    return SimulatedActivity(mutations=mutations, malicious_from=clock)
+
+
+def dev_shm_staging(rng: random.Random, clock: datetime) -> SimulatedActivity:
+    """A staging binary runs from /dev/shm."""
+    return SimulatedActivity(
+        feeds=[
+            FeedRecord(
+                clock,
+                "process",
+                {
+                    "pid": 4300,
+                    "name": "stager",
+                    "exe": "/dev/shm/stager",  # noqa: S108 - simulated path
+                    "username": "nobody",
+                },
+            )
+        ],
+        malicious_from=clock,
+    )
+
+
+def legit_admin_3am(rng: random.Random, clock: datetime) -> SimulatedActivity:
+    """A plausible-sounding account is created in the middle of the night."""
+    stamp = (clock + timedelta(days=1)).replace(hour=3, minute=0, second=0, microsecond=0)
+    lines = [
+        (stamp, user_created(stamp, "sysadmin")),
+        (stamp + timedelta(minutes=2), group_add(stamp + timedelta(minutes=2), "sysadmin", "sudo")),
+        (stamp + timedelta(minutes=6), success(stamp + timedelta(minutes=6), "sysadmin", BENIGN)),
+    ]
+    return SimulatedActivity(auth_lines=sorted(lines), malicious_from=stamp)
+
+
+def blended_low_slow(rng: random.Random, clock: datetime) -> SimulatedActivity:
+    """Each malicious guess is surrounded by twenty ordinary-looking actions."""
+    lines: list[tuple[datetime, str]] = []
+    for round_index in range(3):
+        start = clock + timedelta(minutes=30 * round_index)
+        lines.append((start, failed(start, "admin", ATTACKER)))
+        for index in range(20):
+            stamp = start + timedelta(minutes=1 + index)
+            if index % 5 == 0:
+                line = sudo(stamp, "alice", "/usr/bin/id")
+            else:
+                line = success(stamp, "alice", BENIGN)
+            lines.append((stamp, line))
+    return SimulatedActivity(auth_lines=sorted(lines), malicious_from=clock)
+
+
 def mixed_realistic_week(rng: random.Random, clock: datetime) -> SimulatedActivity:
     activity = SimulatedActivity(
         history_lines=benign_history(rng, clock, days=7), malicious_from=clock + DAY

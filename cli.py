@@ -108,7 +108,9 @@ def _parser() -> argparse.ArgumentParser:
     demo.add_argument("--no-print-password", action="store_true")
     demo.add_argument("--workdir", help="demo workdir (default: demo_workdir/)")
     simulate = sub.add_parser("simulate")
-    simulate.add_argument("action", choices=["list", "run", "dashboard", "live", "whatif"])
+    simulate.add_argument(
+        "action", choices=["list", "run", "dashboard", "live", "whatif", "metrics"]
+    )
     simulate.add_argument("scenario", nargs="?")
     simulate.add_argument("--seed", type=int, default=0)
     simulate.add_argument("--format", choices=["table", "md", "json"], default="table")
@@ -135,6 +137,21 @@ def _simulate(args: Any) -> int:
 
     action = args.action
     workdir = args.out
+    if action == "metrics":
+        from scripts.metrics import METRICS_DOC, METRICS_JSON, build_metrics
+
+        data = build_metrics(seeds=list(range(1, 21)))
+        _emit(
+            {
+                "scenarios": data["methodology"]["total_scenarios"],
+                "seeds": data["methodology"]["seeds_run"],
+                "metrics_json": str(METRICS_JSON.relative_to(Path.cwd())),
+                "metrics_doc": str(METRICS_DOC.relative_to(Path.cwd())),
+            },
+            args.json,
+            f"metrics written to {METRICS_JSON.name} and {METRICS_DOC.name}",
+        )
+        return 0
     if action == "list":
         for scenario in SCENARIOS:
             print(f"{scenario.id:32} {scenario.category:9} {scenario.title}")

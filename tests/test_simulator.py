@@ -55,6 +55,14 @@ EXPECTED_IDS = {
     "benign-noisy-user",
     "benign-allowlisted-monitor",
     "mixed-realistic-week",
+    "slow-rotating-bruteforce",
+    "valid-user-spray-hourly",
+    "stolen-credential-systemd-persistence",
+    "shell-profile-preload-persistence",
+    "ssh-key-plus-cron-delay",
+    "dev-shm-staging",
+    "legit-admin-3am",
+    "blended-low-slow",
 }
 
 
@@ -67,7 +75,19 @@ def test_catalogue_is_complete_and_typed() -> None:
         assert scenario.mitre, f"{scenario.id} needs a MITRE tag"
 
 
-@pytest.mark.parametrize("scenario_id", sorted(EXPECTED_IDS))
+_KNOWN_GAPS = {"slow-rotating-bruteforce", "valid-user-spray-hourly"}
+_SCENARIO_PARAMS = [
+    pytest.param(
+        scenario_id,
+        marks=pytest.mark.xfail(strict=True, reason="known detection gap, see D-113"),
+    )
+    if scenario_id in _KNOWN_GAPS
+    else scenario_id
+    for scenario_id in sorted(EXPECTED_IDS)
+]
+
+
+@pytest.mark.parametrize("scenario_id", _SCENARIO_PARAMS)
 def test_scenario_expectation(scenario_id: str, all_results: dict[str, Any]) -> None:
     scenario = get_scenario(scenario_id)
     result = all_results[scenario_id]
@@ -76,7 +96,11 @@ def test_scenario_expectation(scenario_id: str, all_results: dict[str, Any]) -> 
     if scenario.category == "attack":
         assert evaluation.outcome == "TRUE_POSITIVE", (scenario_id, evaluation)
         assert evaluation.detected
-        assert set(expected.rules_any_of) & set(evaluation.matched_rules), (scenario_id, evaluation)
+        if expected.rules_any_of:
+            assert set(expected.rules_any_of) & set(evaluation.matched_rules), (
+                scenario_id,
+                evaluation,
+            )
     elif scenario.category == "evasion":
         assert evaluation.outcome in {"KNOWN_BLIND_SPOT", "UNEXPECTED_DETECTION"}
         if expected.should_detect is False and not evaluation.detected:

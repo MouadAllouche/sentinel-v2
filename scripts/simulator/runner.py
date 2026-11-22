@@ -40,7 +40,12 @@ from storage.repositories import (
     query_events_bulk,
     set_setting,
 )
-from storage.rules_repository import create_rule, get_rule, list_findings, update_rule
+from storage.rules_repository import (
+    create_rule,
+    get_rule,
+    list_findings,
+    update_rule,
+)
 from storage.severity_repository import add_allowlist_entry
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -143,6 +148,13 @@ def _prepare_case(
     cron_file = etc / "cron.d" / "backup"
     if not cron_file.exists():
         cron_file.write_text("# baseline\n", encoding="utf-8")
+    # Standard persistence locations are part of the simulated host's normal
+    # monitoring surface; all scenarios get the same baseline coverage.
+    for directory in (etc / "systemd" / "system", etc / "profile.d"):
+        directory.mkdir(parents=True, exist_ok=True)
+    preload = etc / "ld.so.preload"
+    if not preload.exists():
+        preload.write_text("# baseline\n", encoding="utf-8")
     auth_log = case / "auth.log"
     dpkg_log = case / "dpkg.log"
     for path in (auth_log, dpkg_log):
@@ -179,6 +191,9 @@ def _prepare_case(
         (etc / "sshd_config", "file", "ssh"),
         (key_file, "authorized_keys", "authorized_keys"),
         (etc / "cron.d", "dir", "cron"),
+        (etc / "systemd" / "system", "dir", "systemd"),
+        (etc / "profile.d", "dir", "shell_profile"),
+        (preload, "file", "ld_preload"),
     ):
         existing = next((item for item in list_monitored_paths(db) if item.path == str(path)), None)
         if existing is None:
@@ -224,11 +239,13 @@ def _execute(
     *,
     overrides: list[dict[str, Any]] | None = None,
     full_steps: bool = False,
+    replace_rules: bool = False,
 ) -> ScenarioResult:
     scenario = get_scenario(scenario_id)
     rng = random.Random(seed)  # noqa: S311 - deterministic simulation
     activity: SimulatedActivity = scenario.build(rng, BASE_TIME)
     case, db, _settings_path, settings = _prepare_case(workdir, scenario_id, activity, seed)
+    allowed_rule_ids = {str(definition["id"]) for definition in (overrides or [])}
     if overrides:
         _apply_overrides(db, overrides)
 
@@ -296,6 +313,31 @@ def _execute(
     def no_baseline(_s: Any, _db: Any, _now: Any) -> dict[str, Any]:
         return {"baselines": 0}
 
+    def restrict_rules(_s: Any, _db: Any, _now: Any) -> dict[str, Any]:
+        # run_once re-seeds defaults at the start of every cycle, so the
+        # reference rule set is re-applied here immediately before evaluation.
+        # Direct column update: set_rule_enabled re-validates whole definitions
+        # and rejects reserved kinds whose stored shape needs extra fields.
+        from contextlib import closing
+
+        from storage.database import get_connection
+
+        disabled = 0
+        with closing(get_connection(db)) as connection, connection:
+            for identifier, definition_json in connection.execute(
+                "SELECT id, definition_json FROM rules WHERE enabled = 1"
+            ):
+                if identifier in allowed_rule_ids:
+                    continue
+                definition = json.loads(definition_json)
+                definition["enabled"] = False
+                connection.execute(
+                    "UPDATE rules SET enabled = 0, definition_json = ? WHERE id = ?",
+                    (json.dumps(definition, sort_keys=True, default=str), identifier),
+                )
+                disabled += 1
+        return {"rules_disabled": disabled, "rules_kept": sorted(allowed_rule_ids)}
+
     for clock in ordered + [final]:
         # Baselines only change at hour boundaries or on the final cycle;
         # recomputing seven days of buckets every simulated minute is wasteful.
@@ -311,6 +353,9 @@ def _execute(
             )
             for name, step in base_steps
         ]
+        if replace_rules:
+            rules_index = next(index for index, (name, _) in enumerate(steps) if name == "rules")
+            steps.insert(rules_index, ("restrict-rules", restrict_rules))
         run_once(settings, db, clock, notify=True, steps=steps)
 
     events = query_events_bulk({}, db_path=db)
@@ -348,6 +393,7 @@ def run_scenario(
     workdir: str | Path | None = None,
     overrides: list[dict[str, Any]] | None = None,
     full_steps: bool = False,
+    replace_rules: bool = False,
 ) -> ScenarioResult:
     return _execute(
         scenario_id,
@@ -355,6 +401,7 @@ def run_scenario(
         safe_workdir(workdir or DEFAULT_WORKDIR),
         overrides=overrides,
         full_steps=full_steps,
+        replace_rules=replace_rules,
     )
 
 

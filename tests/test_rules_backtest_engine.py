@@ -97,7 +97,7 @@ def test_backtest_range_and_should_stop(make_event: Callable[..., dict[str, Any]
         )
 
 
-def test_evaluate_rules_marks_reserved_kinds() -> None:
+def test_evaluate_rules_is_silent_for_delegated_kinds() -> None:
     rule, _warnings = validate_rule(
         _definition(
             id="reserved-rule",
@@ -118,7 +118,7 @@ def test_evaluate_rules_marks_reserved_kinds() -> None:
     )
     findings, warnings = evaluate_rules([rule], [], now=BASE_TIME)
     assert findings == []
-    assert warnings and "baseline cycle" in warnings[0]
+    assert warnings == []
 
 
 def test_engine_emits_deterministic_rule_triggered_events(

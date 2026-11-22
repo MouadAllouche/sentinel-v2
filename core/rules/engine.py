@@ -13,6 +13,10 @@ from core.rules.threshold import Finding, evaluate_threshold
 
 __all__ = ["evaluate_rules"]
 
+# These kinds are evaluated by other, dedicated stages. They are not missing
+# evaluators, so the generic rule cycle must stay silent about them.
+_DELEGATED_KINDS = frozenset({"baseline_metric", "incident_meta"})
+
 
 def evaluate_rules(
     rules: list[Rule],
@@ -32,13 +36,9 @@ def evaluate_rules(
             findings.extend(evaluate_new_value(rule, events, (history or {}).get(rule.id, {}), now))
         elif rule.kind == "field_match":
             findings.extend(evaluate_field_match(rule, events, now))
-        elif rule.kind == "baseline_metric":
-            warnings.append(
-                f"rule '{rule.id}' is evaluated by the baseline cycle, not the generic rule cycle"
-            )
+        elif rule.kind in _DELEGATED_KINDS:
+            # baseline_metric: engine/baselines.py; incident_meta: engine/scoring.py.
+            continue
         else:
-            warnings.append(
-                f"rule '{rule.id}' has kind '{rule.kind}': NotImplementedForKind "
-                "(evaluated in a later phase)"
-            )
+            warnings.append(f"rule '{rule.id}' has kind '{rule.kind}': no evaluator in any stage")
     return findings, warnings

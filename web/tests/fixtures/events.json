@@ -17,6 +17,174 @@
         "is_root_user": false,
         "is_service_account": false,
         "suspicious_path": false,
+        "weekday_hour_utc": "Sun-13"
+      },
+      "event_type": "sudo_command",
+      "id": 134,
+      "process_name": "mint-refresh-cache",
+      "severity": "low",
+      "severity_source": "default",
+      "source": "auth_log",
+      "timestamp": "2026-11-22T13:54:41.123713+00:00",
+      "username": "mouad"
+    },
+    {
+      "allowlisted": false,
+      "description": "User mouad executed a sudo command as root",
+      "details": {
+        "command_args_count": 0,
+        "command_executable": "/usr/bin/mint-refresh-cache",
+        "target_user": "root"
+      },
+      "enrichment": {
+        "allowlist_match": [],
+        "allowlist_suppressed": false,
+        "bind_scope": "invalid",
+        "destination_ip_scope": "invalid",
+        "ip_scope": "invalid",
+        "is_root_user": false,
+        "is_service_account": false,
+        "suspicious_path": false,
+        "weekday_hour_utc": "Sun-13"
+      },
+      "event_type": "sudo_command",
+      "id": 133,
+      "process_name": "mint-refresh-cache",
+      "severity": "low",
+      "severity_source": "default",
+      "source": "auth_log",
+      "timestamp": "2026-11-22T13:53:41.123017+00:00",
+      "username": "mouad"
+    },
+    {
+      "allowlisted": false,
+      "description": "User mouad executed a sudo command as root",
+      "details": {
+        "command_args_count": 0,
+        "command_executable": "/usr/bin/mint-refresh-cache",
+        "target_user": "root"
+      },
+      "enrichment": {
+        "allowlist_match": [],
+        "allowlist_suppressed": false,
+        "bind_scope": "invalid",
+        "destination_ip_scope": "invalid",
+        "ip_scope": "invalid",
+        "is_root_user": false,
+        "is_service_account": false,
+        "suspicious_path": false,
+        "weekday_hour_utc": "Sun-11"
+      },
+      "event_type": "sudo_command",
+      "id": 132,
+      "process_name": "mint-refresh-cache",
+      "severity": "low",
+      "severity_source": "default",
+      "source": "auth_log",
+      "timestamp": "2026-11-22T11:54:41.118376+00:00",
+      "username": "mouad"
+    },
+    {
+      "allowlisted": false,
+      "description": "User mouad executed a sudo command as root",
+      "details": {
+        "command_args_count": 0,
+        "command_executable": "/usr/bin/mint-refresh-cache",
+        "target_user": "root"
+      },
+      "enrichment": {
+        "allowlist_match": [],
+        "allowlist_suppressed": false,
+        "bind_scope": "invalid",
+        "destination_ip_scope": "invalid",
+        "ip_scope": "invalid",
+        "is_root_user": false,
+        "is_service_account": false,
+        "suspicious_path": false,
+        "weekday_hour_utc": "Sun-11"
+      },
+      "event_type": "sudo_command",
+      "id": 131,
+      "process_name": "mint-refresh-cache",
+      "severity": "low",
+      "severity_source": "default",
+      "source": "auth_log",
+      "timestamp": "2026-11-22T11:53:41.118065+00:00",
+      "username": "mouad"
+    },
+    {
+      "allowlisted": false,
+      "description": "User mouad executed a sudo command as root",
+      "details": {
+        "command_args_count": 0,
+        "command_executable": "/usr/bin/mint-refresh-cache",
+        "target_user": "root"
+      },
+      "enrichment": {
+        "allowlist_match": [],
+        "allowlist_suppressed": false,
+        "bind_scope": "invalid",
+        "destination_ip_scope": "invalid",
+        "ip_scope": "invalid",
+        "is_root_user": false,
+        "is_service_account": false,
+        "suspicious_path": false,
+        "weekday_hour_utc": "Sun-09"
+      },
+      "event_type": "sudo_command",
+      "id": 130,
+      "process_name": "mint-refresh-cache",
+      "severity": "low",
+      "severity_source": "default",
+      "source": "auth_log",
+      "timestamp": "2026-11-22T09:22:29.265968+00:00",
+      "username": "mouad"
+    },
+    {
+      "allowlisted": false,
+      "description": "User mouad executed a sudo command as root",
+      "details": {
+        "command_args_count": 0,
+        "command_executable": "/usr/bin/mint-refresh-cache",
+        "target_user": "root"
+      },
+      "enrichment": {
+        "allowlist_match": [],
+        "allowlist_suppressed": false,
+        "bind_scope": "invalid",
+        "destination_ip_scope": "invalid",
+        "ip_scope": "invalid",
+        "is_root_user": false,
+        "is_service_account": false,
+        "suspicious_path": false,
+        "weekday_hour_utc": "Sun-09"
+      },
+      "event_type": "sudo_command",
+      "id": 129,
+      "process_name": "mint-refresh-cache",
+      "severity": "low",
+      "severity_source": "default",
+      "source": "auth_log",
+      "timestamp": "2026-11-22T09:21:29.264638+00:00",
+      "username": "mouad"
+    },
+    {
+      "allowlisted": false,
+      "description": "User mouad executed a sudo command as root",
+      "details": {
+        "command_args_count": 0,
+        "command_executable": "/usr/bin/mint-refresh-cache",
+        "target_user": "root"
+      },
+      "enrichment": {
+        "allowlist_match": [],
+        "allowlist_suppressed": false,
+        "bind_scope": "invalid",
+        "destination_ip_scope": "invalid",
+        "ip_scope": "invalid",
+        "is_root_user": false,
+        "is_service_account": false,
+        "suspicious_path": false,
         "weekday_hour_utc": "Sun-06"
       },
       "event_type": "sudo_command",
@@ -1054,7 +1222,7 @@
         "window_seconds": 900
       },
       "event_type": "rule_triggered",
-      "id": 132,
+      "id": 138,
       "severity": "high",
       "severity_source": "rule:success-after-failures",
       "source": "rules",
@@ -1232,7 +1400,7 @@
         "window_seconds": 600
       },
       "event_type": "rule_triggered",
-      "id": 131,
+      "id": 137,
       "severity": "high",
       "severity_source": "rule:ssh-bruteforce-by-ip",
       "source": "rules",
@@ -1443,7 +1611,7 @@
         "window_seconds": 600
       },
       "event_type": "rule_triggered",
-      "id": 130,
+      "id": 136,
       "severity": "medium",
       "severity_source": "rule:ssh-bruteforce-by-ip",
       "source": "rules",
@@ -1533,7 +1701,7 @@
       },
       "event_type": "config_drift",
       "file_path": "/etc/ssh/sshd_config",
-      "id": 129,
+      "id": 135,
       "severity": "high",
       "severity_source": "override:drift-sensitive-content",
       "source": "filesystem",
@@ -2110,176 +2278,8 @@
       "source": "auth_log",
       "timestamp": "2026-11-18T07:15:41.534937+00:00",
       "username": "mouad"
-    },
-    {
-      "allowlisted": false,
-      "description": "User mouad executed a sudo command as root",
-      "details": {
-        "command_args_count": 0,
-        "command_executable": "/usr/bin/mint-refresh-cache",
-        "target_user": "root"
-      },
-      "enrichment": {
-        "allowlist_match": [],
-        "allowlist_suppressed": false,
-        "bind_scope": "invalid",
-        "destination_ip_scope": "invalid",
-        "ip_scope": "invalid",
-        "is_root_user": false,
-        "is_service_account": false,
-        "suspicious_path": false,
-        "weekday_hour_utc": "Wed-05"
-      },
-      "event_type": "sudo_command",
-      "id": 75,
-      "process_name": "mint-refresh-cache",
-      "severity": "low",
-      "severity_source": "default",
-      "source": "auth_log",
-      "timestamp": "2026-11-18T05:16:49.528789+00:00",
-      "username": "mouad"
-    },
-    {
-      "allowlisted": false,
-      "description": "User mouad executed a sudo command as root",
-      "details": {
-        "command_args_count": 0,
-        "command_executable": "/usr/bin/mint-refresh-cache",
-        "target_user": "root"
-      },
-      "enrichment": {
-        "allowlist_match": [],
-        "allowlist_suppressed": false,
-        "bind_scope": "invalid",
-        "destination_ip_scope": "invalid",
-        "ip_scope": "invalid",
-        "is_root_user": false,
-        "is_service_account": false,
-        "suspicious_path": false,
-        "weekday_hour_utc": "Wed-05"
-      },
-      "event_type": "sudo_command",
-      "id": 74,
-      "process_name": "mint-refresh-cache",
-      "severity": "low",
-      "severity_source": "default",
-      "source": "auth_log",
-      "timestamp": "2026-11-18T05:15:41.531620+00:00",
-      "username": "mouad"
-    },
-    {
-      "allowlisted": false,
-      "description": "User mouad executed a sudo command as root",
-      "details": {
-        "command_args_count": 0,
-        "command_executable": "/usr/bin/mint-refresh-cache",
-        "target_user": "root"
-      },
-      "enrichment": {
-        "allowlist_match": [],
-        "allowlist_suppressed": false,
-        "bind_scope": "invalid",
-        "destination_ip_scope": "invalid",
-        "ip_scope": "invalid",
-        "is_root_user": false,
-        "is_service_account": false,
-        "suspicious_path": false,
-        "weekday_hour_utc": "Wed-03"
-      },
-      "event_type": "sudo_command",
-      "id": 73,
-      "process_name": "mint-refresh-cache",
-      "severity": "low",
-      "severity_source": "default",
-      "source": "auth_log",
-      "timestamp": "2026-11-18T03:16:49.529139+00:00",
-      "username": "mouad"
-    },
-    {
-      "allowlisted": false,
-      "description": "User mouad executed a sudo command as root",
-      "details": {
-        "command_args_count": 0,
-        "command_executable": "/usr/bin/mint-refresh-cache",
-        "target_user": "root"
-      },
-      "enrichment": {
-        "allowlist_match": [],
-        "allowlist_suppressed": false,
-        "bind_scope": "invalid",
-        "destination_ip_scope": "invalid",
-        "ip_scope": "invalid",
-        "is_root_user": false,
-        "is_service_account": false,
-        "suspicious_path": false,
-        "weekday_hour_utc": "Wed-03"
-      },
-      "event_type": "sudo_command",
-      "id": 72,
-      "process_name": "mint-refresh-cache",
-      "severity": "low",
-      "severity_source": "default",
-      "source": "auth_log",
-      "timestamp": "2026-11-18T03:15:41.524418+00:00",
-      "username": "mouad"
-    },
-    {
-      "allowlisted": false,
-      "description": "User mouad executed a sudo command as root",
-      "details": {
-        "command_args_count": 0,
-        "command_executable": "/usr/bin/mint-refresh-cache",
-        "target_user": "root"
-      },
-      "enrichment": {
-        "allowlist_match": [],
-        "allowlist_suppressed": false,
-        "bind_scope": "invalid",
-        "destination_ip_scope": "invalid",
-        "ip_scope": "invalid",
-        "is_root_user": false,
-        "is_service_account": false,
-        "suspicious_path": false,
-        "weekday_hour_utc": "Wed-01"
-      },
-      "event_type": "sudo_command",
-      "id": 71,
-      "process_name": "mint-refresh-cache",
-      "severity": "low",
-      "severity_source": "default",
-      "source": "auth_log",
-      "timestamp": "2026-11-18T01:16:49.772536+00:00",
-      "username": "mouad"
-    },
-    {
-      "allowlisted": false,
-      "description": "User mouad executed a sudo command as root",
-      "details": {
-        "command_args_count": 0,
-        "command_executable": "/usr/bin/mint-refresh-cache",
-        "target_user": "root"
-      },
-      "enrichment": {
-        "allowlist_match": [],
-        "allowlist_suppressed": false,
-        "bind_scope": "invalid",
-        "destination_ip_scope": "invalid",
-        "ip_scope": "invalid",
-        "is_root_user": false,
-        "is_service_account": false,
-        "suspicious_path": false,
-        "weekday_hour_utc": "Wed-01"
-      },
-      "event_type": "sudo_command",
-      "id": 70,
-      "process_name": "mint-refresh-cache",
-      "severity": "low",
-      "severity_source": "default",
-      "source": "auth_log",
-      "timestamp": "2026-11-18T01:15:49.770858+00:00",
-      "username": "mouad"
     }
   ],
-  "next_cursor": "eyJ0IjoiMjAyNi0xMS0xOFQwMToxNTo0OS43NzA4NTgrMDA6MDAiLCJpIjo3MH0",
-  "total": 131
+  "next_cursor": "eyJ0IjoiMjAyNi0xMS0xOFQwNzoxNTo0MS41MzQ5MzcrMDA6MDAiLCJpIjo3Nn0",
+  "total": 137
 }

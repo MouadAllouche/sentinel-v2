@@ -1,8 +1,8 @@
 {
   "db": {
-    "event_count": 131,
+    "event_count": 137,
     "oldest_event": "2026-11-15T23:42:07.893226+00:00",
-    "size_bytes": 565248
+    "size_bytes": 573440
   },
   "last_cycle": {
     "started_at": "2026-11-19T12:00:00+00:00",

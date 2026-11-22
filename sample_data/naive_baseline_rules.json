@@ -1,0 +1,26 @@
+[
+  {
+    "id": "naive-baseline-bruteforce",
+    "name": "Naive baseline: five failed logins from one IP in ten minutes",
+    "description": "Simple reference rule set, not a real product: one threshold rule only.",
+    "kind": "threshold",
+    "enabled": true,
+    "match": {"event_types": ["failed_login"], "conditions": {"all": []}},
+    "scope": {"exclude_allowlisted": true},
+    "actions": {"create_incident": true, "notify": true, "tags": []},
+    "mitre": [],
+    "group_by": ["source_ip"],
+    "aggregate": {"type": "count"},
+    "window_mode": "sliding",
+    "cooldown_seconds": 0,
+    "tiers": [
+      {
+        "label": "Alert",
+        "count": 5,
+        "window_seconds": 600,
+        "severity": "medium",
+        "points": 10
+      }
+    ]
+  }
+]

@@ -65,9 +65,53 @@ time-to-detect changes.
 | `benign-noisy-user` | benign | T1078 | no incident |
 | `benign-allowlisted-monitor` | benign | T1078 | events stored and labelled suppressed, no alert |
 | `mixed-realistic-week` | combined | T1110, T1078, T1053.003 | three hidden attacks in the dashboard DB |
+| `slow-rotating-bruteforce` | attack | T1110 | 3 attempts per 10 min from a rotating pool of 40 IPs |
+| `valid-user-spray-hourly` | attack | T1110.003 | valid usernames only, one attempt per user per hour |
+| `stolen-credential-systemd-persistence` | attack | T1078, T1543.002 | stolen credential, quiet escalation, systemd service |
+| `shell-profile-preload-persistence` | attack | T1546.004, T1574.006 | shell profile and `ld.so.preload` changes |
+| `ssh-key-plus-cron-delay` | attack | T1098.004, T1053.003 | SSH key then cron job minutes apart |
+| `dev-shm-staging` | attack | T1059, T1074.001 | process started from `/dev/shm` staging data |
+| `legit-admin-3am` | attack | T1136.001 | legitimate-looking admin account created at 03:00 |
+| `blended-low-slow` | evasion | T1110 | malicious events hidden among 20 benign-looking actions each |
 
 All addresses come from the documentation-reserved ranges
 `203.0.113.0/24`, `198.51.100.0/24` and `192.0.2.0/24`. Usernames are invented.
+
+## Red-team addendum (seed 7)
+
+Eight harder scenarios were written from attacker behaviour only, before consulting any seeded
+rule or threshold. Outcomes: `slow-rotating-bruteforce` and `valid-user-spray-hourly` were
+**FALSE_NEGATIVE** (36 rotating sources with at most 3 attempts per 10 minutes; 12 valid usernames
+one per hour — both below minute-scale grouping windows); the six persistence/process/account
+scenarios were TRUE_POSITIVE; `blended-low-slow` was a KNOWN_BLIND_SPOT as expected. The two false
+negatives were **not** tuned away; their pre-registered expectations remain and the corresponding
+tests are strict expected failures (`xfail(strict=True)`, reason "known detection gap, see D-113")
+so a future fix turns them into deliberate failures. Diagnosis: threshold/window and rule gap, not
+simulator realism — the events were generated and stored correctly. See `docs/DECISIONS.md` D-113.
+
+### `blended-low-slow` — exact actions and why it is expected to be missed
+
+The scenario runs three identical rounds, 30 simulated minutes apart:
+
+- **Malicious actions (3 total):** one `failed_login` per round against the invented user `admin`,
+  all from the documentation-reserved source IP `203.0.113.45`. Timestamps are round start,
+  round start + 30 min and round start + 60 min. There is no successful login from that IP and no
+  subsequent privileged action by the attacker, so the only evidence is three widely spaced
+  failures from one source.
+- **Benign filler (20 per round, 60 total):** 16 `successful_login` events for the invented user
+  `alice` from the documentation-reserved IP `198.51.100.7`, plus 4 `sudo_command` events by
+  `alice` running `/usr/bin/id` (routine administrative command). These use a different source IP
+  and a different username from the malicious events; they are ordinary activity, not attacks.
+- **Why `should_detect=False`:** each malicious event is separated from the next by 20 benign
+  actions and 30 simulated minutes. No short-window threshold sees more than one failure, and the
+  attacker shares no IP or username with the filler, so no correlation link exists. A monitor that
+  only aggregates failures in short windows has no evidence to act on. This is an evasion case, not
+  a failure of the simulator: the three failures are stored and visible in the events table.
+- **Would a reasonable monitor catch any of it?** A monitor with a long (multi-hour) window for
+  repeated failures from one source against one account, or one with external reputation data for
+  the source address, could plausibly flag the three failures across the hour. Sentinel's default
+  rule set does not do that, so the honest expectation stays `False`. The expectation was not
+  changed to make the matrix greener.
 
 ## Reading the report
 
