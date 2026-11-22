@@ -17,6 +17,7 @@ import pytest
 from storage.database import init_db
 
 _FIXED_NOW = datetime(2026, 11, 15, 12, 34, 56, tzinfo=UTC)
+ROOT = Path(__file__).resolve().parents[1]
 
 
 @pytest.fixture(autouse=True)
@@ -37,6 +38,19 @@ def NOW() -> datetime:  # noqa: N802 - the spec names this fixture NOW
 def now() -> datetime:
     """Lowercase alias of the NOW fixture."""
     return _FIXED_NOW
+
+
+@pytest.fixture
+def sim_workdir(tmp_path: Path) -> Any:
+    """A simulator sandbox *inside* the project (the simulator refuses external paths)."""
+    import shutil
+
+    path = ROOT / "sim_workdir" / f"test-{tmp_path.name}"
+    if path.exists():
+        shutil.rmtree(path)
+    path.mkdir(parents=True)
+    yield path
+    shutil.rmtree(path, ignore_errors=True)
 
 
 @pytest.fixture

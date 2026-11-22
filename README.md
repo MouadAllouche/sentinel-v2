@@ -40,4 +40,14 @@ Python 3.12, Node LTS and npm are required. Tool versions and design decisions a
 - No sudo, no machine learning, no outbound network except explicitly enabled
   notification channels.
 
-See `docs/DECISIONS.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md` and `docs/LIMITATIONS.md`.
+## Threat simulator
+
+`python cli.py simulate list` shows 19 synthetic scenarios (attacks, benign days and a deliberate
+low-and-slow blind spot). `python cli.py simulate run all` replays them through the real pipeline
+and prints a detection matrix; `simulate dashboard` builds a combined scenario database for the
+dashboard; `simulate whatif <scenario> --rules FILE.json` compares an exported rule set with the
+defaults. Everything is written to `sim_workdir/`; no real logs, network calls or privileged
+operations are used. See `docs/SIMULATION.md`.
+
+See `docs/DECISIONS.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, `docs/LIMITATIONS.md` and
+`docs/SIMULATION.md`.

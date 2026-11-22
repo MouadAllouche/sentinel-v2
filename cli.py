@@ -107,7 +107,97 @@ def _parser() -> argparse.ArgumentParser:
     demo.add_argument("--live", action="store_true")
     demo.add_argument("--no-print-password", action="store_true")
     demo.add_argument("--workdir", help="demo workdir (default: demo_workdir/)")
+    simulate = sub.add_parser("simulate")
+    simulate.add_argument("action", choices=["list", "run", "dashboard", "live", "whatif"])
+    simulate.add_argument("scenario", nargs="?")
+    simulate.add_argument("--seed", type=int, default=0)
+    simulate.add_argument("--format", choices=["table", "md", "json"], default="table")
+    simulate.add_argument("--out")
+    simulate.add_argument("--rules")
+    simulate.add_argument("--speed", type=float, default=1.0)
+    simulate.add_argument("--steps", type=int, default=5)
     return parser
+
+
+def _simulate(args: Any) -> int:
+    """Dispatch the sandboxed threat simulator commands (Phase 20)."""
+    from scripts.simulator.evaluate import aggregate, evaluate
+    from scripts.simulator.report import render_json, render_markdown, render_table, write_report
+    from scripts.simulator.runner import (
+        DEFAULT_WORKDIR,
+        build_dashboard,
+        run_all,
+        run_scenario,
+        simulate_live,
+        whatif,
+    )
+    from scripts.simulator.scenarios import SCENARIOS
+
+    action = args.action
+    workdir = args.out
+    if action == "list":
+        for scenario in SCENARIOS:
+            print(f"{scenario.id:32} {scenario.category:9} {scenario.title}")
+        return 0
+    if action == "run":
+        target = args.scenario or "all"
+        if target == "all":
+            results = run_all(seed=args.seed, workdir=workdir)
+        else:
+            try:
+                results = [run_scenario(target, seed=args.seed, workdir=workdir)]
+            except ValueError as exc:
+                print(str(exc))
+                return 2
+        summary = aggregate([evaluate(item) for item in results])
+        text = (
+            render_json(results)
+            if args.format == "json"
+            else render_markdown(results, summary)
+            if args.format == "md"
+            else render_table(results, summary)
+        )
+        print(text, end="")
+        if args.out:
+            write_report(results, fmt=args.format, out_dir=args.out)
+        return 0
+    if action == "dashboard":
+        info = build_dashboard(seed=args.seed, workdir=workdir)
+        print(f"Simulation dashboard: {info['db']}")
+        print(f"Session key: {info['session_key']} (mode 0600)")
+        sim_root = Path(workdir or DEFAULT_WORKDIR)
+        print(
+            f"Start the API: SENTINEL_SESSION_KEY=$(cat {sim_root / 'session.key'}) "
+            f"SENTINEL_CONFIG={info['settings']} "
+            "./venv/bin/uvicorn api.main:app --host 127.0.0.1 --port 8000"
+        )
+        print("Start the web: cd web && npm run start")
+        return 0
+    if action == "live":
+        return simulate_live(speed=args.speed, steps=args.steps, workdir=workdir)
+    if action == "whatif":
+        if not args.scenario or not args.rules:
+            print("whatif requires a scenario and --rules FILE")
+            return 2
+        try:
+            diff = whatif(args.scenario, args.rules, seed=args.seed, workdir=workdir)
+        except ValueError as exc:
+            print(str(exc))
+            return 2
+        print(
+            f"findings gained: {', '.join(diff['findings_gained']) or 'none'}\n"
+            f"findings lost: {', '.join(diff['findings_lost']) or 'none'}\n"
+            f"severity changes: {diff['severity_changes']}\n"
+            f"score change: {diff['score_change']}\n"
+            f"time-to-detect change: {diff['time_to_detect_change']}"
+        )
+        if args.out:
+            Path(args.out).mkdir(parents=True, exist_ok=True)
+            (Path(args.out) / "whatif.json").write_text(
+                json.dumps(diff, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            )
+        return 0
+    return 2
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -316,6 +406,8 @@ def main(argv: list[str] | None = None) -> int:
         health = get_health(db_path)
         _emit(health, args.json, health["status"])
         return 0
+    if command == "simulate":
+        return _simulate(args)
     if command == "demo":
         summary = build_demo(
             args.workdir or DEFAULT_DEMO_WORKDIR,

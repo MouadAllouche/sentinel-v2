@@ -238,3 +238,12 @@ exact document path.
 Regex conditions are limited to 200 characters, compiled at validation, reject nested quantifiers and
 are evaluated against at most 500 characters. Viewers cannot bypass the server: the
 builder's zod checks are advisory, and `POST /api/rules/validate` plus the save endpoint decide.
+
+## What-if simulation
+
+Export a rule set from the dashboard as JSON, then run
+`python cli.py simulate whatif <scenario> --rules FILE.json` to replay a synthetic scenario with
+those rules and compare findings gained/lost, severity changes, score and time-to-detect against
+the seeded defaults. The file is validated by the real rule validator; a bad rule produces a clear
+error. Defaults are never changed — the modified rules apply only to a sandbox copy of the
+scenario. See `docs/SIMULATION.md`.

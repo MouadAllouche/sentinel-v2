@@ -381,3 +381,20 @@ satisfy each gate. Status legend: ✅ done · ⬜ not started.
   `make web-test` → build, 137 tests in 28 files, typecheck and lint clean;
   `make web-e2e` → `22 passed`. `npm audit --omit=dev` → 0 vulnerabilities; `pip-audit` absent.
 - **Commit**: `phase-19: final audit and extra audit items`.
+
+## Phase 20 evidence (2026-11-22)
+
+- **Code**: `scripts/simulator/` (`scenarios.py`, `generators.py`, `feeds.py`, `runner.py`,
+  `evaluate.py`, `report.py`), `cli.py simulate` wiring, `sim_workdir/` git-ignored.
+- **Tests**: `tests/test_simulator.py` (catalogue, one test per scenario, allowlisted evidence,
+  determinism, idempotence, time-to-detect, report math/wording, safety),
+  `tests/test_simulator_cli.py` (CLI, what-if, live), and a scenario-id docs coverage check.
+- **Docs**: `docs/SIMULATION.md` plus short sections in `README.md`, `docs/DEMO.md`,
+  `docs/LIMITATIONS.md` and `docs/RULES.md`.
+- **Commands run**: `make test` → `643 passed`; `make lint` → clean; `make web-test` → build,
+  137 tests in 28 files, typecheck and lint clean; `python cli.py simulate run all --seed 7
+  --format md` → 1 m 9 s, report matrix generated.
+- **Matrix**: 14/14 attack scenarios TRUE_POSITIVE, 3/3 benign TRUE_NEGATIVE,
+  `low-and-slow` KNOWN_BLIND_SPOT, combined week TRUE_POSITIVE; 0 FALSE_NEGATIVE and
+  0 FALSE_POSITIVE. Full matrix in `docs/SIMULATION.md` and the generated `report.md`.
+- **Commit**: `phase-20: threat simulator and detection report`.

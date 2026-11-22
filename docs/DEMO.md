@@ -37,3 +37,11 @@ rule tiers firing (5/20/50), drift findings and the allowlisted-but-stored evide
 failed-login line to `auth.log` and re-runs collection, so the dashboard's live feed can be shown.
 It does not start a background process. `--no-print-password` is used by the end-to-end harness,
 which reads credentials from the mode-0600 file instead.
+
+## Threat simulator
+
+`python cli.py simulate run all` runs 19 sandboxed scenarios through the same pipeline and prints
+an honest detection matrix, including the deliberate low-and-slow blind spot. Use
+`python cli.py simulate dashboard` to load the combined "realistic week" database into the normal
+dashboard. The simulator is separate from the demo: it writes only to `sim_workdir/`, uses synthetic
+log lines and fake feeds, and never reads the monitored machine. See `docs/SIMULATION.md`.

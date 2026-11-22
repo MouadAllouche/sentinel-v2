@@ -8,6 +8,7 @@ __pycache__/
 *.db-shm
 logs/
 demo_workdir/
+sim_workdir/
 .demo-e2e/
 exports/
 .env

@@ -17,6 +17,7 @@ DOCS = [
     "docs/OPERATIONS.md",
     "docs/DEMO.md",
     "docs/DECISIONS.md",
+    "docs/SIMULATION.md",
 ]
 
 
@@ -39,4 +40,12 @@ def test_every_seeded_rule_id_is_documented() -> None:
 
     text = (ROOT / "docs" / "RULES.md").read_text(encoding="utf-8")
     missing = [rule["id"] for rule in DEFAULT_RULES if rule["id"] not in text]
+    assert missing == []
+
+
+def test_every_simulator_scenario_id_is_documented() -> None:
+    from scripts.simulator.scenarios import scenario_ids
+
+    text = (ROOT / "docs" / "SIMULATION.md").read_text(encoding="utf-8")
+    missing = [identifier for identifier in scenario_ids() if identifier not in text]
     assert missing == []

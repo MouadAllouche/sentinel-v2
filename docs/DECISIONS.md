@@ -978,3 +978,36 @@ Run `make api` and `make web`, then verify by hand (no screenshots):
   Security auditor (no production regression) required the no-network test to exercise real
   defaults with the notifier enabled and to use the actual planted demo secrets; both fixed.
   Remaining non-blockers and the full audit evidence are in `docs/AUDIT_REPORT.md` §11.
+
+### D-111 — Threat simulator (Phase 20)
+- **Decision**: a sandboxed simulator replays 19 synthetic scenarios through the real collectors,
+  rules, correlation, baselines, scoring and notifier. It writes only to `sim_workdir/`, uses
+  injected fake feed adapters instead of host psutil, and never opens a socket or subprocess.
+  Rationale: answer "how does Sentinel deal with these situations?" without touching the machine.
+  Alternatives rejected: a real-traffic VM (documentation-only in `scripts/generate_attack_vm.md`)
+  and hand-built event dicts (would drift from the real collector output).
+- **Deviation — simulated stepping**: the spec describes 60-second engine steps. The runner still
+  advances a simulated clock and calls the real `run_cycle(now=clock)`, but coalesces idle minutes
+  and caps a scenario at ~40 cycles (all due activity is still fed at each cycle). Without this,
+  `simulate run all` took >10 minutes; with it the gate is met in 1 m 9 s. Detection times are
+  measured in simulated seconds at cycle resolution. For long scenarios the sampled cadence is
+  coarser than 60 s, so a fidelity test (`test_sampled_cycles_match_full_60s_stepping`) compares
+  the sampled and full-step outcomes, matched rules and time-to-detect for the brute-force
+  scenario; other scenarios are validated by their expectation tests, not by an assumed 60 s bound.
+- **Deviation — `--out`**: for `simulate run/dashboard/whatif/live`, `--out DIR` is both the report
+  directory and the simulator workdir (it must be inside the project), so the generated databases
+  sit next to the report. This keeps one sandbox per invocation and is documented in
+  `docs/SIMULATION.md`.
+- **Scenario realism**: failed-login history is just inside the 7-day baseline window so maturity
+  can fire; a listener record is injected two simulated minutes after the first cycle so snapshot
+  collectors seed first. These are simulator realism details, not rule tuning.
+- **Honest matrix**: all attacks were detected, no benign scenario produced a false positive, and
+  `low-and-slow` is reported as `KNOWN_BLIND_SPOT`. No threshold was changed to improve the matrix.
+- **Verification**: `make test` 643 passed; `make lint` clean; `make web-test` build + 137 tests in
+  28 files + typecheck/lint clean; `simulate run all` 1 m 9 s with `report.md` generated.
+- **Review outcome**: `/review 20` (no production blocker) required a real what-if time-to-detect
+  delta, a TTD test pinned to the 5th-failure cycle, matching-finding TTD, disclaimer/aggregate in
+  JSON and table reports, and a real `simulate live`; all fixed and pinned by tests. The security
+  auditor confirmed the sandbox confinement; its assurance gaps were closed by patching psutil and
+  write-open in the safety test, hashing the project outside the sandbox, making credentials 0600,
+  confining `write_report()` and sandbox mutations, and documenting exactly when `live` drives SSE.

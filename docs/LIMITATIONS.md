@@ -45,3 +45,7 @@ discovered in production.
   the database until the retention policy prunes it.
 - No automatic remediation, no outbound network except explicitly enabled notification channels,
   no DNS/GeoIP lookups, no secrets, file contents or command lines stored.
+- The threat simulator (`docs/SIMULATION.md`) models only what reaches logs, connections,
+  processes and files. It does not model encrypted traffic, memory-only malware, kernel rootkits,
+  zero-days, or a real adversary. Its detection matrix measures rule behaviour on synthetic input,
+  not real-world detection performance; the low-and-slow scenario is a known blind spot.
